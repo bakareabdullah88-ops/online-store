@@ -99,7 +99,7 @@ export function SuccessView() {
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         {isPending ? (
           // Until we know how many orders there are, don't offer a link that might be wrong.
-          <Skeleton className="h-13 w-48" />
+          <Skeleton className="h-11 w-48" />
         ) : orders.length === 1 && orders[0] ? (
           <ButtonLink href={`/orders/${orders[0].id}`} size="lg">
             Track your order

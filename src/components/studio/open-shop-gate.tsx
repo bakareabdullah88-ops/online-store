@@ -11,7 +11,7 @@ const fallback = (
   <div className="flex flex-col gap-6" aria-hidden>
     <Skeleton className="h-1.5 w-full" rounded="full" />
     <Skeleton className="mt-8 h-12 w-80" />
-    <Skeleton className="h-13 w-full" rounded="md" />
+    <Skeleton className="h-11 w-full" rounded="md" />
   </div>
 );
 

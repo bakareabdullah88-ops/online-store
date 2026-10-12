@@ -80,20 +80,20 @@ function ProductRail({
 export function ProductSkeleton() {
   return (
     <div className="container-page pt-4 md:pt-8" aria-hidden>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
-        <div className="md:col-span-7">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10 xl:gap-14">
+        <div className="md:col-span-6">
           <Skeleton
             className="aspect-[4/5] w-full max-md:-mx-(--gutter) max-md:w-[calc(100%+2*var(--gutter))]"
             rounded="lg"
           />
         </div>
-        <div className="md:col-span-5">
+        <div className="md:col-span-6 md:max-w-[520px]">
           <Skeleton className="h-3 w-28" />
           <Skeleton className="mt-4 h-10 w-4/5" />
           <Skeleton className="mt-4 h-8 w-32" />
           <SkeletonText className="mt-6 text-body" lines={3} />
           <Skeleton className="mt-8 h-11 w-64" rounded="md" />
-          <Skeleton className="mt-8 h-13 w-full" rounded="md" />
+          <Skeleton className="mt-8 h-11 w-full" rounded="md" />
         </div>
       </div>
     </div>
@@ -245,14 +245,14 @@ export function ProductView() {
           </li>
         </ol>
       </nav>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10 xl:gap-16">
-        <div className="min-w-0 md:col-span-7">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10 xl:gap-14">
+        <div className="min-w-0 md:col-span-6">
           <div className="md:sticky md:top-24">
             <Gallery images={p.images} name={p.name} productId={p.id} heroRef={heroRef} />
           </div>
         </div>
 
-        <div className="md:col-span-5">
+        <div className="min-w-0 md:col-span-6 md:max-w-[520px]">
           <Link
             href={`/brands/${p.brand.handle}`}
             className="group inline-flex items-center gap-2.5"

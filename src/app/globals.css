@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Dark theme is class-driven (next-themes). */
+/* Dark theme is class-driven (see components/providers/theme.tsx). */
 @custom-variant dark (&:where(.dark, .dark *));
 /* Selling mode (Shop Studio) */
 @custom-variant selling (&:where([data-mode="selling"], [data-mode="selling"] *));
@@ -10,60 +10,66 @@
 /* ------------------------------------------------------------------ */
 
 :root {
-  /* Surfaces: warm paper */
-  --canvas: #f6f1e9;
-  --canvas-sunk: #efe8dc;
-  --surface: #fffdf9;
-  --surface-2: #faf6ef;
-  --sand: #ede4d6;
-  --line: #e4dacb;
-  --line-strong: #cfc3b1;
+  /* Surfaces: clean white with a cool, faintly green tint */
+  --canvas: #f6f8f7;
+  --canvas-sunk: #edf1ef;
+  --surface: #ffffff;
+  --surface-2: #f9fbfa;
+  --sand: #eef2f0;
+  --line: #e4e8e6;
+  --line-strong: #cbd2cf;
 
   /* Ink */
-  --ink: #1b1814;
-  --ink-2: #3a342d;
-  --muted: #5f574d;
-  --faint: #8a8073;
+  --ink: #0f1115;
+  --ink-2: #2b2f36;
+  --muted: #59606a;
+  --faint: #8b929b;
 
-  /* Primary (black buttons) */
-  --primary: #1b1814;
-  --primary-hover: #2e2924;
-  --on-primary: #fbf7f1;
+  /* Primary: near-black panels and selected states */
+  --primary: #0f1115;
+  --primary-hover: #262a31;
+  --on-primary: #ffffff;
 
-  /* Accent: Ember (Buying) */
-  --accent: #bf3e18;
-  --accent-hover: #a93514;
-  --accent-soft: #f7e3d8;
-  --accent-ink: #9c3112;
+  /* Accent: Blue (Buying) - main buttons, links, highlights */
+  --accent: #2f45d8;
+  --accent-hover: #2337bd;
+  --accent-soft: #e7eafd;
+  --accent-ink: #2235b5;
   --on-accent: #ffffff;
 
-  /* Supporting accent: Studio green (Selling); always available by name */
-  --studio: #1e5b45;
-  --ember: #bf3e18;
+  /* Named accents, always available: mint for Selling, blue for Buying */
+  --studio: #0f7a55;
+  --ember: #2f45d8;
   /* Accent hues that stay legible on --primary surfaces (inverted panels) */
-  --studio-contrast: #7bd8b1;
-  --ember-contrast: #ff9b78;
+  --studio-contrast: #86e0b0;
+  --ember-contrast: #aab5ff;
+
+  /* Soft washes (hero gradient, announcement bar) */
+  --wash-mint: #dff3e6;
+  --wash-peach: #fdeee2;
+  --notice: #fdeee2;
+  --on-notice: #4a2a14;
 
   /* Semantic */
-  --success: #1a6e45;
-  --success-soft: #ddf0e4;
-  --warning: #9a5806;
-  --warning-soft: #fbebcf;
+  --success: #0f7048;
+  --success-soft: #dcf3e6;
+  --warning: #935307;
+  --warning-soft: #fcefd6;
   --danger: #b42318;
-  --danger-soft: #fbe1dd;
+  --danger-soft: #fde4e1;
   --info: #1d5c8f;
-  --info-soft: #ddeaf5;
+  --info-soft: #e0ecf7;
 
-  --overlay: rgb(27 24 20 / 0.42);
-  --skeleton: #ebe3d6;
-  --skeleton-shine: rgb(255 253 249 / 0.65);
+  --overlay: rgb(15 17 21 / 0.45);
+  --skeleton: #e9eeeb;
+  --skeleton-shine: rgb(255 255 255 / 0.7);
 
   /* Elevation */
-  --shadow-xs: 0 1px 0 rgb(27 24 20 / 0.04);
-  --shadow-sm: 0 1px 2px rgb(27 24 20 / 0.06), 0 1px 1px rgb(27 24 20 / 0.04);
-  --shadow-md: 0 8px 20px -8px rgb(27 24 20 / 0.16), 0 2px 4px rgb(27 24 20 / 0.05);
-  --shadow-lg: 0 20px 44px -14px rgb(27 24 20 / 0.24), 0 4px 10px rgb(27 24 20 / 0.06);
-  --shadow-xl: 0 36px 72px -18px rgb(27 24 20 / 0.32), 0 8px 18px rgb(27 24 20 / 0.08);
+  --shadow-xs: 0 1px 0 rgb(15 17 21 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(15 17 21 / 0.06), 0 1px 1px rgb(15 17 21 / 0.04);
+  --shadow-md: 0 8px 20px -8px rgb(15 17 21 / 0.14), 0 2px 4px rgb(15 17 21 / 0.05);
+  --shadow-lg: 0 20px 44px -14px rgb(15 17 21 / 0.2), 0 4px 10px rgb(15 17 21 / 0.06);
+  --shadow-xl: 0 36px 72px -18px rgb(15 17 21 / 0.28), 0 8px 18px rgb(15 17 21 / 0.08);
 
   /* Z-index scale */
   --z-raised: 10;
@@ -76,73 +82,78 @@
   --z-curtain: 90;
   --z-skip: 100;
 
-  /* Layout */
+  /* Layout: compact, centred */
   --header-h: 60px;
-  --tabbar-h: 64px;
-  --sidebar-w: 248px;
+  --tabbar-h: 62px;
+  --sidebar-w: 232px;
   --gutter: 16px;
-  --content-max: 1360px;
+  --content-max: 1232px;
+
+  /* Headline style (set per font style, see src/config/font-presets.ts) */
+  --display-weight: 700;
+  --display-tracking: -0.035em;
 
   color-scheme: light;
 }
 
 [data-mode="selling"] {
-  --canvas: #f1f1ec;
-  --canvas-sunk: #e8e8e1;
-  --surface: #ffffff;
-  --surface-2: #f8f8f5;
-  --sand: #e6e6de;
-  --line: #e2e2da;
-  --line-strong: #cacac0;
-  --skeleton: #e6e6df;
+  --canvas: #f5f7f6;
+  --canvas-sunk: #ebf0ed;
+  --sand: #ecf1ee;
+  --skeleton: #e6ece8;
 
-  --accent: #1e5b45;
-  --accent-hover: #174a38;
-  --accent-soft: #dcebe3;
-  --accent-ink: #17493a;
+  --accent: #0f7a55;
+  --accent-hover: #0b6646;
+  --accent-soft: #dcf3e6;
+  --accent-ink: #0b5e41;
   --on-accent: #ffffff;
 }
 
 .dark {
-  --canvas: #141210;
-  --canvas-sunk: #0f0d0c;
-  --surface: #1d1a17;
-  --surface-2: #25211d;
-  --sand: #2c2722;
-  --line: #2f2a25;
-  --line-strong: #463f37;
+  --canvas: #0e1012;
+  --canvas-sunk: #0a0b0d;
+  --surface: #16191d;
+  --surface-2: #1d2126;
+  --sand: #21262b;
+  --line: #262b31;
+  --line-strong: #3a4149;
 
-  --ink: #f2ece3;
-  --ink-2: #d6cec2;
-  --muted: #a79d90;
-  --faint: #7d7468;
+  --ink: #eef1f4;
+  --ink-2: #cdd3da;
+  --muted: #9aa3ad;
+  --faint: #6f7882;
 
-  --primary: #f2ece3;
+  --primary: #eef1f4;
   --primary-hover: #ffffff;
-  --on-primary: #141210;
+  --on-primary: #0e1012;
 
-  --accent: #ff7a50;
-  --accent-hover: #ff916c;
-  --accent-soft: #3a2018;
-  --accent-ink: #ffa382;
-  --on-accent: #1b0e08;
+  --accent: #8090ff;
+  --accent-hover: #97a4ff;
+  --accent-soft: #1c2250;
+  --accent-ink: #a9b4ff;
+  --on-accent: #0b0f2b;
 
-  --studio: #4fc394;
-  --ember: #ff7a50;
-  --studio-contrast: #1e5b45;
-  --ember-contrast: #b83a16;
+  --studio: #4fd39a;
+  --ember: #8090ff;
+  --studio-contrast: #0f7a55;
+  --ember-contrast: #2f45d8;
 
-  --success: #4cc488;
-  --success-soft: #133222;
+  --wash-mint: #12241b;
+  --wash-peach: #2a1d14;
+  --notice: #241a12;
+  --on-notice: #f6d9c0;
+
+  --success: #4fd39a;
+  --success-soft: #11291e;
   --warning: #f0b45a;
-  --warning-soft: #3a2a10;
+  --warning-soft: #33250f;
   --danger: #ff7b6e;
-  --danger-soft: #3d1714;
+  --danger-soft: #3a1714;
   --info: #7ab8ec;
-  --info-soft: #132a3d;
+  --info-soft: #11263a;
 
   --overlay: rgb(0 0 0 / 0.6);
-  --skeleton: #24201c;
+  --skeleton: #1d2126;
   --skeleton-shine: rgb(255 255 255 / 0.05);
 
   --shadow-xs: 0 1px 0 rgb(0 0 0 / 0.3);
@@ -156,20 +167,20 @@
 
 .dark[data-mode="selling"],
 .dark [data-mode="selling"] {
-  --canvas: #111312;
-  --canvas-sunk: #0c0e0d;
-  --surface: #191c1a;
-  --surface-2: #212522;
-  --sand: #262b28;
-  --line: #2a2f2c;
-  --line-strong: #3d4440;
-  --skeleton: #212522;
+  --canvas: #0d1110;
+  --canvas-sunk: #090c0b;
+  --surface: #151a18;
+  --surface-2: #1b211f;
+  --sand: #202825;
+  --line: #242c29;
+  --line-strong: #37423e;
+  --skeleton: #1b211f;
 
-  --accent: #4fc394;
-  --accent-hover: #6dd3a9;
-  --accent-soft: #15302a;
-  --accent-ink: #7bd8b1;
-  --on-accent: #06140e;
+  --accent: #4fd39a;
+  --accent-hover: #6ddfae;
+  --accent-soft: #12291f;
+  --accent-ink: #86e0b0;
+  --on-accent: #04130c;
 }
 
 @theme inline {
@@ -206,33 +217,38 @@
   --color-info-soft: var(--info-soft);
   --color-overlay: var(--overlay);
   --color-skeleton: var(--skeleton);
+  --color-notice: var(--notice);
+  --color-on-notice: var(--on-notice);
+  --color-wash-mint: var(--wash-mint);
+  --color-wash-peach: var(--wash-peach);
 
   /* Faces come from src/config/fonts.ts */
-  --font-display: var(--font-display-face), "Times New Roman", serif;
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-face), ui-monospace, "SFMono-Regular", monospace;
 
-  /* Type scale */
-  --text-display-xl: clamp(3.25rem, 1.9rem + 6.4vw, 7.5rem);
-  --text-display-xl--line-height: 0.9;
-  --text-display-xl--letter-spacing: -0.02em;
-  --text-display-lg: clamp(2.5rem, 1.75rem + 3.6vw, 4.75rem);
-  --text-display-lg--line-height: 0.95;
-  --text-display-lg--letter-spacing: -0.015em;
-  --text-display-md: clamp(2rem, 1.6rem + 1.9vw, 3.25rem);
-  --text-display-md--line-height: 1;
-  --text-display-md--letter-spacing: -0.01em;
-  --text-display-sm: 1.875rem;
-  --text-display-sm--line-height: 1.05;
-  --text-title-lg: 1.375rem;
-  --text-title-lg--line-height: 1.25;
+  /* Type scale: compact. Headline weight and tracking follow the font style. */
+  --text-display-xl: clamp(2.125rem, 1.55rem + 2.6vw, 3.5rem);
+  --text-display-xl--line-height: 1.04;
+  --text-display-xl--letter-spacing: var(--display-tracking);
+  --text-display-lg: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  --text-display-lg--line-height: 1.08;
+  --text-display-lg--letter-spacing: var(--display-tracking);
+  --text-display-md: clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem);
+  --text-display-md--line-height: 1.12;
+  --text-display-md--letter-spacing: var(--display-tracking);
+  --text-display-sm: 1.375rem;
+  --text-display-sm--line-height: 1.2;
+  --text-display-sm--letter-spacing: -0.02em;
+  --text-title-lg: 1.125rem;
+  --text-title-lg--line-height: 1.3;
   --text-title-lg--letter-spacing: -0.01em;
-  --text-title: 1.0625rem;
+  --text-title: 1rem;
   --text-title--line-height: 1.35;
   --text-title--letter-spacing: -0.005em;
-  --text-body-lg: 1.0625rem;
+  --text-body-lg: 1rem;
   --text-body-lg--line-height: 1.6;
-  --text-body: 0.9375rem;
+  --text-body: 0.875rem;
   --text-body--line-height: 1.55;
   --text-small: 0.8125rem;
   --text-small--line-height: 1.45;
@@ -294,7 +310,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Emphasis style is chosen in src/config/fonts.ts (`emphasis`). */
+  /* Headlines take their weight from the font style (src/config/font-presets.ts). */
+  .font-display {
+    font-weight: var(--display-weight);
+  }
+
+  /* Emphasis style is chosen in src/config/font-presets.ts (`emphasis`). */
   html[data-emphasis="upright"] em {
     font-style: normal;
   }
@@ -358,10 +379,10 @@
   margin-inline: auto;
   padding-inline: var(--gutter);
   @variant md {
-    padding-inline: 32px;
+    padding-inline: 24px;
   }
   @variant xl {
-    padding-inline: 48px;
+    padding-inline: 32px;
   }
 }
 

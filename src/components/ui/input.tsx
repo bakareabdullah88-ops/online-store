@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, leading, trailing, inputSize = "md", ...props },
   ref,
 ) {
-  const height = inputSize === "lg" ? "h-13 text-body-lg" : "h-11 text-body";
+  const height = inputSize === "lg" ? "h-12 text-body-lg" : "h-10 text-body";
   if (!leading && !trailing) {
     return <input ref={ref} className={cn(fieldControl, height, "px-3.5", className)} {...props} />;
   }

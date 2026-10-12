@@ -172,7 +172,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
       </header>
 
       {/* Sticky category rail + tools */}
-      <div className="sticky top-14 z-(--z-sticky) -mx-(--gutter) mt-6 bg-canvas/92 px-(--gutter) py-3 backdrop-blur-md md:-mx-8 md:px-8 lg:top-14 xl:-mx-12 xl:px-12">
+      <div className="sticky top-14 z-(--z-sticky) -mx-(--gutter) mt-6 bg-canvas/92 px-(--gutter) py-3 backdrop-blur-md md:-mx-6 md:px-6 lg:top-14 xl:-mx-8 xl:px-8">
         <div className="flex items-center gap-3">
           <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
             <ChipGroup

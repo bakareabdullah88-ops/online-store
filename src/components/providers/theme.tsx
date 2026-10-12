@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { FONT_STORAGE_KEY, fontPresets } from "@/config/font-presets";
 
 export type ThemePreference = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
@@ -9,9 +10,9 @@ export const THEME_STORAGE_KEY = "kiosk-theme";
 
 /**
  * Runs before first paint (inlined in <head>) so there is never a flash of the
- * wrong theme or the wrong mode accent. Kept tiny and dependency-free.
+ * wrong theme, font style or mode accent. Kept tiny and dependency-free.
  */
-export const themeBootScript = `(function(){try{var d=document.documentElement;var t=localStorage.getItem("${THEME_STORAGE_KEY}")||"system";var dark=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);d.classList.toggle("dark",dark);d.style.colorScheme=dark?"dark":"light";if(location.pathname.indexOf("/studio")===0){d.setAttribute("data-mode","selling")}else{d.setAttribute("data-mode","buying")}}catch(e){}})();`;
+export const themeBootScript = `(function(){try{var d=document.documentElement;var t=localStorage.getItem("${THEME_STORAGE_KEY}")||"system";var dark=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);d.classList.toggle("dark",dark);d.style.colorScheme=dark?"dark":"light";var f=localStorage.getItem("${FONT_STORAGE_KEY}");if(f&&${JSON.stringify(fontPresets.map((p) => p.id))}.indexOf(f)>-1){d.setAttribute("data-font",f)}if(location.pathname.indexOf("/studio")===0){d.setAttribute("data-mode","selling")}else{d.setAttribute("data-mode","buying")}}catch(e){}})();`;
 
 type ThemeContextValue = {
   preference: ThemePreference;

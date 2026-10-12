@@ -1,16 +1,20 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@/config/brand";
-import { emphasis, fontNames } from "@/config/fonts";
+import { defaultFontPreset, emphasis, getFontPreset } from "@/config/font-presets";
 
 export const alt = `${brand.name}: buy from student brands on your campus`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /** Loads the display font from Google Fonts; falls back to the default face if offline at build. */
-async function loadFont(family: string, italic: boolean): Promise<ArrayBuffer | null> {
+async function loadFont(
+  family: string,
+  weight: number,
+  italic: boolean,
+): Promise<ArrayBuffer | null> {
   "use cache";
   try {
-    const query = family.replace(/ /g, "+") + (italic ? ":ital@1" : "");
+    const query = `${family.replace(/ /g, "+")}:ital,wght@${italic ? 1 : 0},${weight}`;
     const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${query}`)).text();
     const src = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/)?.[1];
     if (!src) return null;
@@ -21,10 +25,10 @@ async function loadFont(family: string, italic: boolean): Promise<ArrayBuffer | 
 }
 
 export default async function OpengraphImage() {
-  const family = fontNames.display;
+  const { family, weight } = getFontPreset(defaultFontPreset).display;
   const [regular, italic] = await Promise.all([
-    loadFont(family, false),
-    emphasis === "italic" ? loadFont(family, true) : Promise.resolve(null),
+    loadFont(family, weight, false),
+    emphasis === "italic" ? loadFont(family, weight, true) : Promise.resolve(null),
   ]);
   const serif = regular ? family : "serif";
   return new ImageResponse(
@@ -33,7 +37,7 @@ export default async function OpengraphImage() {
         width: "100%",
         height: "100%",
         display: "flex",
-        background: "#f6f1e9",
+        background: "#f6f8f7",
         padding: 72,
         position: "relative",
       }}
@@ -46,7 +50,7 @@ export default async function OpengraphImage() {
           width: 560,
           height: 560,
           borderRadius: 999,
-          background: "#ede4d6",
+          background: "#dff3e6",
         }}
       />
       <div
@@ -85,11 +89,11 @@ export default async function OpengraphImage() {
             gap: 14,
             fontFamily: serif,
             fontSize: 48,
-            color: "#1b1814",
+            color: "#0f1115",
           }}
         >
           {brand.name}
-          <div style={{ width: 12, height: 12, borderRadius: 999, background: "#bf3e18" }} />
+          <div style={{ width: 12, height: 12, borderRadius: 999, background: "#2f45d8" }} />
         </div>
         <div
           style={{
@@ -98,18 +102,18 @@ export default async function OpengraphImage() {
             fontFamily: serif,
             fontSize: 96,
             lineHeight: 0.95,
-            color: "#1b1814",
+            color: "#0f1115",
             letterSpacing: -2,
           }}
         >
           <span>Buy from the brands</span>
           <span
-            style={{ color: "#bf3e18", fontStyle: emphasis === "italic" ? "italic" : "normal" }}
+            style={{ color: "#2f45d8", fontStyle: emphasis === "italic" ? "italic" : "normal" }}
           >
             in your hostel.
           </span>
         </div>
-        <div style={{ fontFamily: serif, fontSize: 30, color: "#5f574d" }}>
+        <div style={{ fontFamily: serif, fontSize: 30, color: "#59606a" }}>
           Thrift · food · skincare · prints · tech, from students on your campus
         </div>
       </div>
@@ -123,7 +127,7 @@ export default async function OpengraphImage() {
                 name: family,
                 data: regular,
                 style: "normal" as const,
-                weight: 400 as const,
+                weight,
               },
             ]
           : []),
@@ -133,7 +137,7 @@ export default async function OpengraphImage() {
                 name: family,
                 data: italic,
                 style: "italic" as const,
-                weight: 400 as const,
+                weight,
               },
             ]
           : []),

@@ -108,17 +108,21 @@ uploads, payments, realtime).
 
 ## Changing fonts
 
-All fonts live in one file, [`src/config/fonts.ts`](src/config/fonts.ts): the headline font, the
-text font, the label font, and whether emphasised words in headlines are upright or italic.
+There are five font styles (Modern, Clean, Friendly, Editorial, Classic), defined in
+[`src/config/font-presets.ts`](src/config/font-presets.ts).
 
-The easiest way to choose is the font lab at **`/design-system` → Try a font**. Pick a headline
-and a text font, preview them on a sample hero (or on the whole page), then press **Copy** and
-paste the result into `src/config/fonts.ts`. Any family on [Google Fonts](https://fonts.google.com)
-works; it is self-hosted at build time, so visitors never load anything from Google.
+- **Anyone can switch** in **Settings → Appearance → Font style** (or on `/design-system`). The
+  choice is saved in that browser.
+- **To change the default** everyone starts with, set `defaultFontPreset` in
+  `src/config/font-presets.ts` and push. The site ships with **Modern** (Plus Jakarta Sans).
+- **To add a new Google font**, load it in [`src/config/fonts.ts`](src/config/fonts.ts), then add a
+  style for it in `font-presets.ts`. Fonts are self-hosted at build time.
 
 ## Using real photos
 
-Seed products use generated SVG art, so nothing is hotlinked. To use real photos:
+Demo photos come from Unsplash (free licence) via `python3 scripts/fetch-photos.py`, which saves
+them in `public/seed/` and lists them in `src/services/mock/seed/photos.ts` by product type.
+Product types without photos fall back to generated art. To use your own photos instead:
 
 1. Put the files in [`public/seed/`](public/seed) (JPEG or WebP, 4:5 crops work best).
 2. In [`src/services/mock/seed/catalog.ts`](src/services/mock/seed/catalog.ts), add `photos` to a

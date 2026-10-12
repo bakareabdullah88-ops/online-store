@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { brand } from "@/config/brand";
-import { emphasis, fontClassNames } from "@/config/fonts";
+import { defaultFontPreset, emphasis, fontPresetCss } from "@/config/font-presets";
+import { fontClassNames } from "@/config/fonts";
 import { siteUrl } from "@/env";
 import { Providers } from "@/components/providers";
+import { DemoNotice } from "@/components/shell/demo-notice";
 import { themeBootScript } from "@/components/providers/theme";
 import "./globals.css";
 
@@ -36,18 +38,26 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f1e9" },
-    { media: "(prefers-color-scheme: dark)", color: "#141210" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f8f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1012" },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-NG" suppressHydrationWarning className={fontClassNames} data-emphasis={emphasis}>
+    <html
+      lang="en-NG"
+      suppressHydrationWarning
+      className={fontClassNames}
+      data-emphasis={emphasis}
+      data-font={defaultFontPreset}
+    >
       <head>
+        <style dangerouslySetInnerHTML={{ __html: fontPresetCss() }} />
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-dvh">
+        <DemoNotice />
         <Providers>{children}</Providers>
       </body>
     </html>

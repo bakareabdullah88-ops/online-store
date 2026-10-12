@@ -53,7 +53,7 @@ export function Rail({
         role="region"
         aria-label={label}
         tabIndex={0}
-        className="-mx-(--gutter) scrollbar-none flex snap-x snap-mandatory scroll-px-(--gutter) gap-4 overflow-x-auto px-(--gutter) pb-2 md:-mx-8 md:scroll-px-8 md:px-8 xl:-mx-12 xl:scroll-px-12 xl:px-12"
+        className="-mx-(--gutter) scrollbar-none flex snap-x snap-mandatory scroll-px-(--gutter) gap-4 overflow-x-auto px-(--gutter) pb-2 md:-mx-6 md:scroll-px-6 md:px-6 xl:-mx-8 xl:scroll-px-8 xl:px-8"
       >
         {children.map((c, i) => (
           <div key={i} className={cn("shrink-0 snap-start", itemClassName)}>

@@ -110,7 +110,7 @@ function StudioHeader() {
         scrolled ? "bg-canvas/85 shadow-[0_1px_0_var(--line)] backdrop-blur-lg" : "bg-canvas",
       )}
     >
-      <div className="flex h-(--header-h) items-center gap-3 px-(--gutter) md:px-8 lg:h-16">
+      <div className="mx-auto flex h-(--header-h) w-full max-w-[calc(var(--content-max)+4rem)] items-center gap-3 px-(--gutter) md:px-8 lg:h-16">
         <Logo href="/studio" suffix="Studio" />
         <div className="ml-auto flex items-center gap-1.5">
           <Button

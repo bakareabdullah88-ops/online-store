@@ -8,6 +8,8 @@ export type Category = {
   blurb: string;
   motif: ArtMotif;
   palette: ArtPalette;
+  /** Optional real photo in /public/seed, used instead of the generated art. */
+  photo?: string;
 };
 
 /** Static taxonomy. BACKEND-SEAM: could be served by the API later. */

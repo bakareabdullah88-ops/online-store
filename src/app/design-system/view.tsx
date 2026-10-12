@@ -51,8 +51,9 @@ import { spring, type SpringName } from "@/design/motion";
 import { artPalettes, type ArtPalette } from "@/design/tokens";
 import { formatNaira } from "@/domain/money";
 import { brand } from "@/config/brand";
-import { fontNames } from "@/config/fonts";
-import { FontLab } from "./font-lab";
+import { getFontPreset } from "@/config/font-presets";
+import { FontPicker } from "@/components/ui/font-picker";
+import { useFontPreset } from "@/components/providers/font";
 import { toast } from "@/stores/toast";
 import type { ArtMotif } from "@/services/types";
 import { cn } from "@/lib/cn";
@@ -245,6 +246,7 @@ function SpringDemo({ name }: { name: SpringName }) {
 }
 
 export function DesignSystemView() {
+  const font = getFontPreset(useFontPreset().preset);
   const { preference, setPreference } = useTheme();
   const [mode, setMode] = useState<"buying" | "selling">("buying");
   const [chips, setChips] = useState<string[]>(["thrift"]);
@@ -271,7 +273,7 @@ export function DesignSystemView() {
   const nav = [
     ["color", "Colour"],
     ["type", "Type"],
-    ["fonts", "Try a font"],
+    ["fonts", "Font style"],
     ["space", "Space & elevation"],
     ["motion", "Motion"],
     ["buttons", "Buttons"],
@@ -374,13 +376,19 @@ export function DesignSystemView() {
             ))}
           </div>
           <p className="mt-6 text-small text-muted">
-            {fontNames.display} (display) · {fontNames.body} (UI) · {fontNames.mono} (labels &
+            {font.display.family} (headlines) · {font.body.family} (text) · Geist Mono (labels &
             figures: <span className="font-mono text-ink tabular">{formatNaira(1_250_000)}</span>)
           </p>
         </Section>
 
-        <Section id="fonts" kicker="02 · Fonts" title="Try a font">
-          <FontLab />
+        <Section id="fonts" kicker="02 · Fonts" title="Font style">
+          <p className="mb-4 max-w-2xl text-body text-muted">
+            Switch the font style for the whole site. Visitors can do the same in Settings →
+            Appearance. To change the default everyone starts with, set{" "}
+            <code className="font-mono text-small text-ink">defaultFontPreset</code> in{" "}
+            <code className="font-mono text-small text-ink">src/config/font-presets.ts</code>.
+          </p>
+          <FontPicker />
         </Section>
 
         <Section id="space" kicker="03" title="Space & elevation">

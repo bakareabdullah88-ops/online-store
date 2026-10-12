@@ -1,5 +1,8 @@
 import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
 import { generateSeed, type DbSnapshot } from "./seed";
+import { motifPhotos, photosFor } from "./seed/photos";
+import { hashString } from "@/lib/random";
+import type { ImageRef } from "@/services/types";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
@@ -36,6 +39,28 @@ export function migrate(db: DbSnapshot, from: number, to: number = SCHEMA_VERSIO
   return db;
 }
 
+/** Changes whenever the photo set changes, so saved demo data picks up new photos. */
+const PHOTO_KEY = hashString(JSON.stringify(motifPhotos));
+
+/** Swaps generated art for real photos where we have them. Leaves uploads and URLs alone. */
+export function applyPhotos(db: DbSnapshot) {
+  const swap = (img: ImageRef, key: string): ImageRef =>
+    img.kind === "art" ? (photosFor(img.motif, key, 1)?.[0] ?? img) : img;
+  for (const p of db.products) {
+    const first = p.images[0];
+    if (first?.kind !== "art" || !p.images.every((i) => i.kind === "art")) continue;
+    p.images = photosFor(first.motif, p.id, p.images.length) ?? p.images;
+  }
+  for (const b of db.brands) b.cover = swap(b.cover, `${b.handle}-cover`);
+  const firstImage = new Map(db.products.map((p) => [p.id, p.images[0]]));
+  for (const o of db.orders) {
+    for (const it of o.items) {
+      const img = firstImage.get(it.productId);
+      if (it.image.kind === "art" && img) it.image = img;
+    }
+  }
+}
+
 const hasIdb = () => typeof indexedDB !== "undefined";
 
 let kv: UseStore | null = null;
@@ -61,6 +86,7 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     const seed = await generateSeed();
     await writeAll(seed);
     await set("meta:version", SCHEMA_VERSION, store());
+    await set("meta:photos", PHOTO_KEY, store());
     sessionUserId = null;
     return seed;
   }
@@ -73,6 +99,12 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     migrate(db, version);
     await writeAll(db);
     await set("meta:version", SCHEMA_VERSION, store());
+  }
+  const photoKey = (await getMany(["meta:photos"], store()))[0] as number | undefined;
+  if (photoKey !== PHOTO_KEY) {
+    applyPhotos(db);
+    await writeAll(db);
+    await set("meta:photos", PHOTO_KEY, store());
   }
   sessionUserId = sid ?? null;
   return db;

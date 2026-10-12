@@ -1,4 +1,5 @@
 import { brand as appBrand } from "@/config/brand";
+import { photosFor } from "./photos";
 import { hashPassword } from "@/lib/hash";
 import { slugify } from "@/lib/ids";
 import { createRng, type Rng } from "@/lib/random";
@@ -248,7 +249,12 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       tagline: spec.tagline,
       bio: spec.bio,
       logo: { kind: "art", motif: "monogram", palette: spec.palette, seed: bi + 1 },
-      cover: { kind: "art", motif: spec.motif, palette: spec.palette, seed: 1000 + bi },
+      cover: photosFor(spec.motif, `${spec.handle}-cover`, 1)?.[0] ?? {
+        kind: "art",
+        motif: spec.motif,
+        palette: spec.palette,
+        seed: 1000 + bi,
+      },
       campusId: campus.id,
       fulfilment: {
         pickup: spec.delivery.pickup,
@@ -300,12 +306,13 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
         ...(ps.compareAt ? { compareAtKobo: ps.compareAt * 100 } : {}),
         images: ps.photos?.length
           ? ps.photos.map((src) => ({ kind: "url" as const, src }))
-          : Array.from({ length: imgCount }, (_, k) => ({
+          : (photosFor(ps.motif, productId, imgCount) ??
+            Array.from({ length: imgCount }, (_, k) => ({
               kind: "art" as const,
               motif: ps.motif,
               palette: palettes[k % palettes.length]!,
               seed: hashSeed(productId, k),
-            })),
+            }))),
         options,
         variants,
         status: ps.draft ? "draft" : "published",

@@ -12,7 +12,7 @@ export function AuthFormSkeleton({ fields }: { fields: number }) {
             <Skeleton className="mt-2 h-11 w-full" rounded="md" />
           </div>
         ))}
-        <Skeleton className="h-13 w-full" rounded="md" />
+        <Skeleton className="h-11 w-full" rounded="md" />
       </div>
     </div>
   );

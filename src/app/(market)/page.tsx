@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Bike, MapPin, ShoppingBag } from "lucide-react";
-import { ProductArt } from "@/components/art/product-art";
+import { ArrowRight, ArrowUpRight, MapPin, ShoppingBag } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
+import { AppImage } from "@/components/ui/app-image";
+import { cn } from "@/lib/cn";
+import type { ImageRef } from "@/services/types";
 import { Page } from "@/components/shell/page";
 import { FeaturedBrands, PopularOnCampus } from "@/components/market/landing-sections";
 import { brand } from "@/config/brand";
@@ -32,26 +34,50 @@ const steps = [
   },
 ];
 
+/** Hero strip. Swap these for real photos (ImageRef { kind: "url" }) in /public/seed. */
+const heroTiles: { label: string; image: ImageRef }[] = [
+  { label: "Àdìrẹ tees · ₦9,500", image: { kind: "art", motif: "tee", palette: "sea", seed: 11 } },
+  {
+    label: "Party jollof · ₦3,500",
+    image: { kind: "art", motif: "bowl", palette: "ochre", seed: 4 },
+  },
+  {
+    label: "Shea serum · ₦6,000",
+    image: { kind: "art", motif: "dropper", palette: "rose", seed: 9 },
+  },
+  {
+    label: "Thrift denim · ₦16,500",
+    image: { kind: "art", motif: "jacket", palette: "sand", seed: 7 },
+  },
+];
+
+/** Category tile image: a real photo when one is set in config/categories.ts, else generated art. */
+function categoryImage(c: (typeof categories)[number], i: number): ImageRef {
+  return c.photo
+    ? { kind: "url", src: c.photo }
+    : { kind: "art", motif: c.motif, palette: c.palette, seed: 20 + i };
+}
+
 export default function LandingPage() {
   return (
     <Page className="-mt-(--header-h) lg:-mt-16">
       {/* ----------------------------- Hero ----------------------------- */}
-      <section className="relative overflow-hidden pt-(--header-h) lg:pt-16">
-        <div className="container-page grid gap-10 pt-10 pb-16 md:pt-16 lg:grid-cols-12 lg:gap-8 lg:pt-20 lg:pb-24">
-          <div className="lg:col-span-7 lg:pt-8">
-            <p className="flex items-center gap-2 eyebrow text-muted">
+      <section className="relative overflow-hidden bg-[radial-gradient(55%_70%_at_12%_0%,var(--wash-mint),transparent_72%),radial-gradient(45%_60%_at_92%_8%,var(--wash-peach),transparent_70%)] pt-(--header-h) lg:pt-16">
+        <div className="container-page pt-8 pb-10 md:pt-12 lg:pb-14">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full bg-surface/80 px-3 py-1 text-small font-medium text-ink-2 shadow-xs hairline">
               <span className="size-1.5 rounded-full bg-accent" aria-hidden />
               {brand.tagline} · 8 campuses
             </p>
             <h1 className="mt-5 font-display text-display-xl text-balance text-ink">
               Buy from the brands <em className="text-accent">in your hostel.</em>
             </h1>
-            <p className="mt-6 max-w-lg text-body-lg text-muted">
+            <p className="mx-auto mt-4 max-w-xl text-body-lg text-muted">
               {brand.name} is where students sell what they make: hand-dyed tees, party jollof, shea
-              butter, posters, past questions. Order in a tap, pick up between lectures or get it
-              delivered to your room.
+              butter, posters, past questions. Pick up between lectures or get it delivered to your
+              room.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <ButtonLink
                 href="/explore"
                 size="lg"
@@ -63,52 +89,48 @@ export default function LandingPage() {
                 Open your shop
               </ButtonLink>
             </div>
-            <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6">
+            <dl className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-small text-muted">
               {[
                 ["18", "student brands"],
                 ["126", "things to buy"],
-                ["~45m", "typical delivery"],
+                ["~45 min", "typical delivery"],
               ].map(([v, l]) => (
-                <div key={l}>
+                <div key={l} className="flex items-baseline gap-1.5">
                   <dt className="sr-only">{l}</dt>
-                  <dd className="font-display text-display-sm tabular">{v}</dd>
-                  <dd className="mt-1 text-small text-muted">{l}</dd>
+                  <dd className="font-semibold text-ink tabular">{v}</dd>
+                  <dd>{l}</dd>
                 </div>
               ))}
             </dl>
           </div>
 
-          {/* Composed still life: three tiles and a live order chip */}
-          <div className="relative lg:col-span-5" aria-hidden>
-            <div className="relative mx-auto aspect-[5/6] w-full max-w-md sm:max-w-lg lg:max-w-none">
-              <div className="absolute top-0 left-0 h-[64%] w-[64%] overflow-hidden rounded-lg shadow-md">
-                <ProductArt motif="tee" palette="sea" seed={11} className="size-full" />
+          {/* A strip of what's for sale */}
+          <div className="relative mt-10 grid grid-cols-2 gap-3 md:grid-cols-4" aria-hidden>
+            {heroTiles.map((t, i) => (
+              <div
+                key={t.label}
+                className={cn(
+                  "relative aspect-[4/5] overflow-hidden rounded-lg bg-sand shadow-sm md:aspect-square",
+                  i > 1 && "max-md:hidden",
+                )}
+              >
+                <AppImage
+                  image={t.image}
+                  alt=""
+                  sizes="(min-width: 768px) 25vw, 50vw"
+                  priority={i < 2}
+                />
+                <span className="absolute bottom-2.5 left-2.5 rounded-full bg-surface/90 px-2.5 py-1 text-[12px] font-medium text-ink shadow-xs backdrop-blur">
+                  {t.label}
+                </span>
               </div>
-              <div className="absolute top-[6%] right-0 h-[44%] w-[32%] overflow-hidden rounded-lg">
-                <ProductArt motif="bowl" palette="ochre" seed={4} className="size-full" />
-              </div>
-              <div className="absolute right-[4%] bottom-0 h-[48%] w-[44%] overflow-hidden rounded-lg shadow-md">
-                <ProductArt motif="dropper" palette="rose" seed={9} className="size-full" />
-              </div>
-              <div className="absolute bottom-[6%] left-[6%] flex w-[52%] flex-col gap-3 rounded-lg bg-primary p-4 text-on-primary shadow-lg md:p-5">
-                <p className="eyebrow opacity-60">Order KSK-7F2Q</p>
-                <div>
-                  <p className="flex items-center gap-2 text-small font-medium">
-                    <Bike className="size-4" /> Out for delivery
-                  </p>
-                  <p className="mt-1 text-small opacity-60">Moremi Hall · 12 min</p>
-                  <div className="mt-3 h-1 overflow-hidden rounded-full bg-on-primary/15">
-                    <div className="h-full w-2/3 rounded-full bg-accent" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* --------------------------- Categories ------------------------- */}
-      <section aria-labelledby="cats" className="container-page">
+      <section aria-labelledby="cats" className="container-page mt-12 md:mt-16">
         <div className="flex items-end justify-between gap-4">
           <h2 id="cats" className="font-display text-display-md">
             What&apos;s on campus
@@ -120,56 +142,37 @@ export default function LandingPage() {
             Everything <ArrowUpRight className="size-4" />
           </Link>
         </div>
-        <ul className="-mx-(--gutter) mt-8 scrollbar-none flex snap-x gap-3 overflow-x-auto px-(--gutter) pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0">
+        <ul className="-mx-(--gutter) mt-5 scrollbar-none flex snap-x gap-3 overflow-x-auto px-(--gutter) pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
           {categories.map((c, i) => (
-            <li
-              key={c.id}
-              className={
-                i === 0
-                  ? "w-60 shrink-0 snap-start md:col-span-2 md:row-span-2 md:w-auto"
-                  : "w-40 shrink-0 snap-start md:w-auto"
-              }
-            >
+            <li key={c.id} className="w-40 shrink-0 snap-start md:w-auto">
               <Link
                 href={`/explore?category=${c.id}`}
                 className="group flex h-full flex-col overflow-hidden rounded-lg bg-surface hairline"
               >
-                <div
-                  className={
-                    i === 0
-                      ? "aspect-[4/5] overflow-hidden md:aspect-auto md:flex-1"
-                      : "aspect-square overflow-hidden"
-                  }
-                >
+                <div className="aspect-[4/3] overflow-hidden bg-sand">
                   <div className="size-full transition-transform duration-700 ease-out group-hover:scale-[1.04]">
-                    <ProductArt
-                      motif={c.motif}
-                      palette={c.palette}
-                      seed={20 + i}
-                      className="size-full"
+                    <AppImage
+                      image={categoryImage(c, i)}
+                      alt=""
+                      sizes="(min-width: 768px) 25vw, 160px"
                     />
                   </div>
                 </div>
-                <div className="p-4">
-                  <p
-                    className={i === 0 ? "font-display text-display-sm" : "text-body font-semibold"}
-                  >
-                    {c.name}
-                  </p>
-                  <p className="mt-1 line-clamp-2 text-small text-muted">{c.blurb}</p>
+                <div className="px-3 py-2.5">
+                  <p className="text-small font-semibold">{c.name}</p>
+                  <p className="mt-0.5 line-clamp-1 text-[12px] text-muted">{c.blurb}</p>
                 </div>
               </Link>
             </li>
           ))}
-          <li className="w-40 shrink-0 snap-start md:w-auto">
+          <li className="w-40 shrink-0 snap-start md:hidden">
             <Link
               href="/explore"
-              className="group flex h-full min-h-48 flex-col justify-between rounded-lg bg-primary p-5 text-on-primary transition-colors hover:bg-primary-hover"
+              className="group flex h-full min-h-40 flex-col justify-between rounded-lg bg-primary p-4 text-on-primary"
             >
-              <p className="eyebrow opacity-60">All categories</p>
-              <p className="font-display text-display-sm">
-                See everything{" "}
-                <ArrowRight className="inline size-6 transition-transform group-hover:translate-x-1" />
+              <p className="eyebrow opacity-70">All categories</p>
+              <p className="text-body font-semibold">
+                See everything <ArrowRight className="inline size-4" />
               </p>
             </Link>
           </li>
@@ -177,7 +180,7 @@ export default function LandingPage() {
       </section>
 
       {/* -------------------------- How it works ------------------------- */}
-      <section aria-labelledby="how" className="container-page mt-24 md:mt-32">
+      <section aria-labelledby="how" className="container-page mt-14 md:mt-20">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <p className="eyebrow text-muted">How it works</p>
@@ -198,7 +201,7 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------ Featured brands ------------------------ */}
-      <section aria-labelledby="brands" className="container-page mt-24 md:mt-32">
+      <section aria-labelledby="brands" className="container-page mt-14 md:mt-20">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="eyebrow text-muted">Featured brands</p>
@@ -211,7 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------ Popular on campus ---------------------- */}
-      <section aria-labelledby="popular" className="container-page mt-24 md:mt-32">
+      <section aria-labelledby="popular" className="container-page mt-14 md:mt-20">
         <p className="eyebrow text-muted">This week</p>
         <h2 id="popular" className="mt-3 mb-8 font-display text-display-md">
           Popular on campus
@@ -220,10 +223,10 @@ export default function LandingPage() {
       </section>
 
       {/* --------------------------- Seller CTA -------------------------- */}
-      <section aria-labelledby="sell" className="mt-24 md:mt-32">
+      <section aria-labelledby="sell" className="mt-14 md:mt-20">
         <div className="container-page">
           <div className="relative overflow-hidden rounded-xl bg-primary text-on-primary">
-            <div className="grid gap-10 p-7 md:grid-cols-12 md:p-12 lg:p-16">
+            <div className="grid gap-8 p-6 md:grid-cols-12 md:p-10">
               <div className="md:col-span-6">
                 <p className="eyebrow opacity-60">For sellers</p>
                 <h2 id="sell" className="mt-4 font-display text-display-lg text-balance">
@@ -274,10 +277,7 @@ export default function LandingPage() {
                 <div className="rounded-lg bg-on-primary p-5 text-primary shadow-xl">
                   <div className="flex items-center justify-between">
                     <p className="text-small font-semibold">Revenue · last 7 days</p>
-                    <span
-                      className="rounded-full bg-[color-mix(in_oklab,var(--studio)_15%,transparent)] px-2 py-0.5 font-mono text-[11px] font-medium"
-                      style={{ color: "var(--studio)" }}
-                    >
+                    <span className="rounded-full bg-success-soft px-2 py-0.5 font-mono text-[11px] font-medium text-success">
                       +18.4%
                     </span>
                   </div>

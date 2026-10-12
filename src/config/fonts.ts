@@ -1,56 +1,62 @@
 /**
- * ─────────────────────────────────────────────────────────────────────────
- *  FONTS: change the look of the whole app from this one file.
- * ─────────────────────────────────────────────────────────────────────────
+ * Font files. Every face a style in src/config/font-presets.ts can use is
+ * declared here. Only the faces the current style uses are downloaded; the
+ * default style's face is preloaded.
  *
- *  To switch a font:
- *    1. Pick any family on https://fonts.google.com (or compare the shortlist
- *       live at /design-system → "Try a font").
- *    2. Change the import and the function call below. Google Fonts names use
- *       underscores here: "Playfair Display" → Playfair_Display.
- *    3. Update the matching `family` name in `fontNames` (used by the share image).
- *    4. Save. In dev the page reloads; on Vercel, push and it redeploys.
- *
- *  Keep the `variable` names as they are: the design tokens read them.
- *  Static (non-variable) families need a `weight`, e.g. weight: "400".
+ * To add a Google font: import it, call it with a new `--ff-…` variable and
+ * `preload: false`, add it to `fontClassNames`, then use that variable in a
+ * style in font-presets.ts.
  */
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import {
+  DM_Sans,
+  Fraunces,
+  Geist,
+  Geist_Mono,
+  Inter,
+  Instrument_Serif,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 
-/** Headlines, big numbers, the logo. */
-export const displayFont = Instrument_Serif({
-  variable: "--font-display-face",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--ff-jakarta",
   subsets: ["latin"],
-  weight: "400",
-  // Add "italic" here only if you set `emphasis` to "italic" below.
-  style: ["normal"],
   display: "swap",
 });
-
-/** Everything else: body copy, buttons, forms. */
-export const bodyFont = Geist({
-  variable: "--font-body-face",
+const inter = Inter({
+  variable: "--ff-inter",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
+});
+const dmSans = DM_Sans({
+  variable: "--ff-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+const instrument = Instrument_Serif({
+  variable: "--ff-instrument",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+const geist = Geist({
+  variable: "--ff-geist",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+const fraunces = Fraunces({
+  variable: "--ff-fraunces",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 /** Labels, prices in tables, order codes, status pills. */
-export const monoFont = Geist_Mono({
-  variable: "--font-mono-face",
-  subsets: ["latin"],
-  display: "swap",
-});
+const mono = Geist_Mono({ variable: "--font-mono-face", subsets: ["latin"], display: "swap" });
 
-export const fontNames = {
-  display: "Instrument Serif",
-  body: "Geist",
-  mono: "Geist Mono",
-} as const;
-
-/**
- * How emphasised words in headlines are set (e.g. "in your hostel." on the
- * landing page). "upright" keeps the accent colour without slanting the
- * letters; "italic" slants them (also add "italic" to displayFont's style).
- */
-export const emphasis: "upright" | "italic" = "upright";
-
-export const fontClassNames = `${displayFont.variable} ${bodyFont.variable} ${monoFont.variable}`;
+export const fontClassNames = [jakarta, inter, dmSans, instrument, geist, fraunces, mono]
+  .map((f) => f.variable)
+  .join(" ");

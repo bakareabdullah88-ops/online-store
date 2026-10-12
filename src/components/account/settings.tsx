@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/misc";
 import { Select } from "@/components/ui/overlay";
 import { Dialog } from "@/components/ui/sheet";
 import { SegmentedControl } from "@/components/ui/tabs";
+import { FontPicker } from "@/components/ui/font-picker";
 import { useTheme, type ThemePreference } from "@/components/providers/theme";
 import { useCampuses } from "@/queries/catalog";
 import { useObjectUrl } from "@/queries/media";
@@ -206,17 +207,26 @@ export function SettingsView() {
       <Section title="Notifications" description="Choose what we tell you about.">
         <NotificationPrefs user={user} />
       </Section>
-      <Section title="Appearance" description="Follows your device by default.">
-        <SegmentedControl<ThemePreference>
-          label="Theme"
-          value={preference}
-          onChange={setPreference}
-          options={[
-            { value: "light", label: "Light" },
-            { value: "dark", label: "Dark" },
-            { value: "system", label: "Match device" },
-          ]}
-        />
+      <Section title="Appearance" description="Theme and font style. Saved on this device.">
+        <div className="flex flex-col gap-6">
+          <div>
+            <p className="mb-2 text-small font-medium">Theme</p>
+            <SegmentedControl<ThemePreference>
+              label="Theme"
+              value={preference}
+              onChange={setPreference}
+              options={[
+                { value: "light", label: "Light" },
+                { value: "dark", label: "Dark" },
+                { value: "system", label: "Match device" },
+              ]}
+            />
+          </div>
+          <div>
+            <p className="mb-2 text-small font-medium">Font style</p>
+            <FontPicker />
+          </div>
+        </div>
       </Section>
       <Section title="Language" description="More languages will be added later.">
         <p className="flex items-center gap-3 text-body">

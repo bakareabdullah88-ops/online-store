@@ -18,7 +18,8 @@ const base =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-on-primary hover:bg-primary-hover shadow-xs",
+  // Main call to action: blue when Buying, green in Shop Studio.
+  primary: "bg-accent text-on-accent hover:bg-accent-hover shadow-xs",
   accent: "bg-accent text-on-accent hover:bg-accent-hover shadow-xs",
   secondary:
     "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] hover:bg-surface-2 hover:shadow-[inset_0_0_0_1px_var(--ink)]",
@@ -28,11 +29,11 @@ const variants: Record<ButtonVariant, string> = {
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-9 rounded-sm px-3 text-small",
-  md: "h-11 rounded-md px-4.5 text-body",
-  lg: "h-13 rounded-md px-6 text-body-lg",
-  icon: "size-11 rounded-md",
-  "icon-sm": "size-9 rounded-sm",
+  sm: "h-8 rounded-sm px-3 text-small",
+  md: "h-10 rounded-md px-4 text-body",
+  lg: "h-11 rounded-md px-5 text-body font-semibold",
+  icon: "size-10 rounded-md",
+  "icon-sm": "size-8 rounded-sm",
 };
 
 export function buttonStyles({
