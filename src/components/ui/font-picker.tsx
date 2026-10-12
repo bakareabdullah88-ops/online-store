@@ -25,7 +25,7 @@ export function FontPicker({
       <div
         className={cn(
           "grid gap-2",
-          compact ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+          compact ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3",
         )}
       >
         {fontPresets.map((p) => {
@@ -58,7 +58,7 @@ export function FontPicker({
               </span>
               <span className="min-w-0 flex-1" style={{ fontFamily: `var(${p.body.cssVar})` }}>
                 <span className="block text-small font-semibold text-ink">{p.label}</span>
-                <span className="block truncate text-[12px] text-muted">{p.description}</span>
+                <span className="block text-[12px] leading-snug text-muted">{p.description}</span>
               </span>
               {active && <Check className="size-4 shrink-0 text-accent" aria-hidden />}
             </label>
