@@ -126,7 +126,7 @@ const S = {
   }
   await step("login errors", async () => {
     await go(p, "/login");
-    await p.getByRole("button", { name: /^Sign in$/ }).click();
+    await p.getByRole("button", { name: "Log in", exact: true }).click();
     await shot(p, S.auth, "04-sign-in-validation", { wait: 800 });
   });
   await step("404", async () => {
@@ -194,15 +194,18 @@ const S = {
       .click();
     await shot(p, S.buy, "02-added-to-bag-toast", { wait: 600 });
   });
-  await step("bag drawer", async () => {
-    await p
-      .getByRole("button", { name: /^Bag, / })
-      .filter({ visible: true })
-      .first()
-      .click();
-    await shot(p, S.overlays, "03-bag-drawer", { wait: 1500 });
-    await p.keyboard.press("Escape");
-  });
+  // Phones open the bag as a page (tab bar); the drawer is desktop-only.
+  if (!phone) {
+    await step("bag drawer", async () => {
+      await p
+        .getByRole("button", { name: /^Bag, / })
+        .filter({ visible: true })
+        .first()
+        .click();
+      await shot(p, S.overlays, "03-bag-drawer", { wait: 1500 });
+      await p.keyboard.press("Escape");
+    });
+  }
   await step("bag page", async () => {
     await go(p, "/bag");
     await shot(p, S.buy, "03-bag", { full: true, wait: 2000 });
@@ -276,11 +279,7 @@ const S = {
   await step("chat", async () => {
     await go(p, "/messages");
     await p.waitForTimeout(1500);
-    await p
-      .getByRole("link", { name: /Mama Put|Àdìrẹ|Lab|Express/ })
-      .filter({ visible: true })
-      .first()
-      .click();
+    await p.locator('a[href*="?thread="]').filter({ visible: true }).first().click();
     await shot(p, S.account, "09-conversation", { wait: 2000 });
   });
   await step("add place", async () => {
@@ -389,7 +388,7 @@ const S = {
     await go(p, "/studio/promotions");
     await p.waitForTimeout(2000);
     await p
-      .getByRole("button", { name: /New promo|Create/ })
+      .getByRole("button", { name: /New code/ })
       .filter({ visible: true })
       .first()
       .click();
