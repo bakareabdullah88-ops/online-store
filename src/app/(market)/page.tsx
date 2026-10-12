@@ -34,21 +34,12 @@ const steps = [
   },
 ];
 
-/** Hero strip. Swap these for real photos (ImageRef { kind: "url" }) in /public/seed. */
+/** Hero strip photos (files in /public/seed). */
 const heroTiles: { label: string; image: ImageRef }[] = [
-  { label: "Àdìrẹ tees · ₦9,500", image: { kind: "art", motif: "tee", palette: "sea", seed: 11 } },
-  {
-    label: "Party jollof · ₦3,500",
-    image: { kind: "art", motif: "bowl", palette: "ochre", seed: 4 },
-  },
-  {
-    label: "Shea serum · ₦6,000",
-    image: { kind: "art", motif: "dropper", palette: "rose", seed: 9 },
-  },
-  {
-    label: "Thrift denim · ₦16,500",
-    image: { kind: "art", motif: "jacket", palette: "sand", seed: 7 },
-  },
+  { label: "Campus tees · ₦9,500", image: { kind: "url", src: "/seed/tee-5.jpg" } },
+  { label: "Party jollof · ₦3,500", image: { kind: "url", src: "/seed/bowl-1.jpg" } },
+  { label: "Glow serum · ₦6,000", image: { kind: "url", src: "/seed/dropper-2.jpg" } },
+  { label: "Thrift jackets · ₦16,500", image: { kind: "url", src: "/seed/jacket-2.jpg" } },
 ];
 
 /** Category tile image: a real photo when one is set in config/categories.ts, else generated art. */

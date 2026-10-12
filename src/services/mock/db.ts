@@ -1,8 +1,7 @@
 import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
 import { generateSeed, type DbSnapshot } from "./seed";
-import { motifPhotos, photosFor } from "./seed/photos";
+import { coverFor, motifCovers, motifPhotos, photosFor } from "./seed/photos";
 import { hashString } from "@/lib/random";
-import type { ImageRef } from "@/services/types";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
@@ -40,18 +39,18 @@ export function migrate(db: DbSnapshot, from: number, to: number = SCHEMA_VERSIO
 }
 
 /** Changes whenever the photo set changes, so saved demo data picks up new photos. */
-const PHOTO_KEY = hashString(JSON.stringify(motifPhotos));
+const PHOTO_KEY = hashString(JSON.stringify([motifPhotos, motifCovers, 2]));
 
 /** Swaps generated art for real photos where we have them. Leaves uploads and URLs alone. */
 export function applyPhotos(db: DbSnapshot) {
-  const swap = (img: ImageRef, key: string): ImageRef =>
-    img.kind === "art" ? (photosFor(img.motif, key, 1)?.[0] ?? img) : img;
   for (const p of db.products) {
     const first = p.images[0];
     if (first?.kind !== "art" || !p.images.every((i) => i.kind === "art")) continue;
-    p.images = photosFor(first.motif, p.id, p.images.length) ?? p.images;
+    p.images = photosFor(first.motif, p.id, p.images.length, p.category) ?? p.images;
   }
-  for (const b of db.brands) b.cover = swap(b.cover, `${b.handle}-cover`);
+  for (const b of db.brands) {
+    if (b.cover.kind === "art") b.cover = coverFor(b.cover.motif) ?? b.cover;
+  }
   const firstImage = new Map(db.products.map((p) => [p.id, p.images[0]]));
   for (const o of db.orders) {
     for (const it of o.items) {

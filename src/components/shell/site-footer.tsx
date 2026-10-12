@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { brand } from "@/config/brand";
 import { categories } from "@/config/categories";
+import { AppearanceControls } from "./appearance";
 import { Logo } from "./logo";
 
 export function SiteFooter() {
@@ -33,13 +34,17 @@ export function SiteFooter() {
     },
   ];
   return (
-    <footer className="mt-24 border-t border-line bg-canvas-sunk">
-      <div className="container-page grid gap-12 py-14 md:grid-cols-12 md:py-20">
+    <footer className="mt-16 border-t border-line bg-canvas-sunk">
+      <div className="container-page grid gap-10 py-10 md:grid-cols-12 md:py-14">
         <div className="md:col-span-5">
           <Logo />
           <p className="mt-4 max-w-sm font-display text-display-sm text-ink-2">
             Student-made, campus-delivered. <em>Support the people you sit beside in class.</em>
           </p>
+          <div className="mt-6 max-w-sm">
+            <h2 className="mb-3 eyebrow text-muted">Appearance</h2>
+            <AppearanceControls />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
           {cols.map((c) => (

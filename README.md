@@ -120,8 +120,9 @@ There are five font styles (Modern, Clean, Friendly, Editorial, Classic), define
 
 ## Using real photos
 
-Demo photos come from Unsplash (free licence) via `python3 scripts/fetch-photos.py`, which saves
-them in `public/seed/` and lists them in `src/services/mock/seed/photos.ts` by product type.
+Demo photos come from Unsplash (free licence). `python3 scripts/fetch-photos.py` downloads a
+hand-picked list of photo ids (in the script), saves them in `public/seed/` and lists them in
+`src/services/mock/seed/photos.ts` by product type. To swap a photo, change its id and re-run.
 Product types without photos fall back to generated art. To use your own photos instead:
 
 1. Put the files in [`public/seed/`](public/seed) (JPEG or WebP, 4:5 crops work best).

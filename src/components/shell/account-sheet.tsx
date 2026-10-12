@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { ChevronRight, LogOut } from "lucide-react";
 import { BottomSheet } from "@/components/ui/sheet";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { SegmentedControl } from "@/components/ui/tabs";
-import { useTheme, type ThemePreference } from "@/components/providers/theme";
 import { accountNav, studioNav, studioTabs } from "@/config/nav";
 import { brand } from "@/config/brand";
 import { useCampus } from "@/queries/catalog";
@@ -16,6 +14,7 @@ import { toast } from "@/stores/toast";
 import { errorMessage } from "@/services/errors";
 import { useMode } from "./mode";
 import { ModeSwitch } from "./mode-switch";
+import { AppearanceControls } from "./appearance";
 import { UserAvatar } from "./site-header";
 
 /** Mobile account sheet: profile, the mode switch, shortcuts, theme, sign out. */
@@ -28,7 +27,6 @@ export function AccountSheet() {
   const router = useRouter();
   const signOut = useSignOut();
   const demo = useSignInDemo();
-  const { preference, setPreference } = useTheme();
   const close = () => setOpen(false);
 
   const links =
@@ -81,20 +79,7 @@ export function AccountSheet() {
               );
             })}
           </nav>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-small font-medium">Theme</span>
-            <SegmentedControl<ThemePreference>
-              size="sm"
-              label="Theme"
-              value={preference}
-              onChange={setPreference}
-              options={[
-                { value: "light", label: "Light" },
-                { value: "dark", label: "Dark" },
-                { value: "system", label: "Auto" },
-              ]}
-            />
-          </div>
+          <AppearanceControls />
           <Button
             variant="secondary"
             leadingIcon={<LogOut className="size-4.5" />}
@@ -123,6 +108,7 @@ export function AccountSheet() {
           <ButtonLink href="/login" onClick={close} variant="secondary" size="lg">
             Log in
           </ButtonLink>
+          <AppearanceControls className="mt-2 border-t border-line pt-4" />
           <div className="mt-2 rounded-md bg-canvas-sunk p-4">
             <p className="eyebrow text-muted">Just looking?</p>
             <div className="mt-3 grid grid-cols-2 gap-2">

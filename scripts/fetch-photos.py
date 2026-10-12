@@ -64,9 +64,8 @@ PHOTOS: dict[str, list[str]] = {
         "1603133872878-684f208fb84b",
         "1585937421612-70a008356fbe",
         "1504674900247-0877df9cc836",
-        "1546069901-ba9599a7e63c",
     ],
-    "jar": ["1556228578-8c89e6adf883", "1608248543803-ba4f8c70ae0b", "1611930022073-b7a4ba5fcccd"],
+    "jar": ["1601049541289-9b1b7bbbfe19", "1611930022073-b7a4ba5fcccd", "1556228578-8c89e6adf883"],
     "cookie": [
         "1499636136210-6f4ee915583e",
         "1558961363-fa8fdf82db35",
@@ -81,9 +80,9 @@ PHOTOS: dict[str, list[str]] = {
         "1497534446932-c925b458314e",
         "1622597467836-f3285f2131b8",
     ],
-    "bottle": ["1620916566398-39f1143ab7be", "1631729371254-42c2892f0e6e"],
+    "bottle": ["1631729371254-42c2892f0e6e", "1556228578-8c89e6adf883"],
     "dropper": ["1608571423902-eed4a5ad8108", "1617897903246-719242758050"],
-    "tube": ["1620916566398-39f1143ab7be", "1556229010-6c3f2c9ca5f8", "1601049541289-9b1b7bbbfe19"],
+    "tube": ["1620916566398-39f1143ab7be", "1608248543803-ba4f8c70ae0b", "1556229010-6c3f2c9ca5f8"],
     "bracelet": [
         "1611591437281-460bfbe1220a",
         "1573408301185-9146fe634ad0",
@@ -127,17 +126,17 @@ def get(url: str) -> bytes:
         return r.read()
 
 
-def crop_4x5(raw: bytes) -> Image.Image:
+def crop(raw: bytes, out_w: int, out_h: int) -> Image.Image:
     im = Image.open(io.BytesIO(raw)).convert("RGB")
     w, h = im.size
-    target = W / H
+    target = out_w / out_h
     if w / h > target:
         nw = int(h * target)
         im = im.crop(((w - nw) // 2, 0, (w - nw) // 2 + nw, h))
     else:
         nh = int(w / target)
         im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
-    return im.resize((W, H), Image.LANCZOS)
+    return im.resize((out_w, out_h), Image.LANCZOS)
 
 
 def main() -> None:
@@ -145,14 +144,17 @@ def main() -> None:
     for old in OUT.glob("*.jpg"):
         old.unlink()
     manifest: dict[str, list[str]] = {}
+    covers: dict[str, str] = {}
     credits: list[str] = []
     for motif, ids in PHOTOS.items():
         paths = []
         for i, pid in enumerate(ids, 1):
             name = f"{motif}-{i}.jpg"
-            url = f"https://images.unsplash.com/photo-{pid}?w=1400&q=80&fm=jpg"
+            url = f"https://images.unsplash.com/photo-{pid}?w=1800&q=80&fm=jpg"
             try:
-                crop_4x5(get(url)).save(OUT / name, "JPEG", quality=QUALITY, optimize=True, progressive=True)
+                raw = get(url)
+                crop(raw, W, H).save(OUT / name, "JPEG", quality=QUALITY, optimize=True, progressive=True)
+
             except Exception as e:  # that slot keeps falling back to art
                 print(f"  failed {name}: {e}")
                 continue
@@ -160,19 +162,26 @@ def main() -> None:
             credits.append(f"- `{name}`: https://images.unsplash.com/photo-{pid}")
         if paths:
             manifest[motif] = paths
+            # Shop banner: a strip of four photos of this type (16:5, stays sharp)
+            strip = Image.new("RGB", (1600, 500), "white")
+            for k in range(4):
+                tile = Image.open(ROOT / "public" / paths[k % len(paths)].lstrip("/")).resize((400, 500), Image.LANCZOS)
+                strip.paste(tile, (k * 400, 0))
+            strip.save(OUT / f"{motif}-banner.jpg", "JPEG", quality=QUALITY, optimize=True, progressive=True)
+            covers[motif] = f"/seed/{motif}-banner.jpg"
         print(f"{motif}: {len(paths)}")
 
-    body = "".join(f"  {k}: {json.dumps(v)},\n" for k, v in manifest.items())
     src = MANIFEST.read_text()
-    start = src.index("export const motifPhotos")
-    end = src.index("};", start) + 2
-    MANIFEST.write_text(
-        src[:start]
-        + "export const motifPhotos: Partial<Record<ArtMotif, readonly string[]>> = {\n"
-        + body
-        + "};"
-        + src[end:]
-    )
+
+    def replace_block(text: str, head: str, entries: dict) -> str:
+        body = "".join(f"  {k}: {json.dumps(v)},\n" for k, v in entries.items())
+        start = text.index(head)
+        end = text.index("};", start) + 2
+        return text[:start] + head + "\n" + body + "};" + text[end:]
+
+    src = replace_block(src, "export const motifPhotos: Partial<Record<ArtMotif, readonly string[]>> = {", manifest)
+    src = replace_block(src, "export const motifCovers: Partial<Record<ArtMotif, string>> = {", covers)
+    MANIFEST.write_text(src)
     (OUT / "CREDITS.md").write_text(
         "# Photo credits\n\nDemo photos from [Unsplash](https://unsplash.com), used under the "
         "[Unsplash License](https://unsplash.com/license). Thank you to the photographers.\n\n"

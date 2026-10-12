@@ -13,12 +13,50 @@ import { useFontPreset } from "@/components/providers/font";
 export function FontPicker({
   className,
   compact = false,
+  variant = "cards",
 }: {
   className?: string;
   compact?: boolean;
+  /** "chips" is a single wrapping row of names, for sheets and footers. */
+  variant?: "cards" | "chips";
 }) {
   const { preset, setPreset } = useFontPreset();
   const name = useId();
+  if (variant === "chips") {
+    return (
+      <fieldset className={cn("min-w-0", className)}>
+        <legend className="sr-only">Font style</legend>
+        <div className="flex flex-wrap gap-1.5">
+          {fontPresets.map((p) => {
+            const active = p.id === preset;
+            return (
+              <label
+                key={p.id}
+                className={cn(
+                  "inline-flex h-8 cursor-pointer items-center rounded-full px-3 text-small transition-colors",
+                  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
+                  active
+                    ? "bg-primary text-on-primary"
+                    : "bg-surface text-ink hairline hover:bg-surface-2",
+                )}
+                style={{ fontFamily: `var(${p.display.cssVar})`, fontWeight: p.display.weight }}
+              >
+                <input
+                  type="radio"
+                  name={name}
+                  value={p.id}
+                  checked={active}
+                  onChange={() => setPreset(p.id)}
+                  className="sr-only"
+                />
+                {p.label}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+    );
+  }
   return (
     <fieldset className={cn("min-w-0", className)}>
       <legend className="sr-only">Font style</legend>

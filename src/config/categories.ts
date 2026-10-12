@@ -20,6 +20,7 @@ export const categories: readonly Category[] = [
     blurb: "Made-on-campus streetwear and tailoring",
     motif: "tee",
     palette: "clay",
+    photo: "/seed/dress-2.jpg",
   },
   {
     id: "thrift",
@@ -27,6 +28,7 @@ export const categories: readonly Category[] = [
     blurb: "Vintage finds, one of one",
     motif: "jacket",
     palette: "sand",
+    photo: "/seed/jacket-5.jpg",
   },
   {
     id: "food",
@@ -34,6 +36,7 @@ export const categories: readonly Category[] = [
     blurb: "Small chops, jollof, late-night bites",
     motif: "bowl",
     palette: "ochre",
+    photo: "/seed/bowl-1.jpg",
   },
   {
     id: "beauty",
@@ -41,6 +44,7 @@ export const categories: readonly Category[] = [
     blurb: "Shea, black soap, glow oils",
     motif: "dropper",
     palette: "rose",
+    photo: "/seed/jar-1.jpg",
   },
   {
     id: "accessories",
@@ -48,6 +52,7 @@ export const categories: readonly Category[] = [
     blurb: "Beads, bags and little extras",
     motif: "bracelet",
     palette: "plum",
+    photo: "/seed/bracelet-3.jpg",
   },
   {
     id: "print",
@@ -55,6 +60,7 @@ export const categories: readonly Category[] = [
     blurb: "Posters, stickers, custom cards",
     motif: "poster",
     palette: "sea",
+    photo: "/seed/poster-1.jpg",
   },
   {
     id: "tech",
@@ -62,6 +68,7 @@ export const categories: readonly Category[] = [
     blurb: "Cases, cables, earbuds",
     motif: "earbuds",
     palette: "ink",
+    photo: "/seed/earbuds-3.jpg",
   },
   {
     id: "books",
@@ -69,6 +76,7 @@ export const categories: readonly Category[] = [
     blurb: "Past questions, novels, study packs",
     motif: "book",
     palette: "sage",
+    photo: "/seed/book-6.jpg",
   },
 ] as const;
 

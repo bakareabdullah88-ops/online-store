@@ -358,6 +358,7 @@ export const brandSpecs: BrandSpec[] = [
         name: "Party Jollof & Chicken",
         price: 3500,
         motif: "bowl",
+        photos: ["/seed/bowl-1.jpg", "/seed/bowl-2.jpg"],
         options: ["Protein:Chicken,Turkey+500,Fish+300"],
         desc: "Smoky, firewood-style jollof with fried plantain and your choice of protein. The one that started it all.",
         tags: ["bestseller"],

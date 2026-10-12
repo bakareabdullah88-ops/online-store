@@ -24,6 +24,13 @@ type AppImageProps = {
 
 const paletteKeys = Object.keys(artPalettes) as ArtPalette[];
 
+/** Responsive image widths by use, unless the caller passes `sizes`. */
+const defaultSizes: Record<Variant, string> = {
+  product: "(min-width: 1024px) 25vw, 50vw",
+  cover: "(min-width: 1280px) 1200px, 100vw",
+  logo: "128px",
+};
+
 function fallbackPalette(key: string): ArtPalette {
   return paletteKeys[hashString(key) % paletteKeys.length] ?? "sand";
 }
@@ -39,7 +46,7 @@ export function AppImage({
   variant = "product",
   name,
   className,
-  sizes = "(min-width: 1024px) 25vw, 50vw",
+  sizes,
   priority,
 }: AppImageProps) {
   const box = cn("relative block size-full overflow-hidden bg-sand", className);
@@ -88,7 +95,7 @@ export function AppImage({
         src={image.src}
         alt={alt}
         fill
-        sizes={sizes}
+        sizes={sizes ?? defaultSizes[variant]}
         priority={priority}
         className="object-cover"
         {...(image.blurDataURL

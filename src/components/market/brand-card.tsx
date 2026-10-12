@@ -60,7 +60,12 @@ export function BrandCard({
         )}
       >
         <div className="size-full transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-          <AppImage image={b.cover} alt="" variant="cover" />
+          <AppImage
+            image={b.cover}
+            alt=""
+            variant="cover"
+            sizes="(min-width: 1024px) 40vw, 100vw"
+          />
         </div>
         {b.vacation && (
           <span className="absolute top-3 left-3 rounded-full bg-surface/90 px-2.5 py-1 font-mono text-[10px] font-semibold uppercase">
