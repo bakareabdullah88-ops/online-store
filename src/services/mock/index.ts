@@ -1,7 +1,7 @@
 import type { Services } from "../contracts";
 import { mockAuth } from "./auth";
 import { mockCatalog } from "./catalog";
-import { resetDb } from "./db";
+import { onExternalChange, resetDb } from "./db";
 import { mockMessages, mockNotifications, mockPlaces, mockWallet } from "./inbox";
 import { latency } from "./latency";
 import { clearMedia, mockMedia } from "./media";
@@ -25,6 +25,10 @@ export const mockServices: Services = {
       await latency();
       await clearMedia();
       await resetDb();
+    },
+    subscribe(cb) {
+      const off = onExternalChange(cb);
+      return () => void off();
     },
   },
 };

@@ -32,5 +32,5 @@ export const remoteServices: Services = {
   places: stub("places"),
   studio: stub("studio"),
   media: stub("media"),
-  demo: stub("demo"),
+  demo: { reset: async () => notImplemented("demo.reset"), subscribe: () => () => undefined },
 };

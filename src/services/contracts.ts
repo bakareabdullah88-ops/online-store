@@ -213,6 +213,8 @@ export interface MediaService {
 export interface DemoService {
   /** Wipes IndexedDB and reseeds. */
   reset(): Promise<void>;
+  /** Notifies when data changed in another tab. BACKEND-SEAM: realtime channel. */
+  subscribe(cb: () => void): () => void;
 }
 
 export interface Services {

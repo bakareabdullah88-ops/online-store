@@ -40,6 +40,9 @@
   /* Supporting accent: Studio green (Selling); always available by name */
   --studio: #1e5b45;
   --ember: #bf3e18;
+  /* Accent hues that stay legible on --primary surfaces (inverted panels) */
+  --studio-contrast: #7bd8b1;
+  --ember-contrast: #ff9b78;
 
   /* Semantic */
   --success: #1f7a4d;
@@ -126,6 +129,8 @@
 
   --studio: #4fc394;
   --ember: #ff7a50;
+  --studio-contrast: #1e5b45;
+  --ember-contrast: #b83a16;
 
   --success: #4cc488;
   --success-soft: #133222;
@@ -189,6 +194,8 @@
   --color-on-accent: var(--on-accent);
   --color-studio: var(--studio);
   --color-ember: var(--ember);
+  --color-studio-contrast: var(--studio-contrast);
+  --color-ember-contrast: var(--ember-contrast);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
