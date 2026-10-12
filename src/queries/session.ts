@@ -4,11 +4,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { services } from "@/services";
 import type { ProfileInput, SignInInput, SignUpInput } from "@/services/inputs";
 import type { User } from "@/services/types";
+import { useMounted } from "@/lib/hooks";
 import { qk } from "./keys";
 
+/**
+ * The session resolves from IndexedDB in a few milliseconds, which can be
+ * before late Suspense boundaries finish hydrating. Until hydration is done we
+ * report "unknown" so client markup always matches the server HTML.
+ */
 export function useSession() {
+  const mounted = useMounted();
   const q = useQuery({ queryKey: qk.session, queryFn: () => services.auth.getSession(), staleTime: 5 * 60_000 });
-  return { ...q, user: q.data ?? null, isSignedIn: !!q.data, isReady: q.isFetched };
+  const user = mounted ? (q.data ?? null) : null;
+  return { ...q, user, isSignedIn: !!user, isReady: mounted && q.isFetched };
 }
 
 /** After any identity change, drop every per-user cache. */

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { AppSync } from "./app-sync";
 import { ModeCurtain } from "./mode-curtain";
 import { OfflineBanner } from "./offline-banner";
@@ -12,14 +13,15 @@ const AccountSheet = dynamic(() => import("./account-sheet").then((m) => m.Accou
 
 /** App-wide overlays and sync, mounted once in the root layout. */
 export function GlobalChrome() {
+  // Everything here reads the URL, so it sits under Suspense (invisible until needed).
   return (
-    <>
+    <Suspense fallback={null}>
       <AppSync />
       <ModeCurtain />
       <OfflineBanner />
       <CommandPalette />
       <BagDrawer />
       <AccountSheet />
-    </>
+    </Suspense>
   );
 }
