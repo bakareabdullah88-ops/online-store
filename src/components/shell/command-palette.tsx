@@ -4,7 +4,7 @@ import { Command } from "cmdk";
 import { Dialog as RDialog, VisuallyHidden } from "radix-ui";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import {
   ArrowRight,
   Clock,
@@ -46,17 +46,6 @@ export function CommandPalette() {
   const { resolved, setPreference } = useTheme();
   const { recentSearches, addRecentSearch, clearRecentSearches } = usePrefs();
   const reduce = useReducedMotion();
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen(!useUi.getState().commandOpen);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [setOpen]);
 
   const close = () => {
     setOpen(false);

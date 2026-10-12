@@ -201,6 +201,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
 
         <div className="min-w-0">
           {mode === "search" && params.q && <BrandMatches q={params.q} />}
+          <h2 className="sr-only">Products</h2>
           {list.isError ? (
             <EmptyState
               illustration="error"

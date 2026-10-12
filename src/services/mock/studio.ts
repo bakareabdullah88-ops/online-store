@@ -5,13 +5,7 @@ import { hashString } from "@/lib/random";
 import { categoryById } from "@/config/categories";
 import type { Customer, StudioPeriod, StudioService } from "../contracts";
 import { ServiceError } from "../errors";
-import {
-  createBrandSchema,
-  handleSchema,
-  productInputSchema,
-  promoInputSchema,
-  updateBrandSchema,
-} from "../inputs";
+import { schemas, type Schemas } from "./schemas";
 import type { Brand, BrandMetric, ImageRef, Product, Promo } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireBrand, requireUser } from "./context";
@@ -52,7 +46,7 @@ function uniqueSlug(db: DbSnapshot, name: string, handle: string, ignoreId?: str
   return slug;
 }
 
-function buildProduct(db: DbSnapshot, brand: Brand, raw: unknown, existing?: Product): Product {
+function buildProduct({ productInputSchema }: Schemas, db: DbSnapshot, brand: Brand, raw: unknown, existing?: Product): Product {
   const parsed = productInputSchema.safeParse(raw);
   if (!parsed.success) zodFail(parsed.error);
   const input = parsed.data;
@@ -126,6 +120,7 @@ function balances(db: DbSnapshot, brand: Brand) {
 
 export const mockStudio: StudioService = {
   async createBrand(raw) {
+    const { createBrandSchema } = await schemas();
     const parsed = createBrandSchema.safeParse(raw);
     if (!parsed.success) zodFail(parsed.error);
     const input = parsed.data;
@@ -175,6 +170,7 @@ export const mockStudio: StudioService = {
   },
 
   async isHandleAvailable(handle) {
+    const { handleSchema } = await schemas();
     const parsed = handleSchema.safeParse(handle);
     if (!parsed.success) return false;
     await quick();
@@ -191,6 +187,7 @@ export const mockStudio: StudioService = {
   },
 
   async updateBrand(raw) {
+    const { updateBrandSchema } = await schemas();
     const parsed = updateBrandSchema.safeParse(raw);
     if (!parsed.success) zodFail(parsed.error);
     const input = parsed.data;
@@ -351,7 +348,7 @@ export const mockStudio: StudioService = {
     await latency();
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    const product = buildProduct(db, brand, raw);
+    const product = buildProduct(await schemas(), db, brand, raw);
     db.products.push(product);
     refreshCounts(db, brand);
     await commit("products", "brands");
@@ -365,7 +362,7 @@ export const mockStudio: StudioService = {
     const idx = db.products.findIndex((p) => p.id === id && p.brandId === brand.id);
     const existing = db.products[idx];
     if (!existing) throw new ServiceError("NOT_FOUND", "Product not found.");
-    const next = buildProduct(db, brand, raw, existing);
+    const next = buildProduct(await schemas(), db, brand, raw, existing);
     db.products[idx] = next;
     refreshCounts(db, brand);
     await commit("products", "brands");
@@ -456,6 +453,7 @@ export const mockStudio: StudioService = {
   },
 
   async createPromo(raw) {
+    const { promoInputSchema } = await schemas();
     const parsed = promoInputSchema.safeParse(raw);
     if (!parsed.success) zodFail(parsed.error);
     const input = parsed.data;
@@ -491,6 +489,7 @@ export const mockStudio: StudioService = {
     const { brand } = await requireBrand(db);
     const promo = db.promos.find((p) => p.id === id && p.brandId === brand.id);
     if (!promo) throw new ServiceError("NOT_FOUND", "Promo not found.");
+    const { promoInputSchema } = await schemas();
     const merged = promoInputSchema.safeParse({ ...promo, ...patch, code: promo.code });
     if (!merged.success) zodFail(merged.error);
     Object.assign(promo, { ...merged.data, code: promo.code });

@@ -1,7 +1,7 @@
 import { newId } from "@/lib/ids";
 import type { MessageService, NotificationService, PlacesService, WalletService } from "../contracts";
 import { ServiceError } from "../errors";
-import { messageSchema, placeSchema, topUpSchema } from "../inputs";
+import { schemas } from "./schemas";
 import type { Thread } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireUser } from "./context";
@@ -103,6 +103,7 @@ export const mockMessages: MessageService = {
   },
 
   async send({ threadId, body, as }) {
+    const { messageSchema } = await schemas();
     const { body: text } = messageSchema.parse({ body });
     await quick();
     const db = await getDb();
@@ -145,6 +146,7 @@ export const mockWallet: WalletService = {
     return { balanceKobo: transactions.reduce((n, w) => n + w.amountKobo, 0), transactions: clone(transactions) };
   },
   async topUp(amountKobo) {
+    const { topUpSchema } = await schemas();
     topUpSchema.parse({ amountKobo });
     await latency(1.2);
     const db = await getDb();
@@ -164,6 +166,7 @@ export const mockPlaces: PlacesService = {
     return clone(db.places.filter((p) => p.userId === user.id));
   },
   async save(raw) {
+    const { placeSchema } = await schemas();
     const input = placeSchema.parse(raw);
     await latency(0.6);
     const db = await getDb();

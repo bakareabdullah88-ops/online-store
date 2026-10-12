@@ -254,7 +254,7 @@ const motifs: Record<ArtMotif, MotifDraw> = {
   monogram: (c) => <circle cx="200" cy="250" r="120" fill={c.obj} />,
 };
 
-function Backdrop({ c, variant }: { c: Colors; variant: number }) {
+function Backdrop({ c, variant, patternId }: { c: Colors; variant: number; patternId: string }) {
   switch (variant) {
     case 1:
       return <circle cx="200" cy="250" r="150" fill={c.detail} opacity="0.55" />;
@@ -264,13 +264,15 @@ function Backdrop({ c, variant }: { c: Colors; variant: number }) {
       return <rect x="0" y="330" width="400" height="170" fill={c.bgDeep} opacity="0.6" />;
     case 4:
       return (
-        <g fill={c.bgDeep} opacity="0.7">
-          {Array.from({ length: 9 }, (_, row) =>
-            Array.from({ length: 8 }, (_, col) => (
-              <circle key={`${row}-${col}`} cx={25 + col * 50} cy={25 + row * 56} r="2.2" />
-            )),
-          )}
-        </g>
+        // One pattern fill instead of 72 circles keeps grids of cards cheap to render.
+        <>
+          <defs>
+            <pattern id={patternId} width="50" height="56" patternUnits="userSpaceOnUse">
+              <circle cx="25" cy="25" r="2.2" fill={c.bgDeep} />
+            </pattern>
+          </defs>
+          <rect width="400" height="500" fill={`url(#${patternId})`} opacity="0.7" />
+        </>
       );
     default:
       return null;
@@ -313,7 +315,7 @@ export const ProductArt = memo(function ProductArt({
         </linearGradient>
       </defs>
       <rect width="400" height="500" fill={`url(#${gid})`} />
-      <Backdrop c={c} variant={variant} />
+      <Backdrop c={c} variant={variant} patternId={`${gid}-dots`} />
       <ellipse cx="200" cy="418" rx="128" ry="14" fill={shade} opacity="0.16" />
       <g transform={`translate(0 ${lift}) rotate(${tilt} 200 260)`}>{motifs[motif](c, r)}</g>
     </svg>

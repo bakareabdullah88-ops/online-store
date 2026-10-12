@@ -2,7 +2,7 @@ import { hashPassword, randomSalt, verifyPassword } from "@/lib/hash";
 import { newId } from "@/lib/ids";
 import type { AuthService } from "../contracts";
 import { ServiceError } from "../errors";
-import { profileSchema, resetSchema, signInSchema, signUpSchema } from "../inputs";
+import { schemas } from "./schemas";
 import type { UserRecord } from "../types";
 import { commit, getDb, setSessionUserId } from "./db";
 import { currentUser, publicUser, requireUser } from "./context";
@@ -22,6 +22,7 @@ export const mockAuth: AuthService = {
   },
 
   async signUp(raw) {
+    const { signUpSchema } = await schemas();
     const parsed = signUpSchema.safeParse(raw);
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;
@@ -67,6 +68,7 @@ export const mockAuth: AuthService = {
   },
 
   async signIn(raw) {
+    const { signInSchema } = await schemas();
     const parsed = signInSchema.safeParse(raw);
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;
@@ -102,6 +104,7 @@ export const mockAuth: AuthService = {
   },
 
   async requestPasswordReset(raw) {
+    const { resetSchema } = await schemas();
     const parsed = resetSchema.safeParse(raw);
     if (!parsed.success) validation(parsed.error);
     await latency();
@@ -110,6 +113,7 @@ export const mockAuth: AuthService = {
   },
 
   async updateProfile(raw) {
+    const { profileSchema } = await schemas();
     const parsed = profileSchema.safeParse(raw);
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;

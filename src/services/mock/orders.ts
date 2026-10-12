@@ -7,7 +7,8 @@ import { findVariant, unitPrice, variantLabel } from "@/domain/variants";
 import { newId, orderCode } from "@/lib/ids";
 import type { OrderService } from "../contracts";
 import { ServiceError } from "../errors";
-import { checkoutSchema, reviewInputSchema, type CheckoutInput } from "../inputs";
+import type { CheckoutInput } from "../inputs";
+import { schemas, type Schemas } from "./schemas";
 import type { Order, Product, UserRecord } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireUser } from "./context";
@@ -24,7 +25,7 @@ type Resolved = {
   }[];
 };
 
-function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number): Resolved {
+function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number, { checkoutSchema }: Schemas): Resolved {
   const parsed = checkoutSchema.safeParse(raw);
   if (!parsed.success) {
     throw new ServiceError("VALIDATION", parsed.error.issues[0]?.message ?? "Check your checkout details");
@@ -131,7 +132,7 @@ export const mockOrders: OrderService = {
     await latency(0.5);
     const db = await getDb();
     const user = await requireUser(db);
-    return price(db, user, input, Date.now()).quote;
+    return price(db, user, input, Date.now(), await schemas()).quote;
   },
 
   async createOrders(input) {
@@ -139,7 +140,8 @@ export const mockOrders: OrderService = {
     const db = await getDb();
     const user = await requireUser(db);
     const now = Date.now();
-    const resolved = price(db, user, input, now);
+    const s = await schemas();
+    const resolved = price(db, user, input, now, s);
 
     const problems = resolved.groups.flatMap((g) => g.quote.problems);
     if (problems.length) throw new ServiceError("CONFLICT", problems[0]!.reason);
@@ -148,7 +150,7 @@ export const mockOrders: OrderService = {
       throw new ServiceError("VALIDATION", `${invalidPromo.quote.promo.code}: ${invalidPromo.quote.promo.reason}`);
     }
 
-    const parsed = checkoutSchema.parse(input);
+    const parsed = s.checkoutSchema.parse(input);
     const total = resolved.quote.totalKobo;
     if (parsed.paymentMethod === "wallet") {
       const balance = db.wallet.filter((w) => w.userId === user.id).reduce((n, w) => n + w.amountKobo, 0);
@@ -320,6 +322,7 @@ export const mockOrders: OrderService = {
   },
 
   async reviewOrderItem(raw) {
+    const { reviewInputSchema } = await schemas();
     const input = reviewInputSchema.parse(raw);
     await latency();
     const db = await getDb();
