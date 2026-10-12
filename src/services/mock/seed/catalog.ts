@@ -19,6 +19,11 @@ export type ProductSpec = {
   scarce?: boolean;
   draft?: boolean;
   tags?: string[];
+  /**
+   * Real product photos, e.g. ["/seed/adire-tee-1.jpg"]. Files live in
+   * /public/seed. When set, they replace the generated art.
+   */
+  photos?: string[];
 };
 
 export type BrandSpec = {

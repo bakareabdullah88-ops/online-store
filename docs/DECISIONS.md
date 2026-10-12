@@ -63,13 +63,13 @@ src/
   services/
     types.ts               entity + DTO types (the API contract in code)
     contracts.ts           service interfaces
-    index.ts               picks the implementation from NEXT_PUBLIC_DATA_SOURCE
+    index.ts               picks the implementation from NEXT_PUBLIC_DATA_SOURCE, loaded on first use
     mock/                  IndexedDB-backed repositories, seed, latency simulation
     remote/                stub that throws "not implemented"
   queries/                 TanStack Query hooks (the only bridge from UI to services)
   stores/                  Zustand stores (bag, prefs, mode memory)
   lib/                     utilities (cn, format, ids, hash, object URLs)
-  env.ts                   Zod-validated public env
+  env.ts                   validated public env (hand-rolled, see §8)
 ```
 
 **Rules:**
@@ -159,3 +159,85 @@ orders / revenue).
 - **Offline detection** uses `online`/`offline` events directly instead of Next's
   `experimental.useOffline`, so the build prints no experimental-feature notices.
 - **Tap targets** are 44px even where references look tighter (usability over fidelity).
+
+## 8. Polish-pass decisions (phases 8–9)
+
+### Hydration and URL hooks
+- **Query results are masked until mount.** `src/queries/use-query.ts` wraps TanStack's
+  `useQuery`/`useInfiniteQuery` and reports `pending` until the component has mounted.
+  IndexedDB can answer before a late `<Suspense>` boundary hydrates, which otherwise rendered
+  data on the client that the server HTML didn't have (React error #418). Every query hook
+  goes through the wrappers.
+- **URL hooks live under Suspense.** With `cacheComponents`, `usePathname`/`useSearchParams`/
+  `useParams` on a prerendered route must sit below a `<Suspense>` boundary. Header, footer,
+  tab bar, global overlays and auth guards are wrapped with skeleton fallbacks.
+- **`/explore` and `/search` render per request** (`await connection()` inside their Suspense
+  boundary). The view reads filters from the URL; rendering on the server puts the heading and
+  filter chips in the HTML instead of waiting for hydration. Measured LCP element on both pages.
+
+### Bundle and main-thread budget
+- **The data implementation loads on first use.** `services/index.ts` exports lazy proxies that
+  `import()` the mock (or remote) implementation, so seed generation, IndexedDB code and the
+  repositories are not in any page's initial bundle.
+- **Zod loads on the first write.** The mock imports its input schemas through
+  `mock/schemas.ts` only inside mutations. Constructing the Zod v4 input schemas cost ~300ms of
+  main-thread time on a throttled phone, and reads never need them. Forms still import their
+  schema directly, so validation is shared between the client and the service layer.
+- **`env.ts` is validated by hand** (with unit tests) instead of with Zod, because it's in every
+  page's bundle.
+- **Overlays mount on first open.** The command palette, bag drawer and account sheet are
+  `next/dynamic` chunks that mount the first time they're opened (then stay mounted so closing
+  animates). Their chunks are warmed ~6s after load during idle time. ⌘K is handled in the
+  always-present shell.
+- `optimizePackageImports` for `lucide-react`, `motion` and `radix-ui` keeps barrel imports
+  tree-shaken.
+- Product art's dotted backdrop is one SVG `<pattern>` instead of 72 circles per card.
+
+### Accessibility
+- **Decorative images are hidden, not unnamed.** `AppImage` with `alt=""` renders
+  `aria-hidden` instead of `role="img"` with an empty label.
+- **Wide tables scroll inside `TableScroll`**: a named, focusable `role="region"` (keyboard
+  users can scroll it) that is `position: relative` (otherwise `sr-only` labels inside the table
+  escape the scroller and widen the whole page on phones).
+- **Single-column grids use `grid-cols-1`** (`minmax(0, 1fr)`), so long truncated text can't
+  push an implicit `auto` track wider than the screen.
+- Tabs used as filters still render `TabsContent` panels so `aria-controls` points somewhere.
+- `--success` was darkened to `#1a6e45` to reach 4.5:1 on `--success-soft`; sold-out variants
+  and inactive timeline steps use `text-muted` (AA) rather than `text-faint` (decorative only).
+- The e2e **page sweep** runs axe (WCAG 2.1 A/AA) on 29 screens in light mode and 9 in dark
+  mode on phone and desktop, and fails on horizontal overflow or console errors.
+
+### Open-shop success screen
+`useUi.shopJustOpened` is set when the wizard succeeds. The `/open-shop` gate redirects users
+who already have a shop to Studio, and without the flag it fired the moment the new shop
+existed and skipped the celebration. The flag resets when the wizard unmounts.
+
+### PWA and offline
+- `public/sw.js` is hand-written (about 60 lines) rather than a plugin: no build step, no
+  framework coupling. Navigations are network-first with a cached copy as fallback, then
+  `/offline`. Hashed `/_next/static` assets are cache-first. Data never goes through the service
+  worker because it lives in IndexedDB, so visited pages keep working offline.
+- It is registered only in production builds, served with `no-cache`, and versioned by a
+  `VERSION` constant.
+- Icons, Apple touch icon, favicon, OG image and manifest are generated from code (`app/icon.tsx`
+  and friends). The OG image loads Instrument Serif regular and italic separately so the headline
+  matches the site.
+
+### Measured results (local production build, Lighthouse 13 mobile, simulated throttling)
+| Page | Performance | Accessibility | Best practices | SEO |
+| --- | --- | --- | --- | --- |
+| `/` | 84–93 | 100 | 100 | 100 |
+| `/explore` | 83–88 | 100 | 100 | 100* |
+| `/brands/[handle]` | 72–76 | 98–100 | 100 | 100 |
+| `/products/[slug]` | 70–73 | — | — | — |
+
+Scores vary ±5 run to run in the dev container. Total blocking time is 130–400ms. *SEO shows 92
+locally only because the canonical URL points at `localhost:3000`; it resolves to the real domain
+on Vercel.
+
+**Known gap: the 95+ performance target is not met on data pages.** Brand and product pages
+render content that only exists in the visitor's IndexedDB, behind the deliberate 300–900ms demo
+latency, so their LCP is client-rendered by design. A real backend would let these pages
+server-render (the service seam is ready for it), which is the fix. Beyond that, the next
+step would be `LazyMotion` with `m.*` components (~20KB off the shared bundle).
+

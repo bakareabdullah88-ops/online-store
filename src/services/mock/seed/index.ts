@@ -247,12 +247,14 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
         tags: ps.tags ?? [],
         priceKobo: ps.price * 100,
         ...(ps.compareAt ? { compareAtKobo: ps.compareAt * 100 } : {}),
-        images: Array.from({ length: imgCount }, (_, k) => ({
-          kind: "art" as const,
-          motif: ps.motif,
-          palette: palettes[k % palettes.length]!,
-          seed: hashSeed(productId, k),
-        })),
+        images: ps.photos?.length
+          ? ps.photos.map((src) => ({ kind: "url" as const, src }))
+          : Array.from({ length: imgCount }, (_, k) => ({
+              kind: "art" as const,
+              motif: ps.motif,
+              palette: palettes[k % palettes.length]!,
+              seed: hashSeed(productId, k),
+            })),
         options,
         variants,
         status: ps.draft ? "draft" : "published",
