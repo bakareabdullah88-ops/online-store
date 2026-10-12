@@ -32,7 +32,7 @@ const paymentLabels = { card: "Card (demo)", transfer: "Bank transfer (demo)", p
 
 export function OrderDetailSkeleton() {
   return (
-    <div className="container-page max-w-5xl pt-6 md:pt-10" aria-hidden>
+    <div className="max-w-5xl" aria-hidden>
       <Skeleton className="h-4 w-24" />
       <Skeleton className="mt-4 h-12 w-72" />
       <div className="mt-8 grid gap-6 lg:grid-cols-12">
@@ -59,7 +59,7 @@ export function OrderDetail() {
   if (isPending) return <OrderDetailSkeleton />;
   if (error || !order) {
     return (
-      <div className="container-page">
+      <div>
         <EmptyState
           illustration="orders"
           title={isServiceError(error) && error.code === "NOT_FOUND" ? "We couldn't find that order" : "Something went wrong"}
@@ -79,7 +79,7 @@ export function OrderDetail() {
   const units = order.items.reduce((n, i) => n + i.quantity, 0);
 
   return (
-    <div className="container-page max-w-5xl pt-6 md:pt-10">
+    <div className="max-w-5xl">
       <Link href="/orders" className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink">
         <ArrowLeft className="size-4" /> All orders
       </Link>

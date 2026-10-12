@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "./use-query";
 import { services } from "@/services";
 import type { StudioPeriod } from "@/services/contracts";
 import type { CreateBrandInput, ProductInput, PromoInput, UpdateBrandInput } from "@/services/inputs";

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "./use-query";
 import { services } from "@/services";
 import type { Brand, User } from "@/services/types";
 import { toast } from "@/stores/toast";

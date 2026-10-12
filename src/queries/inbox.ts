@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "./use-query";
 import { services } from "@/services";
 import type { PlaceInput } from "@/services/inputs";
 import type { AppNotification, Thread } from "@/services/types";

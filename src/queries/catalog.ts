@@ -1,6 +1,7 @@
 "use client";
 
-import { keepPreviousData, useInfiniteQuery, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "./use-query";
 import { services } from "@/services";
 import type { BrandQuery } from "@/services/contracts";
 import type { Page, ProductQuery, ProductWithBrand } from "@/services/types";

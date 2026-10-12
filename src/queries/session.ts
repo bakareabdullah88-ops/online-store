@@ -1,10 +1,10 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "./use-query";
 import { services } from "@/services";
 import type { ProfileInput, SignInInput, SignUpInput } from "@/services/inputs";
 import type { User } from "@/services/types";
-import { useMounted } from "@/lib/hooks";
 import { qk } from "./keys";
 
 /**
@@ -13,10 +13,9 @@ import { qk } from "./keys";
  * report "unknown" so client markup always matches the server HTML.
  */
 export function useSession() {
-  const mounted = useMounted();
   const q = useQuery({ queryKey: qk.session, queryFn: () => services.auth.getSession(), staleTime: 5 * 60_000 });
-  const user = mounted ? (q.data ?? null) : null;
-  return { ...q, user, isSignedIn: !!user, isReady: mounted && q.isFetched };
+  const user = q.data ?? null;
+  return { ...q, user, isSignedIn: !!user, isReady: q.isFetched };
 }
 
 /** After any identity change, drop every per-user cache. */

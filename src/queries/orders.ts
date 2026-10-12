@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "./use-query";
 import { isActive } from "@/domain/orders";
 import { services } from "@/services";
 import type { CheckoutInput, ReviewInput } from "@/services/inputs";
