@@ -17,7 +17,12 @@ export function lineId(l: Pick<BagLine, "productId" | "variantKey">) {
 }
 
 /** Add or merge a line. Quantity is clamped to stock and the per-line max. */
-export function addLine(lines: BagLine[], next: Omit<BagLine, "addedAt">, stock: number, now: number): BagLine[] {
+export function addLine(
+  lines: BagLine[],
+  next: Omit<BagLine, "addedAt">,
+  stock: number,
+  now: number,
+): BagLine[] {
   const id = lineId(next);
   const existing = lines.find((l) => lineId(l) === id);
   const cap = Math.min(stock, MAX_LINE_QUANTITY);
@@ -31,7 +36,9 @@ export function addLine(lines: BagLine[], next: Omit<BagLine, "addedAt">, stock:
 
 export function setQuantity(lines: BagLine[], id: string, quantity: number): BagLine[] {
   if (quantity <= 0) return lines.filter((l) => lineId(l) !== id);
-  return lines.map((l) => (lineId(l) === id ? { ...l, quantity: Math.min(MAX_LINE_QUANTITY, quantity) } : l));
+  return lines.map((l) =>
+    lineId(l) === id ? { ...l, quantity: Math.min(MAX_LINE_QUANTITY, quantity) } : l,
+  );
 }
 
 export function removeLine(lines: BagLine[], id: string): BagLine[] {
@@ -53,14 +60,21 @@ export function groupByBrand(lines: readonly BagLine[]): { brandId: string; line
   return [...map.entries()].map(([brandId, ls]) => ({ brandId, lines: ls }));
 }
 
-export function lineSubtotal(line: BagLine, product: Pick<Product, "priceKobo" | "variants"> | undefined): Kobo {
+export function lineSubtotal(
+  line: BagLine,
+  product: Pick<Product, "priceKobo" | "variants"> | undefined,
+): Kobo {
   if (!product) return 0;
   return unitPrice(product, line.variantKey) * line.quantity;
 }
 
 export type PurchaseBlock =
   | { blocked: false }
-  | { blocked: true; reason: "own_product" | "sold_out" | "vacation" | "unpublished"; message: string };
+  | {
+      blocked: true;
+      reason: "own_product" | "sold_out" | "vacation" | "unpublished";
+      message: string;
+    };
 
 /** Can this user buy this product variant? Pure; used by the UI and by the service. */
 export function purchaseBlock(
@@ -75,12 +89,21 @@ export function purchaseBlock(
       message: "This is from your own shop, so you can't buy it. Share it with friends instead.",
     };
   if (product.status !== "published")
-    return { blocked: true, reason: "unpublished", message: "This product isn't available right now." };
+    return {
+      blocked: true,
+      reason: "unpublished",
+      message: "This product isn't available right now.",
+    };
   if (ctx.brandOnVacation)
-    return { blocked: true, reason: "vacation", message: "This shop is on a short break. Check back soon." };
+    return {
+      blocked: true,
+      reason: "vacation",
+      message: "This shop is on a short break. Check back soon.",
+    };
   if (variantKey) {
     const v = findVariant(product, variantKey);
-    if (!v || v.stock <= 0) return { blocked: true, reason: "sold_out", message: "Sold out in this option." };
+    if (!v || v.stock <= 0)
+      return { blocked: true, reason: "sold_out", message: "Sold out in this option." };
   }
   return { blocked: false };
 }

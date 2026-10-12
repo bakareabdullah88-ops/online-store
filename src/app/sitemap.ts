@@ -13,7 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: url("/"), changeFrequency: "weekly", priority: 1 },
     { url: url("/explore"), changeFrequency: "daily", priority: 0.9 },
-    ...categories.map((c) => ({ url: url(`/explore?category=${c.id}`), changeFrequency: "daily" as const, priority: 0.7 })),
+    ...categories.map((c) => ({
+      url: url(`/explore?category=${c.id}`),
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    })),
     { url: url("/open-shop"), changeFrequency: "monthly", priority: 0.6 },
     { url: url("/signup"), changeFrequency: "monthly", priority: 0.4 },
     { url: url("/login"), changeFrequency: "monthly", priority: 0.3 },

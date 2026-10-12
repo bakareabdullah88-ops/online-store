@@ -7,12 +7,23 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { TabBar } from "./tab-bar";
 
-const NO_FOOTER = ["/checkout", "/messages", "/account", "/orders", "/notifications", "/bag", "/wishlist"];
+const NO_FOOTER = [
+  "/checkout",
+  "/messages",
+  "/account",
+  "/orders",
+  "/notifications",
+  "/bag",
+  "/wishlist",
+];
 
 /** Static stand-in while the URL is unknown during prerender of dynamic routes. */
 function HeaderFallback() {
   return (
-    <header className="sticky top-0 z-(--z-header) bg-canvas/85 shadow-[0_1px_0_var(--line)]" style={{ viewTransitionName: "site-header" }}>
+    <header
+      className="sticky top-0 z-(--z-header) bg-canvas/85 shadow-[0_1px_0_var(--line)]"
+      style={{ viewTransitionName: "site-header" }}
+    >
       <div className="container-page flex h-(--header-h) items-center lg:h-16">
         <Logo />
       </div>
@@ -40,7 +51,14 @@ export function MarketChrome({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
-      <Suspense fallback={<div className="h-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] lg:hidden" aria-hidden />}>
+      <Suspense
+        fallback={
+          <div
+            className="h-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] lg:hidden"
+            aria-hidden
+          />
+        }
+      >
         <TabBar variant="market" />
       </Suspense>
     </div>

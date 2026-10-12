@@ -8,7 +8,10 @@ import { services } from "@/services";
  * so nothing leaks. `undefined` = loading, `null` = missing.
  */
 export function useObjectUrl(id: string | null | undefined): string | null | undefined {
-  const [state, setState] = useState<{ id: string | null | undefined; url: string | null | undefined }>({
+  const [state, setState] = useState<{
+    id: string | null | undefined;
+    url: string | null | undefined;
+  }>({
     id,
     url: undefined,
   });

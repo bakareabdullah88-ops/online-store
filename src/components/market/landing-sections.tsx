@@ -13,7 +13,12 @@ export function FeaturedBrands() {
     return (
       <div className="mt-8 rounded-lg bg-surface p-8 text-center hairline">
         <p className="text-body text-muted">We couldn&apos;t load brands just now.</p>
-        <ButtonLink href="/explore" variant="secondary" className="mt-4" onClick={() => void refetch()}>
+        <ButtonLink
+          href="/explore"
+          variant="secondary"
+          className="mt-4"
+          onClick={() => void refetch()}
+        >
           Browse everything instead
         </ButtonLink>
       </div>
@@ -21,7 +26,10 @@ export function FeaturedBrands() {
   }
   const [lead, ...rest] = data ?? [];
   return (
-    <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12" aria-busy={isPending}>
+    <div
+      className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12"
+      aria-busy={isPending}
+    >
       {isPending || !lead ? (
         <>
           <BrandCardSkeleton variant="lead" className="lg:col-span-6 lg:row-span-2" />
@@ -43,13 +51,21 @@ export function FeaturedBrands() {
 
 export function PopularOnCampus() {
   const { user } = useSession();
-  const { data, isPending } = useProducts({ sort: "popular", pageSize: 10, campusId: user?.campusId ?? undefined, inStock: true });
+  const { data, isPending } = useProducts({
+    sort: "popular",
+    pageSize: 10,
+    campusId: user?.campusId ?? undefined,
+    inStock: true,
+  });
   const items = data?.items ?? [];
   const cards = isPending
     ? Array.from({ length: 6 }, (_, i) => <ProductCardSkeleton key={i} />)
     : items.map((p, i) => <ProductCard key={p.id} product={p} priority={i < 2} morph />);
   return (
-    <Rail label="Popular on campus" itemClassName="w-[46vw] sm:w-[30vw] md:w-[23vw] lg:w-[18vw] xl:w-[15.5vw] max-w-64">
+    <Rail
+      label="Popular on campus"
+      itemClassName="w-[46vw] sm:w-[30vw] md:w-[23vw] lg:w-[18vw] xl:w-[15.5vw] max-w-64"
+    >
       {cards}
     </Rail>
   );

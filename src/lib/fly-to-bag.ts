@@ -51,8 +51,16 @@ export function flyToBag(source: HTMLElement | null) {
   const anim = ghost.animate(
     [
       { transform: "translate(0,0) scale(1) rotate(0deg)", opacity: 1, borderRadius: "12px" },
-      { transform: `translate(${dx * 0.45}px, ${lift}px) scale(${0.55}) rotate(-8deg)`, opacity: 1, offset: 0.45 },
-      { transform: `translate(${dx}px, ${dy}px) scale(${end}) rotate(6deg)`, opacity: 0.6, borderRadius: "50%" },
+      {
+        transform: `translate(${dx * 0.45}px, ${lift}px) scale(${0.55}) rotate(-8deg)`,
+        opacity: 1,
+        offset: 0.45,
+      },
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${end}) rotate(6deg)`,
+        opacity: 0.6,
+        borderRadius: "50%",
+      },
     ],
     { duration: 620, easing: "cubic-bezier(0.45, 0, 0.2, 1)", fill: "forwards" },
   );

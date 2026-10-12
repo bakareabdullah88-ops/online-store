@@ -40,7 +40,10 @@ export function WishlistButton({
     if (!user) {
       toast("Log in to save items", {
         description: "Your saved items follow you across devices once you're signed in.",
-        action: { label: "Log in", onClick: () => router.push(`/login?next=${encodeURIComponent(pathname)}`) },
+        action: {
+          label: "Log in",
+          onClick: () => router.push(`/login?next=${encodeURIComponent(pathname)}`),
+        },
       });
       return;
     }
@@ -62,7 +65,9 @@ export function WishlistButton({
       className={cn(
         "relative flex items-center justify-center rounded-full",
         dim,
-        variant === "floating" ? "bg-surface/90 shadow-sm backdrop-blur-sm hover:bg-surface" : "hover:bg-ink/[0.06]",
+        variant === "floating"
+          ? "bg-surface/90 shadow-sm backdrop-blur-sm hover:bg-surface"
+          : "hover:bg-ink/[0.06]",
         className,
       )}
     >
@@ -77,7 +82,14 @@ export function WishlistButton({
       </motion.span>
       <AnimatePresence>
         {!reduce && burst > 0 && saved && (
-          <motion.span key={burst} className="pointer-events-none absolute inset-0" aria-hidden initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ delay: 0.35, duration: 0.2 }}>
+          <motion.span
+            key={burst}
+            className="pointer-events-none absolute inset-0"
+            aria-hidden
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ delay: 0.35, duration: 0.2 }}
+          >
             {Array.from({ length: PARTICLES }, (_, i) => {
               const a = (i / PARTICLES) * Math.PI * 2;
               return (
@@ -85,7 +97,11 @@ export function WishlistButton({
                   key={i}
                   className="absolute top-1/2 left-1/2 size-1.5 rounded-full bg-accent"
                   initial={{ x: "-50%", y: "-50%", scale: 0.6 }}
-                  animate={{ x: `calc(-50% + ${Math.cos(a) * 20}px)`, y: `calc(-50% + ${Math.sin(a) * 20}px)`, scale: 0 }}
+                  animate={{
+                    x: `calc(-50% + ${Math.cos(a) * 20}px)`,
+                    y: `calc(-50% + ${Math.sin(a) * 20}px)`,
+                    scale: 0,
+                  }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 />
               );

@@ -12,7 +12,13 @@ import { Dialog } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatSheet } from "@/components/messages/chat-sheet";
 import { spring } from "@/design/motion";
-import { canBuyerCancel, deliveryProgress, etaSeconds, isActive, statusLabel } from "@/domain/orders";
+import {
+  canBuyerCancel,
+  deliveryProgress,
+  etaSeconds,
+  isActive,
+  statusLabel,
+} from "@/domain/orders";
 import { formatNaira } from "@/domain/money";
 import { formatDate, formatTime } from "@/lib/format";
 import { useDocumentTitle, useNow } from "@/lib/hooks";
@@ -28,7 +34,12 @@ import { ReviewDialog } from "./review-dialog";
 import { StatusPill } from "./status-pill";
 import { useReorder } from "./use-reorder";
 
-const paymentLabels = { card: "Card (demo)", transfer: "Bank transfer (demo)", pay_on_pickup: "Pay on pickup / delivery", wallet: "Kiosk wallet (demo)" } as const;
+const paymentLabels = {
+  card: "Card (demo)",
+  transfer: "Bank transfer (demo)",
+  pay_on_pickup: "Pay on pickup / delivery",
+  wallet: "Kiosk wallet (demo)",
+} as const;
 
 export function OrderDetailSkeleton() {
   return (
@@ -62,7 +73,11 @@ export function OrderDetail() {
       <div>
         <EmptyState
           illustration="orders"
-          title={isServiceError(error) && error.code === "NOT_FOUND" ? "We couldn't find that order" : "Something went wrong"}
+          title={
+            isServiceError(error) && error.code === "NOT_FOUND"
+              ? "We couldn't find that order"
+              : "Something went wrong"
+          }
           body="It may belong to a different account."
           action={<ButtonLink href="/orders">Your orders</ButtonLink>}
         />
@@ -80,13 +95,23 @@ export function OrderDetail() {
 
   return (
     <div className="max-w-5xl">
-      <Link href="/orders" className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink">
+      <Link
+        href="/orders"
+        className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink"
+      >
         <ArrowLeft className="size-4" /> All orders
       </Link>
       <header className="mt-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="eyebrow text-muted">Order {order.code}</p>
-          <motion.h1 key={order.status} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={spring.smooth} className="mt-2 font-display text-display-md" aria-live="polite">
+          <motion.h1
+            key={order.status}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={spring.smooth}
+            className="mt-2 font-display text-display-md"
+            aria-live="polite"
+          >
             {statusLabel(order.status, order.fulfilment.method)}
           </motion.h1>
           <p className="mt-2 text-body text-muted">
@@ -99,22 +124,37 @@ export function OrderDetail() {
         </div>
         <div className="flex flex-wrap gap-2">
           {isBuyer && canBuyerCancel(order) && (
-            <Button variant="secondary" leadingIcon={<X className="size-4.5" />} onClick={() => setConfirmCancel(true)}>
+            <Button
+              variant="secondary"
+              leadingIcon={<X className="size-4.5" />}
+              onClick={() => setConfirmCancel(true)}
+            >
               Cancel order
             </Button>
           )}
           {isBuyer && (
-            <Button variant="secondary" leadingIcon={<MessageCircle className="size-4.5" />} onClick={() => setChat(true)}>
+            <Button
+              variant="secondary"
+              leadingIcon={<MessageCircle className="size-4.5" />}
+              onClick={() => setChat(true)}
+            >
               Message {order.brandName}
             </Button>
           )}
           {isBuyer && order.status === "delivered" && (
             <>
-              <Button variant="secondary" leadingIcon={<RotateCcw className="size-4.5" />} onClick={() => void reorder(order)}>
+              <Button
+                variant="secondary"
+                leadingIcon={<RotateCcw className="size-4.5" />}
+                onClick={() => void reorder(order)}
+              >
                 Reorder
               </Button>
               {!order.reviewed && (
-                <Button leadingIcon={<Star className="size-4.5" />} onClick={() => setReviewOpen(true)}>
+                <Button
+                  leadingIcon={<Star className="size-4.5" />}
+                  onClick={() => setReviewOpen(true)}
+                >
                   Rate &amp; review
                 </Button>
               )}
@@ -126,24 +166,38 @@ export function OrderDetail() {
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-7">
           {order.fulfilment.method === "delivery" ? (
-            <CampusMap campusKey={order.fulfilment.campusId} progress={progress} mode="delivery" fromLabel={order.brandName} toLabel={`${zone?.name ?? "You"}${order.fulfilment.addressLine ? ` · ${order.fulfilment.addressLine}` : ""}`} />
+            <CampusMap
+              campusKey={order.fulfilment.campusId}
+              progress={progress}
+              mode="delivery"
+              fromLabel={order.brandName}
+              toLabel={`${zone?.name ?? "You"}${order.fulfilment.addressLine ? ` · ${order.fulfilment.addressLine}` : ""}`}
+            />
           ) : (
             <section className="overflow-hidden rounded-lg bg-primary p-6 text-on-primary">
               <p className="eyebrow opacity-60">Pickup code</p>
               <p className="mt-3 font-mono text-display-md tracking-[0.12em]">{order.code}</p>
               <p className="mt-3 text-small opacity-70">
-                Show this at <strong className="font-semibold">{point?.name ?? "the pickup point"}</strong>
+                Show this at{" "}
+                <strong className="font-semibold">{point?.name ?? "the pickup point"}</strong>
                 {point?.hint && `: ${point.hint}`}.
               </p>
               <div className="mt-5 flex gap-1" aria-hidden>
                 {order.code.split("").map((ch, i) => (
-                  <span key={i} className="h-10 flex-1 rounded-xs bg-on-primary" style={{ opacity: ((ch.charCodeAt(0) * (i + 3)) % 7) / 10 + 0.25 }} />
+                  <span
+                    key={i}
+                    className="h-10 flex-1 rounded-xs bg-on-primary"
+                    style={{ opacity: ((ch.charCodeAt(0) * (i + 3)) % 7) / 10 + 0.25 }}
+                  />
                 ))}
               </div>
             </section>
           )}
 
-          <section aria-labelledby="progress-title" className="rounded-lg bg-surface p-5 hairline md:p-6">
+          <section
+            aria-labelledby="progress-title"
+            className="rounded-lg bg-surface p-5 hairline md:p-6"
+          >
             <h2 id="progress-title" className="mb-5 text-title font-semibold">
               Progress
             </h2>
@@ -158,7 +212,10 @@ export function OrderDetail() {
                 <AppImage image={order.brandLogo} alt="" variant="logo" name={order.brandName} />
               </span>
               <div className="min-w-0 flex-1">
-                <Link href={`/brands/${order.brandHandle}`} className="text-body font-semibold hover:underline">
+                <Link
+                  href={`/brands/${order.brandHandle}`}
+                  className="text-body font-semibold hover:underline"
+                >
                   {order.brandName}
                 </Link>
                 <p id="items-title" className="text-small text-muted">
@@ -179,7 +236,9 @@ export function OrderDetail() {
                       {it.variantLabel ? `${it.variantLabel} · ` : ""}× {it.quantity}
                     </p>
                   </div>
-                  <span className="font-mono text-small tabular">{formatNaira(it.unitPriceKobo * it.quantity)}</span>
+                  <span className="font-mono text-small tabular">
+                    {formatNaira(it.unitPriceKobo * it.quantity)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -189,12 +248,19 @@ export function OrderDetail() {
                 <dd className="font-mono tabular">{formatNaira(order.subtotalKobo)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted">{order.fulfilment.method === "delivery" ? "Delivery" : "Pickup"}</dt>
-                <dd className="font-mono tabular">{order.deliveryFeeKobo ? formatNaira(order.deliveryFeeKobo) : "Free"}</dd>
+                <dt className="text-muted">
+                  {order.fulfilment.method === "delivery" ? "Delivery" : "Pickup"}
+                </dt>
+                <dd className="font-mono tabular">
+                  {order.deliveryFeeKobo ? formatNaira(order.deliveryFeeKobo) : "Free"}
+                </dd>
               </div>
               {order.discountKobo > 0 && (
                 <div className="flex justify-between text-success">
-                  <dt>Discount {order.promoCode && <span className="font-mono">({order.promoCode})</span>}</dt>
+                  <dt>
+                    Discount{" "}
+                    {order.promoCode && <span className="font-mono">({order.promoCode})</span>}
+                  </dt>
                   <dd className="font-mono tabular">−{formatNaira(order.discountKobo)}</dd>
                 </div>
               )}
@@ -205,18 +271,23 @@ export function OrderDetail() {
               <div className="mt-1 flex justify-between">
                 <dt className="text-muted">Payment</dt>
                 <dd>
-                  {paymentLabels[order.payment.method]} · <span className="capitalize">{order.payment.status}</span>
+                  {paymentLabels[order.payment.method]} ·{" "}
+                  <span className="capitalize">{order.payment.status}</span>
                 </dd>
               </div>
             </dl>
           </section>
 
           <section className="rounded-lg bg-surface p-5 text-small hairline">
-            <h2 className="mb-3 text-body font-semibold">{order.fulfilment.method === "delivery" ? "Delivery details" : "Pickup details"}</h2>
+            <h2 className="mb-3 text-body font-semibold">
+              {order.fulfilment.method === "delivery" ? "Delivery details" : "Pickup details"}
+            </h2>
             <dl className="grid grid-cols-[110px_1fr] gap-y-2">
               <dt className="text-muted">Campus</dt>
               <dd>{campus?.name}</dd>
-              <dt className="text-muted">{order.fulfilment.method === "delivery" ? "Zone" : "Pickup point"}</dt>
+              <dt className="text-muted">
+                {order.fulfilment.method === "delivery" ? "Zone" : "Pickup point"}
+              </dt>
               <dd>{order.fulfilment.method === "delivery" ? zone?.name : point?.name}</dd>
               {order.fulfilment.addressLine && (
                 <>
@@ -254,7 +325,12 @@ export function OrderDetail() {
                 cancel.mutate(order.id, {
                   onSuccess: () => {
                     setConfirmCancel(false);
-                    toast("Order cancelled", { description: order.payment.status === "paid" ? "Your demo payment was refunded." : undefined });
+                    toast("Order cancelled", {
+                      description:
+                        order.payment.status === "paid"
+                          ? "Your demo payment was refunded."
+                          : undefined,
+                    });
                   },
                   onError: (e) => {
                     setConfirmCancel(false);
@@ -270,8 +346,17 @@ export function OrderDetail() {
       >
         <p className="text-body text-muted">Items go back on the shelf for other students.</p>
       </Dialog>
-      {order.status === "delivered" && <ReviewDialog order={order} open={reviewOpen} onOpenChange={setReviewOpen} />}
-      {isBuyer && <ChatSheet open={chat} onOpenChange={setChat} brandId={order.brandId} brandName={order.brandName} />}
+      {order.status === "delivered" && (
+        <ReviewDialog order={order} open={reviewOpen} onOpenChange={setReviewOpen} />
+      )}
+      {isBuyer && (
+        <ChatSheet
+          open={chat}
+          onOpenChange={setChat}
+          brandId={order.brandId}
+          brandName={order.brandName}
+        />
+      )}
     </div>
   );
 }

@@ -31,12 +31,25 @@ function series(db: DbSnapshot, brandId: string, days: number, offsetDays = 0): 
   for (let d = days - 1; d >= 0; d--) {
     const date = new Date(end - d * DAY).toISOString().slice(0, 10);
     const m = db.metrics.find((x) => x.brandId === brandId && x.date === date);
-    out.push(m ? clone(m) : { brandId, date, views: 0, addToBag: 0, orders: 0, revenueKobo: 0, hourly: Array.from({ length: 24 }, () => 0) });
+    out.push(
+      m
+        ? clone(m)
+        : {
+            brandId,
+            date,
+            views: 0,
+            addToBag: 0,
+            orders: 0,
+            revenueKobo: 0,
+            hourly: Array.from({ length: 24 }, () => 0),
+          },
+    );
   }
   return out;
 }
 
-const sum = (xs: BrandMetric[], k: "views" | "addToBag" | "orders" | "revenueKobo") => xs.reduce((n, x) => n + x[k], 0);
+const sum = (xs: BrandMetric[], k: "views" | "addToBag" | "orders" | "revenueKobo") =>
+  xs.reduce((n, x) => n + x[k], 0);
 
 function uniqueSlug(db: DbSnapshot, name: string, handle: string, ignoreId?: string) {
   const base = `${slugify(name)}-${handle}`;
@@ -46,7 +59,13 @@ function uniqueSlug(db: DbSnapshot, name: string, handle: string, ignoreId?: str
   return slug;
 }
 
-function buildProduct({ productInputSchema }: Schemas, db: DbSnapshot, brand: Brand, raw: unknown, existing?: Product): Product {
+function buildProduct(
+  { productInputSchema }: Schemas,
+  db: DbSnapshot,
+  brand: Brand,
+  raw: unknown,
+  existing?: Product,
+): Product {
   const parsed = productInputSchema.safeParse(raw);
   if (!parsed.success) zodFail(parsed.error);
   const input = parsed.data;
@@ -65,13 +84,21 @@ function buildProduct({ productInputSchema }: Schemas, db: DbSnapshot, brand: Br
   const images = [...kept, ...uploaded];
   if (images.length === 0) {
     const cat = categoryById(input.category);
-    images.push({ kind: "art", motif: cat.motif, palette: cat.palette, seed: hashString(input.name) });
+    images.push({
+      kind: "art",
+      motif: cat.motif,
+      palette: cat.palette,
+      seed: hashString(input.name),
+    });
   }
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? newId("p"),
     brandId: brand.id,
-    slug: existing && existing.name === input.name ? existing.slug : uniqueSlug(db, input.name, brand.handle, existing?.id),
+    slug:
+      existing && existing.name === input.name
+        ? existing.slug
+        : uniqueSlug(db, input.name, brand.handle, existing?.id),
     name: input.name,
     description: input.description,
     details: input.details,
@@ -93,7 +120,9 @@ function buildProduct({ productInputSchema }: Schemas, db: DbSnapshot, brand: Br
 }
 
 function refreshCounts(db: DbSnapshot, brand: Brand) {
-  brand.productCount = db.products.filter((p) => p.brandId === brand.id && p.status === "published").length;
+  brand.productCount = db.products.filter(
+    (p) => p.brandId === brand.id && p.status === "published",
+  ).length;
 }
 
 function balances(db: DbSnapshot, brand: Brand) {
@@ -106,7 +135,9 @@ function balances(db: DbSnapshot, brand: Brand) {
     .filter((o) => isActive(o.status))
     .reduce((n, o) => n + net(o.subtotalKobo - o.discountKobo + o.deliveryFeeKobo), 0);
   // Seeded history: assume earlier earnings were already paid out.
-  const paid = db.payouts.filter((p) => p.brandId === brand.id).reduce((n, p) => n + p.amountKobo, 0);
+  const paid = db.payouts
+    .filter((p) => p.brandId === brand.id)
+    .reduce((n, p) => n + p.amountKobo, 0);
   const recentWindow = Date.now() - 14 * DAY;
   const recentEarned = orders
     .filter((o) => o.status === "delivered" && Date.parse(o.placedAt) >= recentWindow)
@@ -127,9 +158,15 @@ export const mockStudio: StudioService = {
     await latency(1.2);
     const db = await getDb();
     const user = await requireUser(db);
-    if (user.brandIds.length >= 1) throw new ServiceError("CONFLICT", "You already have a shop. Multiple shops are coming later.");
+    if (user.brandIds.length >= 1)
+      throw new ServiceError(
+        "CONFLICT",
+        "You already have a shop. Multiple shops are coming later.",
+      );
     if (db.brands.some((b) => b.handle === input.handle)) {
-      throw new ServiceError("CONFLICT", "That handle is taken.", { handle: "That handle is taken" });
+      throw new ServiceError("CONFLICT", "That handle is taken.", {
+        handle: "That handle is taken",
+      });
     }
     const campusId = user.campusId ?? db.campuses[0]!.id;
     const cat = categoryById(input.category);
@@ -142,8 +179,12 @@ export const mockStudio: StudioService = {
       category: input.category,
       tagline: input.tagline,
       bio: input.bio,
-      logo: input.logoImageId ? { kind: "blob", id: input.logoImageId } : { kind: "art", motif: "monogram", palette: cat.palette, seed },
-      cover: input.coverImageId ? { kind: "blob", id: input.coverImageId } : { kind: "art", motif: cat.motif, palette: cat.palette, seed },
+      logo: input.logoImageId
+        ? { kind: "blob", id: input.logoImageId }
+        : { kind: "art", motif: "monogram", palette: cat.palette, seed },
+      cover: input.coverImageId
+        ? { kind: "blob", id: input.coverImageId }
+        : { kind: "art", motif: cat.motif, palette: cat.palette, seed },
       campusId,
       fulfilment: input.fulfilment,
       openHours: { days: [1, 2, 3, 4, 5, 6], opens: "09:00", closes: "20:00" },
@@ -211,7 +252,9 @@ export const mockStudio: StudioService = {
       };
     }
     // Keep denormalised copies in threads/orders fresh.
-    for (const t of db.threads) if (t.brandId === brand.id) Object.assign(t, { brandName: brand.name, brandLogo: clone(brand.logo) });
+    for (const t of db.threads)
+      if (t.brandId === brand.id)
+        Object.assign(t, { brandName: brand.name, brandLogo: clone(brand.logo) });
     await commit("brands", "threads");
     return clone(brand);
   },
@@ -223,12 +266,42 @@ export const mockStudio: StudioService = {
     const products = db.products.filter((p) => p.brandId === brand.id);
     return [
       { id: "shop", label: "Open your shop", done: true, href: "/studio/brand" },
-      { id: "logo", label: "Upload a logo", done: brand.logo.kind !== "art", href: "/studio/brand#logo" },
-      { id: "bio", label: "Tell your story in the bio", done: brand.bio.trim().length >= 40, href: "/studio/brand#bio" },
-      { id: "product", label: "List your first product", done: products.length > 0, href: "/studio/products/new" },
-      { id: "three", label: "Publish 3 products", done: products.filter((p) => p.status === "published").length >= 3, href: "/studio/products" },
-      { id: "payout", label: "Add a payout account", done: !!brand.payoutAccount, href: "/studio/payouts" },
-      { id: "promo", label: "Create a promo code", done: db.promos.some((p) => p.brandId === brand.id), href: "/studio/promotions" },
+      {
+        id: "logo",
+        label: "Upload a logo",
+        done: brand.logo.kind !== "art",
+        href: "/studio/brand#logo",
+      },
+      {
+        id: "bio",
+        label: "Tell your story in the bio",
+        done: brand.bio.trim().length >= 40,
+        href: "/studio/brand#bio",
+      },
+      {
+        id: "product",
+        label: "List your first product",
+        done: products.length > 0,
+        href: "/studio/products/new",
+      },
+      {
+        id: "three",
+        label: "Publish 3 products",
+        done: products.filter((p) => p.status === "published").length >= 3,
+        href: "/studio/products",
+      },
+      {
+        id: "payout",
+        label: "Add a payout account",
+        done: !!brand.payoutAccount,
+        href: "/studio/payouts",
+      },
+      {
+        id: "promo",
+        label: "Create a promo code",
+        done: db.promos.some((p) => p.brandId === brand.id),
+        href: "/studio/promotions",
+      },
     ];
   },
 
@@ -243,7 +316,8 @@ export const mockStudio: StudioService = {
     const brandOrders = db.orders.filter((o) => o.brandId === brand.id);
     const units = new Map<string, { units: number; revenue: number }>();
     for (const o of brandOrders) {
-      if (Date.parse(o.placedAt) < since || o.status === "declined" || o.status === "cancelled") continue;
+      if (Date.parse(o.placedAt) < since || o.status === "declined" || o.status === "cancelled")
+        continue;
       for (const it of o.items) {
         const u = units.get(it.productId) ?? { units: 0, revenue: 0 };
         u.units += it.quantity;
@@ -252,7 +326,11 @@ export const mockStudio: StudioService = {
       }
     }
     const topProducts = [...units.entries()]
-      .map(([id, u]) => ({ product: db.products.find((p) => p.id === id), unitsSold: u.units, revenueKobo: u.revenue }))
+      .map(([id, u]) => ({
+        product: db.products.find((p) => p.id === id),
+        unitsSold: u.units,
+        revenueKobo: u.revenue,
+      }))
       .filter((x): x is { product: Product; unitsSold: number; revenueKobo: number } => !!x.product)
       .sort((a, b) => b.revenueKobo - a.revenueKobo)
       .slice(0, 5)
@@ -273,7 +351,9 @@ export const mockStudio: StudioService = {
       ratingCount: brand.ratingCount,
       series: cur,
       topProducts,
-      recentOrders: clone(brandOrders.sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)).slice(0, 6)),
+      recentOrders: clone(
+        brandOrders.sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)).slice(0, 6),
+      ),
     };
   },
 
@@ -287,11 +367,19 @@ export const mockStudio: StudioService = {
     const views = sum(cur, "views");
     const addToBag = sum(cur, "addToBag");
     const orders = sum(cur, "orders");
-    const hourly = Array.from({ length: 24 }, (_, h) => cur.reduce((n, m) => n + (m.hourly[h] ?? 0), 0));
+    const hourly = Array.from({ length: 24 }, (_, h) =>
+      cur.reduce((n, m) => n + (m.hourly[h] ?? 0), 0),
+    );
     const since = Date.now() - days * DAY;
     const byCampus = new Map<string, { orders: number; revenue: number }>();
     for (const o of db.orders) {
-      if (o.brandId !== brand.id || Date.parse(o.placedAt) < since || o.status === "declined" || o.status === "cancelled") continue;
+      if (
+        o.brandId !== brand.id ||
+        Date.parse(o.placedAt) < since ||
+        o.status === "declined" ||
+        o.status === "cancelled"
+      )
+        continue;
       const buyer = db.users.find((u) => u.id === o.buyerId);
       const cid = buyer?.campusId ?? o.fulfilment.campusId;
       const c = byCampus.get(cid) ?? { orders: 0, revenue: 0 };
@@ -311,11 +399,20 @@ export const mockStudio: StudioService = {
       series: cur,
       hourly,
       topCampuses: [...byCampus.entries()]
-        .map(([campusId, v]) => ({ campusId, name: db.campuses.find((c) => c.id === campusId)?.shortName ?? "Other", orders: v.orders, revenueKobo: v.revenue }))
+        .map(([campusId, v]) => ({
+          campusId,
+          name: db.campuses.find((c) => c.id === campusId)?.shortName ?? "Other",
+          orders: v.orders,
+          revenueKobo: v.revenue,
+        }))
         .sort((a, b) => b.orders - a.orders)
         .slice(0, 6),
       topProducts: products
-        .map((p) => ({ product: clone(p), views: Math.round(p.viewCount * (days / 90)), addToBag: Math.round(p.salesCount * 1.6 * (days / 90)) }))
+        .map((p) => ({
+          product: clone(p),
+          views: Math.round(p.viewCount * (days / 90)),
+          addToBag: Math.round(p.salesCount * 1.6 * (days / 90)),
+        }))
         .sort((a, b) => b.views - a.views)
         .slice(0, 6),
     };
@@ -326,11 +423,14 @@ export const mockStudio: StudioService = {
     const db = await getDb();
     const { brand } = await requireBrand(db);
     let list = db.products.filter((p) => p.brandId === brand.id);
-    if (query.status && query.status !== "all") list = list.filter((p) => p.status === query.status);
+    if (query.status && query.status !== "all")
+      list = list.filter((p) => p.status === query.status);
     if (query.category) list = list.filter((p) => p.category === query.category);
     if (query.q?.trim()) {
       const q = query.q.trim().toLowerCase();
-      list = list.filter((p) => p.name.toLowerCase().includes(q) || p.tags.some((t) => t.toLowerCase().includes(q)));
+      list = list.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.tags.some((t) => t.toLowerCase().includes(q)),
+      );
     }
     return clone(list.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)));
   },
@@ -373,7 +473,8 @@ export const mockStudio: StudioService = {
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    for (const p of db.products) if (p.brandId === brand.id && ids.includes(p.id)) p.status = status;
+    for (const p of db.products)
+      if (p.brandId === brand.id && ids.includes(p.id)) p.status = status;
     refreshCounts(db, brand);
     await commit("products", "brands");
   },
@@ -391,7 +492,11 @@ export const mockStudio: StudioService = {
     await latency();
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    return clone(db.orders.filter((o) => o.brandId === brand.id).sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)));
+    return clone(
+      db.orders
+        .filter((o) => o.brandId === brand.id)
+        .sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)),
+    );
   },
 
   async updateOrderStatus(id, status) {
@@ -414,7 +519,14 @@ export const mockStudio: StudioService = {
       if (o.brandId !== brand.id || o.status === "declined" || o.status === "cancelled") continue;
       const buyer = db.users.find((u) => u.id === o.buyerId);
       const campus = db.campuses.find((c) => c.id === (buyer?.campusId ?? o.fulfilment.campusId));
-      const c = map.get(o.buyerId) ?? { userId: o.buyerId, name: o.buyerName, campusName: campus?.shortName ?? "", orders: 0, spentKobo: 0, lastOrderAt: o.placedAt };
+      const c = map.get(o.buyerId) ?? {
+        userId: o.buyerId,
+        name: o.buyerName,
+        campusName: campus?.shortName ?? "",
+        orders: 0,
+        spentKobo: 0,
+        lastOrderAt: o.placedAt,
+      };
       c.orders += 1;
       c.spentKobo += o.totalKobo;
       if (Date.parse(o.placedAt) > Date.parse(c.lastOrderAt)) c.lastOrderAt = o.placedAt;
@@ -427,20 +539,31 @@ export const mockStudio: StudioService = {
     await latency();
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    return clone(db.reviews.filter((r) => r.brandId === brand.id).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
+    return clone(
+      db.reviews
+        .filter((r) => r.brandId === brand.id)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    );
   },
 
   async replyToReview(reviewId, body) {
     const text = body.trim();
     if (text.length < 2) throw new ServiceError("VALIDATION", "Write a reply first.");
-    if (text.length > 500) throw new ServiceError("VALIDATION", "Keep replies under 500 characters.");
+    if (text.length > 500)
+      throw new ServiceError("VALIDATION", "Keep replies under 500 characters.");
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
     const r = db.reviews.find((x) => x.id === reviewId && x.brandId === brand.id);
     if (!r) throw new ServiceError("NOT_FOUND", "Review not found.");
     r.reply = { body: text, createdAt: new Date().toISOString() };
-    pushNotification(db, { userId: r.userId, kind: "review", title: `${brand.name} replied to your review`, body: text.slice(0, 90), href: `/brands/${brand.handle}` });
+    pushNotification(db, {
+      userId: r.userId,
+      kind: "review",
+      title: `${brand.name} replied to your review`,
+      body: text.slice(0, 90),
+      href: `/brands/${brand.handle}`,
+    });
     await commit("reviews", "notifications");
     return clone(r);
   },
@@ -449,7 +572,11 @@ export const mockStudio: StudioService = {
     await latency();
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    return clone(db.promos.filter((p) => p.brandId === brand.id).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
+    return clone(
+      db.promos
+        .filter((p) => p.brandId === brand.id)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    );
   },
 
   async createPromo(raw) {
@@ -461,7 +588,9 @@ export const mockStudio: StudioService = {
     const db = await getDb();
     const { brand } = await requireBrand(db);
     if (db.promos.some((p) => p.code === input.code)) {
-      throw new ServiceError("CONFLICT", "That code is already in use on Kiosk.", { code: "Already in use" });
+      throw new ServiceError("CONFLICT", "That code is already in use on Kiosk.", {
+        code: "Already in use",
+      });
     }
     const promo: Promo = {
       id: newId("pr"),
@@ -513,7 +642,11 @@ export const mockStudio: StudioService = {
     return {
       availableKobo,
       pendingKobo,
-      payouts: clone(db.payouts.filter((p) => p.brandId === brand.id).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))),
+      payouts: clone(
+        db.payouts
+          .filter((p) => p.brandId === brand.id)
+          .sort((a, b) => Date.parse(b.at) - Date.parse(a.at)),
+      ),
     };
   },
 
@@ -523,7 +656,8 @@ export const mockStudio: StudioService = {
     const { brand } = await requireBrand(db);
     if (!brand.payoutAccount) throw new ServiceError("CONFLICT", "Add a payout account first.");
     const { availableKobo } = balances(db, brand);
-    if (availableKobo < 100_000) throw new ServiceError("CONFLICT", "You need at least ₦1,000 available to request a payout.");
+    if (availableKobo < 100_000)
+      throw new ServiceError("CONFLICT", "You need at least ₦1,000 available to request a payout.");
     // BACKEND-SEAM: payouts API (Paystack transfers). DEMO: no money moves.
     const payout = {
       id: newId("po"),

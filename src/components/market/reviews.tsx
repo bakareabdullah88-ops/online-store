@@ -16,11 +16,16 @@ export function RatingSummary({ breakdown }: { breakdown: RatingBreakdown }) {
   return (
     <div className="flex gap-6">
       <div>
-        <p className="font-display text-display-lg leading-none">{breakdown.count ? breakdown.average.toFixed(1) : "–"}</p>
+        <p className="font-display text-display-lg leading-none">
+          {breakdown.count ? breakdown.average.toFixed(1) : "–"}
+        </p>
         <Stars value={breakdown.average} size={14} className="mt-2 text-ink" />
         <p className="mt-1.5 text-small text-muted">{formatNumber(breakdown.count)} reviews</p>
       </div>
-      <ol className="flex min-w-0 flex-1 flex-col justify-center gap-1.5" aria-label="Rating breakdown">
+      <ol
+        className="flex min-w-0 flex-1 flex-col justify-center gap-1.5"
+        aria-label="Rating breakdown"
+      >
         {[5, 4, 3, 2, 1].map((star) => {
           const n = breakdown.histogram[star - 1] ?? 0;
           return (
@@ -36,7 +41,9 @@ export function RatingSummary({ breakdown }: { breakdown: RatingBreakdown }) {
                 />
               </span>
               <span className="w-6 text-right font-mono text-muted tabular">{n}</span>
-              <span className="sr-only">{star} stars: {n} reviews</span>
+              <span className="sr-only">
+                {star} stars: {n} reviews
+              </span>
             </li>
           );
         })}

@@ -8,13 +8,21 @@ import { useSignInDemo } from "@/queries/session";
 import { errorMessage } from "@/services/errors";
 import { toast } from "@/stores/toast";
 
-export function DemoPanel({ next, highlight }: { next?: string | null; highlight?: string | null }) {
+export function DemoPanel({
+  next,
+  highlight,
+}: {
+  next?: string | null;
+  highlight?: string | null;
+}) {
   const demo = useSignInDemo();
   const router = useRouter();
   const go = (k: "buyer" | "seller") =>
     demo.mutate(k, {
       onSuccess: (u) => {
-        toast.success(`Welcome, ${u.name.split(" ")[0]}`, { description: `You're using the demo ${k} account.` });
+        toast.success(`Welcome, ${u.name.split(" ")[0]}`, {
+          description: `You're using the demo ${k} account.`,
+        });
         router.push(next ?? (k === "seller" ? "/studio" : "/explore"));
       },
       onError: (e) => toast.error(errorMessage(e)),
@@ -25,7 +33,10 @@ export function DemoPanel({ next, highlight }: { next?: string | null; highlight
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Button
           variant="secondary"
-          className={cn("h-auto justify-start py-3 text-left", highlight === "buyer" && "shadow-[inset_0_0_0_1.5px_var(--ink)]")}
+          className={cn(
+            "h-auto justify-start py-3 text-left",
+            highlight === "buyer" && "shadow-[inset_0_0_0_1.5px_var(--ink)]",
+          )}
           loading={demo.isPending && demo.variables === "buyer"}
           disabled={demo.isPending}
           onClick={() => go("buyer")}
@@ -41,7 +52,10 @@ export function DemoPanel({ next, highlight }: { next?: string | null; highlight
         </Button>
         <Button
           variant="secondary"
-          className={cn("h-auto justify-start py-3 text-left", highlight === "seller" && "shadow-[inset_0_0_0_1.5px_var(--ink)]")}
+          className={cn(
+            "h-auto justify-start py-3 text-left",
+            highlight === "seller" && "shadow-[inset_0_0_0_1.5px_var(--ink)]",
+          )}
           loading={demo.isPending && demo.variables === "seller"}
           disabled={demo.isPending}
           onClick={() => go("seller")}
@@ -57,7 +71,8 @@ export function DemoPanel({ next, highlight }: { next?: string | null; highlight
         </Button>
       </div>
       <p className="mt-3 text-small text-muted">
-        Demo only: accounts live in this browser, passwords are hashed locally, and no real payments happen.
+        Demo only: accounts live in this browser, passwords are hashed locally, and no real payments
+        happen.
       </p>
     </div>
   );

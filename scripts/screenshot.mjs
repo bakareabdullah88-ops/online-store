@@ -5,7 +5,9 @@ import { mkdirSync } from "node:fs";
 const [base, out, routesArg, ...flags] = process.argv.slice(2);
 const dark = flags.includes("--dark");
 const full = flags.includes("--full");
-const widths = (flags.find((f) => f.startsWith("--widths="))?.split("=")[1] ?? "390,1280").split(",").map(Number);
+const widths = (flags.find((f) => f.startsWith("--widths="))?.split("=")[1] ?? "390,1280")
+  .split(",")
+  .map(Number);
 const login = flags.find((f) => f.startsWith("--login="))?.split("=")[1];
 const waitMs = Number(flags.find((f) => f.startsWith("--wait="))?.split("=")[1] ?? 1800);
 mkdirSync(out, { recursive: true });
@@ -23,12 +25,16 @@ for (const width of widths) {
   });
   const page = await context.newPage();
   page.on("console", (m) => {
-    if (m.type() === "error" || m.type() === "warning") errors.push(`[${width}] ${m.type()}: ${m.text()}`);
+    if (m.type() === "error" || m.type() === "warning")
+      errors.push(`[${width}] ${m.type()}: ${m.text()}`);
   });
   page.on("pageerror", (e) => errors.push(`[${width}] pageerror: ${e.message}`));
   if (login) {
     await page.goto(`${base}/login`, { waitUntil: "networkidle" });
-    await page.getByRole("button", { name: new RegExp(`demo ${login}`, "i") }).first().click();
+    await page
+      .getByRole("button", { name: new RegExp(`demo ${login}`, "i") })
+      .first()
+      .click();
     await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 20000 });
     await page.waitForTimeout(800);
   }

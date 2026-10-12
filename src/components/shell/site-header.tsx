@@ -4,10 +4,30 @@ import Link from "next/link";
 import { useMotionValueEvent, useScroll, motion, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
-import { Bell, Heart, LogOut, Moon, Receipt, Search, Settings, ShoppingBag, Store, Sun, User as UserIcon } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  LogOut,
+  Moon,
+  Receipt,
+  Search,
+  Settings,
+  ShoppingBag,
+  Store,
+  Sun,
+  User as UserIcon,
+} from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Avatar, CountBadge, Kbd } from "@/components/ui/misc";
-import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Tooltip } from "@/components/ui/overlay";
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuSeparator,
+  MenuTrigger,
+  Tooltip,
+} from "@/components/ui/overlay";
 import { useTheme } from "@/components/providers/theme";
 import { cn } from "@/lib/cn";
 import { spring } from "@/design/motion";
@@ -49,11 +69,16 @@ export function BagButton({ className }: { className?: string }) {
         data-bag-target
         onClick={() => setBagOpen(true)}
         aria-label={`Bag, ${count} item${count === 1 ? "" : "s"}`}
-        className={cn("relative flex size-10 items-center justify-center rounded-md text-ink hover:bg-ink/[0.06]", className)}
+        className={cn(
+          "relative flex size-10 items-center justify-center rounded-md text-ink hover:bg-ink/[0.06]",
+          className,
+        )}
       >
         <motion.span
           key={pulse}
-          animate={reduce || pulse === 0 ? undefined : { scale: [1, 1.25, 0.95, 1], rotate: [0, -8, 4, 0] }}
+          animate={
+            reduce || pulse === 0 ? undefined : { scale: [1, 1.25, 0.95, 1], rotate: [0, -8, 4, 0] }
+          }
           transition={{ duration: 0.45 }}
         >
           <ShoppingBag className="size-5" />
@@ -74,7 +99,11 @@ export function AccountMenu() {
   return (
     <Menu>
       <MenuTrigger asChild>
-        <button type="button" className="rounded-full ring-offset-2 ring-offset-canvas hover:ring-2 hover:ring-line-strong" aria-label="Account menu">
+        <button
+          type="button"
+          className="rounded-full ring-offset-2 ring-offset-canvas hover:ring-2 hover:ring-line-strong"
+          aria-label="Account menu"
+        >
           <UserAvatar size={34} />
         </button>
       </MenuTrigger>
@@ -82,21 +111,32 @@ export function AccountMenu() {
         <div className="px-2.5 pt-2 pb-2.5">
           <p className="truncate text-small font-medium">{user.name}</p>
           <p className="truncate text-small text-muted">{user.email}</p>
-          {user.isDemo && <p className="eyebrow mt-1.5 text-accent-ink">Demo account</p>}
+          {user.isDemo && <p className="mt-1.5 eyebrow text-accent-ink">Demo account</p>}
         </div>
         <MenuSeparator />
         <MenuLabel>Buying</MenuLabel>
-        <MenuItem icon={<UserIcon />} onSelect={() => router.push("/account")}>Dashboard</MenuItem>
-        <MenuItem icon={<Receipt />} onSelect={() => router.push("/orders")}>Orders</MenuItem>
-        <MenuItem icon={<Heart />} onSelect={() => router.push("/wishlist")}>Saved</MenuItem>
+        <MenuItem icon={<UserIcon />} onSelect={() => router.push("/account")}>
+          Dashboard
+        </MenuItem>
+        <MenuItem icon={<Receipt />} onSelect={() => router.push("/orders")}>
+          Orders
+        </MenuItem>
+        <MenuItem icon={<Heart />} onSelect={() => router.push("/wishlist")}>
+          Saved
+        </MenuItem>
         <MenuSeparator />
         <MenuItem icon={<Store />} onSelect={() => router.push(hasShop ? "/studio" : "/open-shop")}>
           {hasShop ? "Shop Studio" : "Open your shop"}
         </MenuItem>
-        <MenuItem icon={resolved === "dark" ? <Sun /> : <Moon />} onSelect={() => setPreference(resolved === "dark" ? "light" : "dark")}>
+        <MenuItem
+          icon={resolved === "dark" ? <Sun /> : <Moon />}
+          onSelect={() => setPreference(resolved === "dark" ? "light" : "dark")}
+        >
           {resolved === "dark" ? "Light theme" : "Dark theme"}
         </MenuItem>
-        <MenuItem icon={<Settings />} onSelect={() => router.push("/account/settings")}>Settings</MenuItem>
+        <MenuItem icon={<Settings />} onSelect={() => router.push("/account/settings")}>
+          Settings
+        </MenuItem>
         <MenuSeparator />
         <MenuItem
           icon={<LogOut />}
@@ -178,7 +218,9 @@ export function SiteHeader({ transparentAtTop = false }: { transparentAtTop?: bo
       style={{ viewTransitionName: "site-header" }}
       className={cn(
         "sticky top-0 z-(--z-header) transition-[background-color,box-shadow,backdrop-filter] duration-300",
-        solid ? "bg-canvas/85 shadow-[0_1px_0_var(--line)] backdrop-blur-lg backdrop-saturate-150" : "bg-transparent",
+        solid
+          ? "bg-canvas/85 shadow-[0_1px_0_var(--line)] backdrop-blur-lg backdrop-saturate-150"
+          : "bg-transparent",
       )}
     >
       <div
@@ -198,7 +240,10 @@ export function SiteHeader({ transparentAtTop = false }: { transparentAtTop?: bo
               <Link
                 key={l.label}
                 href={l.href}
-                className={cn("rounded-full px-3 py-2 text-small font-medium transition-colors", active ? "text-ink" : "text-muted hover:text-ink")}
+                className={cn(
+                  "rounded-full px-3 py-2 text-small font-medium transition-colors",
+                  active ? "text-ink" : "text-muted hover:text-ink",
+                )}
               >
                 {l.label}
               </Link>
@@ -209,13 +254,23 @@ export function SiteHeader({ transparentAtTop = false }: { transparentAtTop?: bo
           <SearchTrigger className="max-w-md" />
         </div>
         <div className="ml-auto flex items-center gap-1 lg:ml-0">
-          <Button variant="ghost" size="icon" className="size-10 lg:hidden" aria-label="Search" onClick={() => setCommandOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 lg:hidden"
+            aria-label="Search"
+            onClick={() => setCommandOpen(true)}
+          >
             <Search className="size-5" />
           </Button>
           {user && <ModeSwitch className="mr-2 hidden lg:inline-flex" />}
           {user && <NotificationsButton />}
           <Tooltip content="Saved">
-            <Link href="/wishlist" aria-label="Saved items" className="hidden size-10 items-center justify-center rounded-md hover:bg-ink/[0.06] lg:flex">
+            <Link
+              href="/wishlist"
+              aria-label="Saved items"
+              className="hidden size-10 items-center justify-center rounded-md hover:bg-ink/[0.06] lg:flex"
+            >
               <Heart className="size-5" />
             </Link>
           </Tooltip>
@@ -225,7 +280,11 @@ export function SiteHeader({ transparentAtTop = false }: { transparentAtTop?: bo
               <AccountMenu />
             ) : isReady ? (
               <div className="flex items-center gap-2">
-                <ButtonLink href={`/login?next=${encodeURIComponent(pathname)}`} variant="ghost" size="sm">
+                <ButtonLink
+                  href={`/login?next=${encodeURIComponent(pathname)}`}
+                  variant="ghost"
+                  size="sm"
+                >
                   Log in
                 </ButtonLink>
                 <ButtonLink href="/signup" size="sm">
@@ -235,7 +294,12 @@ export function SiteHeader({ transparentAtTop = false }: { transparentAtTop?: bo
             ) : null}
           </div>
           {!user && isReady && (
-            <ButtonLink href={`/login?next=${encodeURIComponent(pathname)}`} variant="secondary" size="sm" className="ml-1 lg:hidden">
+            <ButtonLink
+              href={`/login?next=${encodeURIComponent(pathname)}`}
+              variant="secondary"
+              size="sm"
+              className="ml-1 lg:hidden"
+            >
               Log in
             </ButtonLink>
           )}

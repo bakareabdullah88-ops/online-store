@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent, formatNaira, formatNairaCompact, naira, parseNairaInput, percentOf, sumKobo } from "./money";
+import {
+  discountPercent,
+  formatNaira,
+  formatNairaCompact,
+  naira,
+  parseNairaInput,
+  percentOf,
+  sumKobo,
+} from "./money";
 
 describe("money", () => {
   it("formats whole naira without decimals", () => {

@@ -42,7 +42,9 @@ export function WalletView() {
     topUp.mutate(kobo, {
       onSuccess: () => {
         setOpen(false);
-        toast.success(`${formatNaira(kobo)} added`, { description: "Demo top-up: no real money moved." });
+        toast.success(`${formatNaira(kobo)} added`, {
+          description: "Demo top-up: no real money moved.",
+        });
       },
       onError: (e) => toast.error(errorMessage(e)),
     });
@@ -50,16 +52,39 @@ export function WalletView() {
 
   return (
     <div>
-      <DashboardHeader eyebrow="Wallet" title="Kiosk wallet" description="A pretend balance for trying out checkout. Nothing here is real money." />
+      <DashboardHeader
+        eyebrow="Wallet"
+        title="Kiosk wallet"
+        description="A pretend balance for trying out checkout. Nothing here is real money."
+      />
       <div className="relative overflow-hidden rounded-xl bg-primary p-6 text-on-primary md:p-8">
-        <div className="pointer-events-none absolute -top-20 -right-16 size-64 rounded-full bg-accent opacity-25 blur-2xl" aria-hidden />
+        <div
+          className="pointer-events-none absolute -top-20 -right-16 size-64 rounded-full bg-accent opacity-25 blur-2xl"
+          aria-hidden
+        />
         <div className="relative flex items-center justify-between">
           <p className="text-small opacity-70">Available balance</p>
-          <span className="rounded-full bg-on-primary/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider">Demo money</span>
+          <span className="rounded-full bg-on-primary/15 px-2.5 py-1 font-mono text-[10px] tracking-wider uppercase">
+            Demo money
+          </span>
         </div>
-        <p className="relative mt-4 font-display text-display-lg">{isPending ? "…" : <NumberTicker value={data?.balanceKobo ?? 0} format={(n) => formatNaira(n)} step={100} />}</p>
+        <p className="relative mt-4 font-display text-display-lg">
+          {isPending ? (
+            "…"
+          ) : (
+            <NumberTicker
+              value={data?.balanceKobo ?? 0}
+              format={(n) => formatNaira(n)}
+              step={100}
+            />
+          )}
+        </p>
         <div className="relative mt-8 flex gap-2">
-          <Button className="bg-on-primary text-primary hover:bg-on-primary/90" leadingIcon={<Plus className="size-4.5" />} onClick={() => setOpen(true)}>
+          <Button
+            className="bg-on-primary text-primary hover:bg-on-primary/90"
+            leadingIcon={<Plus className="size-4.5" />}
+            onClick={() => setOpen(true)}
+          >
             Top up
           </Button>
         </div>
@@ -76,22 +101,55 @@ export function WalletView() {
             ))}
           </div>
         ) : !data?.transactions.length ? (
-          <EmptyState compact illustration="wallet" title="No activity yet" body="Top-ups and wallet payments will show here." />
+          <EmptyState
+            compact
+            illustration="wallet"
+            title="No activity yet"
+            body="Top-ups and wallet payments will show here."
+          />
         ) : (
           <ul className="divide-y divide-line rounded-lg bg-surface hairline">
             <AnimatePresence initial={false}>
               {data.transactions.map((t, i) => {
-                const Icon = t.kind === "topup" ? ArrowDownLeft : t.kind === "refund" ? RotateCcw : ArrowUpRight;
+                const Icon =
+                  t.kind === "topup"
+                    ? ArrowDownLeft
+                    : t.kind === "refund"
+                      ? RotateCcw
+                      : ArrowUpRight;
                 return (
-                  <motion.li key={t.id} layout initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spring.smooth, delay: stagger(i, 0.03, 0.2) }} className="flex items-center gap-4 px-5 py-4">
-                    <span className={cn("flex size-10 items-center justify-center rounded-full", t.amountKobo > 0 ? "bg-success-soft text-success" : "bg-ink/[0.06] text-ink-2")}>
+                  <motion.li
+                    key={t.id}
+                    layout
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...spring.smooth, delay: stagger(i, 0.03, 0.2) }}
+                    className="flex items-center gap-4 px-5 py-4"
+                  >
+                    <span
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-full",
+                        t.amountKobo > 0
+                          ? "bg-success-soft text-success"
+                          : "bg-ink/[0.06] text-ink-2",
+                      )}
+                    >
                       <Icon className="size-4.5" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-small font-medium">{t.label}</p>
-                      <p className="text-small text-muted">{mounted ? `${formatDate(t.at, { year: true })} · ${formatTime(t.at)}` : " "}</p>
+                      <p className="text-small text-muted">
+                        {mounted
+                          ? `${formatDate(t.at, { year: true })} · ${formatTime(t.at)}`
+                          : " "}
+                      </p>
                     </div>
-                    <span className={cn("font-mono text-small font-medium tabular", t.amountKobo > 0 && "text-success")}>
+                    <span
+                      className={cn(
+                        "font-mono text-small font-medium tabular",
+                        t.amountKobo > 0 && "text-success",
+                      )}
+                    >
                       {t.amountKobo > 0 ? "+" : "−"}
                       {formatNaira(Math.abs(t.amountKobo))}
                     </span>
@@ -117,13 +175,22 @@ export function WalletView() {
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap gap-2">
             {presets.map((p) => (
-              <Chip key={p} selected={parseNairaInput(amount) === p} onClick={() => setAmount((p / 100).toLocaleString("en-NG"))}>
+              <Chip
+                key={p}
+                selected={parseNairaInput(amount) === p}
+                onClick={() => setAmount((p / 100).toLocaleString("en-NG"))}
+              >
                 {formatNaira(p)}
               </Chip>
             ))}
           </div>
           <Field label="Amount (₦)" error={error} hint="₦500 to ₦200,000">
-            <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" className="font-mono" />
+            <Input
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              inputMode="decimal"
+              className="font-mono"
+            />
           </Field>
         </div>
       </ResponsiveSheet>

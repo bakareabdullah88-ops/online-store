@@ -22,18 +22,23 @@ function isAbsoluteUrl(value: string): boolean {
 export function parseEnv(raw: Record<string, string | undefined>): Env {
   const problems: string[] = [];
   const source = raw.NEXT_PUBLIC_DATA_SOURCE || "mock";
-  if (source !== "mock" && source !== "remote") problems.push(`NEXT_PUBLIC_DATA_SOURCE must be "mock" or "remote" (got "${source}")`);
+  if (source !== "mock" && source !== "remote")
+    problems.push(`NEXT_PUBLIC_DATA_SOURCE must be "mock" or "remote" (got "${source}")`);
 
   const site = raw.NEXT_PUBLIC_SITE_URL || undefined;
-  if (site && !isAbsoluteUrl(site)) problems.push(`NEXT_PUBLIC_SITE_URL must be an absolute URL (got "${site}")`);
+  if (site && !isAbsoluteUrl(site))
+    problems.push(`NEXT_PUBLIC_SITE_URL must be an absolute URL (got "${site}")`);
 
   const latencyRaw = raw.NEXT_PUBLIC_MOCK_LATENCY || undefined;
   const latency = latencyRaw === undefined ? undefined : Number(latencyRaw);
   if (latency !== undefined && !(Number.isInteger(latency) && latency >= 0 && latency <= 5000)) {
-    problems.push(`NEXT_PUBLIC_MOCK_LATENCY must be a whole number from 0 to 5000 (got "${latencyRaw}")`);
+    problems.push(
+      `NEXT_PUBLIC_MOCK_LATENCY must be a whole number from 0 to 5000 (got "${latencyRaw}")`,
+    );
   }
 
-  if (problems.length) throw new Error(`Invalid environment variables:\n  ✖ ${problems.join("\n  ✖ ")}`);
+  if (problems.length)
+    throw new Error(`Invalid environment variables:\n  ✖ ${problems.join("\n  ✖ ")}`);
   return {
     NEXT_PUBLIC_DATA_SOURCE: source as Env["NEXT_PUBLIC_DATA_SOURCE"],
     ...(site ? { NEXT_PUBLIC_SITE_URL: site } : {}),

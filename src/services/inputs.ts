@@ -8,9 +8,16 @@ const nigerianPhone = z
   .string()
   .trim()
   .transform((v) => v.replace(/[\s-]/g, ""))
-  .refine((v) => /^(\+234|0)[789][01]\d{8}$/.test(v), "Enter a Nigerian number, e.g. 0803 123 4567");
+  .refine(
+    (v) => /^(\+234|0)[789][01]\d{8}$/.test(v),
+    "Enter a Nigerian number, e.g. 0803 123 4567",
+  );
 
-export const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address"));
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Enter a valid email address"));
 
 export const passwordSchema = z
   .string()
@@ -55,11 +62,18 @@ const fulfilmentSchema = z
     pickup: z.boolean(),
     delivery: z.boolean(),
     deliveryFeeKobo: z.number().int().min(0).max(500_000),
-    prepMinutes: z.number().int().min(5).max(72 * 60),
+    prepMinutes: z
+      .number()
+      .int()
+      .min(5)
+      .max(72 * 60),
     pickupPointIds: z.array(z.string()),
     zoneIds: z.array(z.string()),
   })
-  .refine((f) => f.pickup || f.delivery, { message: "Offer pickup, delivery or both", path: ["pickup"] })
+  .refine((f) => f.pickup || f.delivery, {
+    message: "Offer pickup, delivery or both",
+    path: ["pickup"],
+  })
   .refine((f) => !f.pickup || f.pickupPointIds.length > 0, {
     message: "Choose at least one pickup point",
     path: ["pickupPointIds"],
@@ -72,9 +86,12 @@ const fulfilmentSchema = z
 export const createBrandSchema = z.object({
   name: z.string().trim().min(2, "Give your brand a name").max(40),
   handle: handleSchema,
-  category: z.enum(["fashion", "thrift", "food", "beauty", "accessories", "print", "tech", "books"], {
-    message: "Pick a category",
-  }),
+  category: z.enum(
+    ["fashion", "thrift", "food", "beauty", "accessories", "print", "tech", "books"],
+    {
+      message: "Pick a category",
+    },
+  ),
   tagline: z.string().trim().min(4, "A short line about what you sell").max(80),
   bio: z.string().trim().max(400).default(""),
   logoImageId: z.string().optional(),
@@ -109,7 +126,13 @@ export const productOptionSchema = z.object({
   id: z.string(),
   name: z.string().trim().min(1, "Name the option").max(20),
   values: z
-    .array(z.object({ id: z.string(), label: z.string().trim().min(1).max(24), swatch: z.string().optional() }))
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string().trim().min(1).max(24),
+        swatch: z.string().optional(),
+      }),
+    )
     .min(1, "Add at least one value"),
 });
 
@@ -117,7 +140,16 @@ export const productInputSchema = z.object({
   name: z.string().trim().min(3, "Name your product").max(80),
   description: z.string().trim().min(10, "Describe it in a sentence or two").max(1200),
   details: z.array(z.string().trim().min(1).max(120)).max(8).default([]),
-  category: z.enum(["fashion", "thrift", "food", "beauty", "accessories", "print", "tech", "books"]),
+  category: z.enum([
+    "fashion",
+    "thrift",
+    "food",
+    "beauty",
+    "accessories",
+    "print",
+    "tech",
+    "books",
+  ]),
   tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
   priceKobo: z.number().int().min(10_000, "Minimum price is ₦100").max(100_000_000),
   compareAtKobo: z.number().int().optional(),
@@ -126,7 +158,13 @@ export const productInputSchema = z.object({
   keepImages: z.array(z.unknown()).optional(),
   options: z.array(productOptionSchema).max(3).default([]),
   variants: z
-    .array(z.object({ key: z.string(), stock: z.number().int().min(0).max(9999), priceDeltaKobo: z.number().int() }))
+    .array(
+      z.object({
+        key: z.string(),
+        stock: z.number().int().min(0).max(9999),
+        priceDeltaKobo: z.number().int(),
+      }),
+    )
     .min(1),
   status: z.enum(["published", "draft"]),
 });
@@ -158,7 +196,13 @@ export const checkoutSchema = z.object({
       z.object({
         brandId: z.string(),
         lines: z
-          .array(z.object({ productId: z.string(), variantKey: z.string(), quantity: z.number().int().min(1).max(20) }))
+          .array(
+            z.object({
+              productId: z.string(),
+              variantKey: z.string(),
+              quantity: z.number().int().min(1).max(20),
+            }),
+          )
           .min(1),
         fulfilment: fulfilmentChoiceSchema,
         promoCode: z.string().trim().toUpperCase().optional(),
@@ -199,7 +243,10 @@ export const promoInputSchema = z
     message: "Between 1% and 90%",
     path: ["value"],
   })
-  .refine((p) => p.kind !== "fixed" || p.value >= 5_000, { message: "At least ₦50", path: ["value"] });
+  .refine((p) => p.kind !== "fixed" || p.value >= 5_000, {
+    message: "At least ₦50",
+    path: ["value"],
+  });
 export type PromoInput = z.input<typeof promoInputSchema>;
 
 export const placeSchema = z.object({
@@ -213,8 +260,14 @@ export const placeSchema = z.object({
 });
 export type PlaceInput = z.input<typeof placeSchema>;
 
-export const messageSchema = z.object({ body: z.string().trim().min(1, "Write a message").max(1000) });
+export const messageSchema = z.object({
+  body: z.string().trim().min(1, "Write a message").max(1000),
+});
 
 export const topUpSchema = z.object({
-  amountKobo: z.number().int().min(50_000, "Minimum top-up is ₦500").max(20_000_000, "Max ₦200,000 per top-up"),
+  amountKobo: z
+    .number()
+    .int()
+    .min(50_000, "Minimum top-up is ₦500")
+    .max(20_000_000, "Max ₦200,000 per top-up"),
 });

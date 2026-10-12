@@ -11,7 +11,10 @@ export default function NotFound() {
       <header className="flex h-16 items-center px-(--gutter) md:px-10">
         <Logo />
       </header>
-      <main id="main" className="flex flex-1 flex-col items-center justify-center px-(--gutter) pb-16">
+      <main
+        id="main"
+        className="flex flex-1 flex-col items-center justify-center px-(--gutter) pb-16"
+      >
         <p className="eyebrow text-muted">Error 404</p>
         <EmptyState
           illustration="lost"

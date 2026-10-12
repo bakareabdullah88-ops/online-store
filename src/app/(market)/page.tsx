@@ -39,7 +39,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-(--header-h) lg:pt-16">
         <div className="container-page grid gap-10 pt-10 pb-16 md:pt-16 lg:grid-cols-12 lg:gap-8 lg:pt-20 lg:pb-24">
           <div className="lg:col-span-7 lg:pt-8">
-            <p className="eyebrow flex items-center gap-2 text-muted">
+            <p className="flex items-center gap-2 eyebrow text-muted">
               <span className="size-1.5 rounded-full bg-accent" aria-hidden />
               {brand.tagline} · 8 campuses
             </p>
@@ -47,11 +47,16 @@ export default function LandingPage() {
               Buy from the brands <em className="text-accent">in your hostel.</em>
             </h1>
             <p className="mt-6 max-w-lg text-body-lg text-muted">
-              {brand.name} is where students sell what they make: hand-dyed tees, party jollof, shea butter, posters,
-              past questions. Order in a tap, pick up between lectures or get it delivered to your room.
+              {brand.name} is where students sell what they make: hand-dyed tees, party jollof, shea
+              butter, posters, past questions. Order in a tap, pick up between lectures or get it
+              delivered to your room.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/explore" size="lg" trailingIcon={<ArrowRight className="size-4.5" />}>
+              <ButtonLink
+                href="/explore"
+                size="lg"
+                trailingIcon={<ArrowRight className="size-4.5" />}
+              >
                 Start exploring
               </ButtonLink>
               <ButtonLink href="/open-shop" size="lg" variant="secondary">
@@ -108,22 +113,50 @@ export default function LandingPage() {
           <h2 id="cats" className="font-display text-display-md">
             What&apos;s on campus
           </h2>
-          <Link href="/explore" className="hidden items-center gap-1 text-small font-medium underline-offset-4 hover:underline sm:inline-flex">
+          <Link
+            href="/explore"
+            className="hidden items-center gap-1 text-small font-medium underline-offset-4 hover:underline sm:inline-flex"
+          >
             Everything <ArrowUpRight className="size-4" />
           </Link>
         </div>
-        <ul className="scrollbar-none -mx-(--gutter) mt-8 flex snap-x gap-3 overflow-x-auto px-(--gutter) pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0">
+        <ul className="-mx-(--gutter) mt-8 scrollbar-none flex snap-x gap-3 overflow-x-auto px-(--gutter) pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0">
           {categories.map((c, i) => (
-            <li key={c.id} className={i === 0 ? "w-60 shrink-0 snap-start md:col-span-2 md:row-span-2 md:w-auto" : "w-40 shrink-0 snap-start md:w-auto"}>
-              <Link href={`/explore?category=${c.id}`} className="group flex h-full flex-col overflow-hidden rounded-lg bg-surface hairline">
-                <div className={i === 0 ? "aspect-[4/5] overflow-hidden md:aspect-auto md:flex-1" : "aspect-square overflow-hidden"}>
+            <li
+              key={c.id}
+              className={
+                i === 0
+                  ? "w-60 shrink-0 snap-start md:col-span-2 md:row-span-2 md:w-auto"
+                  : "w-40 shrink-0 snap-start md:w-auto"
+              }
+            >
+              <Link
+                href={`/explore?category=${c.id}`}
+                className="group flex h-full flex-col overflow-hidden rounded-lg bg-surface hairline"
+              >
+                <div
+                  className={
+                    i === 0
+                      ? "aspect-[4/5] overflow-hidden md:aspect-auto md:flex-1"
+                      : "aspect-square overflow-hidden"
+                  }
+                >
                   <div className="size-full transition-transform duration-700 ease-out group-hover:scale-[1.04]">
-                    <ProductArt motif={c.motif} palette={c.palette} seed={20 + i} className="size-full" />
+                    <ProductArt
+                      motif={c.motif}
+                      palette={c.palette}
+                      seed={20 + i}
+                      className="size-full"
+                    />
                   </div>
                 </div>
                 <div className="p-4">
-                  <p className={i === 0 ? "font-display text-display-sm" : "text-body font-semibold"}>{c.name}</p>
-                  <p className="mt-1 text-small text-muted line-clamp-2">{c.blurb}</p>
+                  <p
+                    className={i === 0 ? "font-display text-display-sm" : "text-body font-semibold"}
+                  >
+                    {c.name}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-small text-muted">{c.blurb}</p>
                 </div>
               </Link>
             </li>
@@ -135,7 +168,8 @@ export default function LandingPage() {
             >
               <p className="eyebrow opacity-60">All categories</p>
               <p className="font-display text-display-sm">
-                See everything <ArrowRight className="inline size-6 transition-transform group-hover:translate-x-1" />
+                See everything{" "}
+                <ArrowRight className="inline size-6 transition-transform group-hover:translate-x-1" />
               </p>
             </Link>
           </li>
@@ -193,11 +227,12 @@ export default function LandingPage() {
               <div className="md:col-span-6">
                 <p className="eyebrow opacity-60">For sellers</p>
                 <h2 id="sell" className="mt-4 font-display text-display-lg text-balance">
-                  Your side hustle deserves a <em className="text-studio-contrast">real storefront.</em>
+                  Your side hustle deserves a{" "}
+                  <em className="text-studio-contrast">real storefront.</em>
                 </h2>
                 <p className="mt-5 max-w-md text-body-lg opacity-70">
-                  Open a shop in five minutes. Get a page for your brand, take orders without the DMs, track deliveries and
-                  see what&apos;s selling, all from Shop Studio.
+                  Open a shop in five minutes. Get a page for your brand, take orders without the
+                  DMs, track deliveries and see what&apos;s selling, all from Shop Studio.
                 </p>
                 <ul className="mt-8 flex flex-col gap-3 text-small">
                   {[
@@ -217,10 +252,19 @@ export default function LandingPage() {
                   })}
                 </ul>
                 <div className="mt-10 flex flex-wrap gap-3">
-                  <ButtonLink href="/open-shop" size="lg" className="bg-on-primary text-primary hover:bg-on-primary/90">
+                  <ButtonLink
+                    href="/open-shop"
+                    size="lg"
+                    className="bg-on-primary text-primary hover:bg-on-primary/90"
+                  >
                     Open your shop, free
                   </ButtonLink>
-                  <ButtonLink href="/login?demo=seller" size="lg" variant="ghost" className="text-on-primary hover:bg-on-primary/10">
+                  <ButtonLink
+                    href="/login?demo=seller"
+                    size="lg"
+                    variant="ghost"
+                    className="text-on-primary hover:bg-on-primary/10"
+                  >
                     Try the seller demo
                   </ButtonLink>
                 </div>
@@ -230,7 +274,10 @@ export default function LandingPage() {
                 <div className="rounded-lg bg-on-primary p-5 text-primary shadow-xl">
                   <div className="flex items-center justify-between">
                     <p className="text-small font-semibold">Revenue · last 7 days</p>
-                    <span className="rounded-full bg-[color-mix(in_oklab,var(--studio)_15%,transparent)] px-2 py-0.5 font-mono text-[11px] font-medium" style={{ color: "var(--studio)" }}>
+                    <span
+                      className="rounded-full bg-[color-mix(in_oklab,var(--studio)_15%,transparent)] px-2 py-0.5 font-mono text-[11px] font-medium"
+                      style={{ color: "var(--studio)" }}
+                    >
                       +18.4%
                     </span>
                   </div>
@@ -241,10 +288,18 @@ export default function LandingPage() {
                         <div className="flex w-full flex-1 items-end">
                           <div
                             className="w-full rounded-t-sm"
-                            style={{ height: `${h}%`, background: i === 5 ? "var(--studio)" : "color-mix(in oklab, var(--primary) 12%, transparent)" }}
+                            style={{
+                              height: `${h}%`,
+                              background:
+                                i === 5
+                                  ? "var(--studio)"
+                                  : "color-mix(in oklab, var(--primary) 12%, transparent)",
+                            }}
                           />
                         </div>
-                        <span className="font-mono text-[10px] opacity-70">{["M", "T", "W", "T", "F", "S", "S"][i]}</span>
+                        <span className="font-mono text-[10px] opacity-70">
+                          {["M", "T", "W", "T", "F", "S", "S"][i]}
+                        </span>
                       </div>
                     ))}
                   </div>

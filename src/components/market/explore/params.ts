@@ -67,7 +67,9 @@ export function toQuery(p: ExploreParams): Omit<ProductQuery, "page"> {
 }
 
 export function activeFilterCount(p: ExploreParams) {
-  return [p.min !== null || p.max !== null, !!p.campus, !!p.zone, !!p.rating, p.stock].filter(Boolean).length;
+  return [p.min !== null || p.max !== null, !!p.campus, !!p.zone, !!p.rating, p.stock].filter(
+    Boolean,
+  ).length;
 }
 
 /** Filters live in the URL so results are shareable and survive refresh/back. */

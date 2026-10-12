@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { addLine, groupByBrand, itemCount, lineId, lineSubtotal, purchaseBlock, removeLine, setQuantity } from "./bag";
+import {
+  addLine,
+  groupByBrand,
+  itemCount,
+  lineId,
+  lineSubtotal,
+  purchaseBlock,
+  removeLine,
+  setQuantity,
+} from "./bag";
 
 const product = {
   brandId: "b1",
@@ -19,7 +28,12 @@ describe("bag math", () => {
     expect(lines[0]!.quantity).toBe(3);
   });
   it("updates and removes quantities", () => {
-    const lines = addLine([], { productId: "p1", brandId: "b1", variantKey: "s", quantity: 1 }, 9, 1);
+    const lines = addLine(
+      [],
+      { productId: "p1", brandId: "b1", variantKey: "s", quantity: 1 },
+      9,
+      1,
+    );
     const id = lineId(lines[0]!);
     expect(setQuantity(lines, id, 4)[0]!.quantity).toBe(4);
     expect(setQuantity(lines, id, 0)).toHaveLength(0);
@@ -37,15 +51,26 @@ describe("bag math", () => {
     expect(itemCount(lines)).toBe(4);
   });
   it("computes line subtotals with variant price deltas", () => {
-    expect(lineSubtotal({ productId: "p", brandId: "b1", variantKey: "xl", quantity: 2, addedAt: 0 }, product)).toBe(210_000);
+    expect(
+      lineSubtotal(
+        { productId: "p", brandId: "b1", variantKey: "xl", quantity: 2, addedAt: 0 },
+        product,
+      ),
+    ).toBe(210_000);
   });
   it("blocks buying your own product", () => {
     const r = purchaseBlock(product, "s", { userBrandIds: ["b1"], brandOnVacation: false });
     expect(r.blocked && r.reason).toBe("own_product");
   });
   it("blocks sold-out variants and vacation shops", () => {
-    expect(purchaseBlock(product, "xl", { userBrandIds: [], brandOnVacation: false })).toMatchObject({ reason: "sold_out" });
-    expect(purchaseBlock(product, "s", { userBrandIds: [], brandOnVacation: true })).toMatchObject({ reason: "vacation" });
-    expect(purchaseBlock(product, "s", { userBrandIds: [], brandOnVacation: false })).toEqual({ blocked: false });
+    expect(
+      purchaseBlock(product, "xl", { userBrandIds: [], brandOnVacation: false }),
+    ).toMatchObject({ reason: "sold_out" });
+    expect(purchaseBlock(product, "s", { userBrandIds: [], brandOnVacation: true })).toMatchObject({
+      reason: "vacation",
+    });
+    expect(purchaseBlock(product, "s", { userBrandIds: [], brandOnVacation: false })).toEqual({
+      blocked: false,
+    });
   });
 });

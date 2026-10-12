@@ -8,7 +8,14 @@ import { useBag } from "@/stores/bag";
 import { usePrefs } from "@/stores/ui";
 import { modeForPath } from "./mode";
 
-const NOT_REMEMBERED = ["/login", "/signup", "/forgot-password", "/welcome", "/open-shop", "/checkout/success"];
+const NOT_REMEMBERED = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/welcome",
+  "/open-shop",
+  "/checkout/success",
+];
 
 /**
  * Keeps global, non-visual state in sync:

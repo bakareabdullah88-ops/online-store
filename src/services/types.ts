@@ -98,14 +98,7 @@ export type Session = { id: ID; userId: ID; createdAt: ISODate };
 /* --------------------------------- Brands --------------------------------- */
 
 export type CategoryId =
-  | "fashion"
-  | "thrift"
-  | "food"
-  | "beauty"
-  | "accessories"
-  | "print"
-  | "tech"
-  | "books";
+  "fashion" | "thrift" | "food" | "beauty" | "accessories" | "print" | "tech" | "books";
 
 export type OpenHours = {
   /** 0 = Sunday … 6 = Saturday */
@@ -182,7 +175,12 @@ export type Product = {
   updatedAt: ISODate;
 };
 
-export type ProductWithBrand = Product & { brand: Pick<Brand, "id" | "handle" | "name" | "logo" | "campusId" | "vacation" | "rating" | "verified"> };
+export type ProductWithBrand = Product & {
+  brand: Pick<
+    Brand,
+    "id" | "handle" | "name" | "logo" | "campusId" | "vacation" | "rating" | "verified"
+  >;
+};
 
 /* -------------------------------- Reviews --------------------------------- */
 
@@ -201,7 +199,11 @@ export type Review = {
   reply?: { body: string; createdAt: ISODate };
 };
 
-export type RatingBreakdown = { average: number; count: number; histogram: [number, number, number, number, number] };
+export type RatingBreakdown = {
+  average: number;
+  count: number;
+  histogram: [number, number, number, number, number];
+};
 
 /* --------------------------------- Orders --------------------------------- */
 
@@ -392,4 +394,10 @@ export type ProductQuery = {
   ids?: ID[];
 };
 
-export type Page<T> = { items: T[]; total: number; page: number; pageSize: number; hasMore: boolean };
+export type Page<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+};

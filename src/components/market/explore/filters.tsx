@@ -10,7 +10,15 @@ import { useCampuses, usePriceRange } from "@/queries/catalog";
 import { useSession } from "@/queries/session";
 import type { ExploreParams } from "./params";
 
-function FilterGroup({ title, children, aside }: { title: string; children: React.ReactNode; aside?: React.ReactNode }) {
+function FilterGroup({
+  title,
+  children,
+  aside,
+}: {
+  title: string;
+  children: React.ReactNode;
+  aside?: React.ReactNode;
+}) {
   return (
     <fieldset className="border-b border-line py-5 first:pt-0 last:border-0">
       <div className="mb-3 flex items-center justify-between">
@@ -22,7 +30,13 @@ function FilterGroup({ title, children, aside }: { title: string; children: Reac
   );
 }
 
-function PriceFilter({ params, update }: { params: ExploreParams; update: (p: Partial<ExploreParams>) => void }) {
+function PriceFilter({
+  params,
+  update,
+}: {
+  params: ExploreParams;
+  update: (p: Partial<ExploreParams>) => void;
+}) {
   const range = usePriceRange();
   const lo = Math.floor((range.data?.minKobo ?? 0) / 100 / 500) * 500;
   const hi = Math.ceil((range.data?.maxKobo ?? 3_500_000) / 100 / 500) * 500;
@@ -36,7 +50,9 @@ function PriceFilter({ params, update }: { params: ExploreParams; update: (p: Pa
     <div>
       <div className="flex justify-between font-mono text-small tabular">
         <span>{formatNaira(value[0] * 100)}</span>
-        <span>{value[1] >= hi ? `${formatNaira(value[1] * 100)}+` : formatNaira(value[1] * 100)}</span>
+        <span>
+          {value[1] >= hi ? `${formatNaira(value[1] * 100)}+` : formatNaira(value[1] * 100)}
+        </span>
       </div>
       <RangeSlider
         label="price"
@@ -61,7 +77,13 @@ function PriceFilter({ params, update }: { params: ExploreParams; update: (p: Pa
               key={label as string}
               className="h-8 px-3"
               selected={selected}
-              onClick={() => update(selected ? { min: null, max: null } : { min: a as number | null, max: b as number | null })}
+              onClick={() =>
+                update(
+                  selected
+                    ? { min: null, max: null }
+                    : { min: a as number | null, max: b as number | null },
+                )
+              }
             >
               {label as string}
             </Chip>
@@ -72,7 +94,13 @@ function PriceFilter({ params, update }: { params: ExploreParams; update: (p: Pa
   );
 }
 
-export function ExploreFilters({ params, update }: { params: ExploreParams; update: (p: Partial<ExploreParams>) => void }) {
+export function ExploreFilters({
+  params,
+  update,
+}: {
+  params: ExploreParams;
+  update: (p: Partial<ExploreParams>) => void;
+}) {
   const campuses = useCampuses();
   const { user } = useSession();
   const campus = campuses.data?.find((c) => c.id === params.campus);
@@ -85,7 +113,11 @@ export function ExploreFilters({ params, update }: { params: ExploreParams; upda
         title="Campus"
         aside={
           user?.campusId && params.campus !== user.campusId ? (
-            <button type="button" className="text-small font-medium underline underline-offset-4" onClick={() => update({ campus: user.campusId })}>
+            <button
+              type="button"
+              className="text-small font-medium underline underline-offset-4"
+              onClick={() => update({ campus: user.campusId })}
+            >
               Use mine
             </button>
           ) : null
@@ -96,30 +128,54 @@ export function ExploreFilters({ params, update }: { params: ExploreParams; upda
             label="Campus"
             value={params.campus ?? "all"}
             onValueChange={(v) => update({ campus: v === "all" ? null : v })}
-            options={[{ value: "all", label: "All campuses" }, ...(campuses.data ?? []).map((c) => ({ value: c.id, label: c.shortName, hint: c.city }))]}
+            options={[
+              { value: "all", label: "All campuses" },
+              ...(campuses.data ?? []).map((c) => ({
+                value: c.id,
+                label: c.shortName,
+                hint: c.city,
+              })),
+            ]}
           />
           {campus && (
             <Select
               label="Zone"
               value={params.zone ?? "all"}
               onValueChange={(v) => update({ zone: v === "all" ? null : v })}
-              options={[{ value: "all", label: "Any hostel or faculty" }, ...campus.zones.map((z) => ({ value: z.id, label: z.name }))]}
+              options={[
+                { value: "all", label: "Any hostel or faculty" },
+                ...campus.zones.map((z) => ({ value: z.id, label: z.name })),
+              ]}
             />
           )}
-          {campus && <p className="text-small text-muted">Zone shows brands that deliver there or have a pickup point there.</p>}
+          {campus && (
+            <p className="text-small text-muted">
+              Zone shows brands that deliver there or have a pickup point there.
+            </p>
+          )}
         </div>
       </FilterGroup>
       <FilterGroup title="Rating">
         <div className="flex flex-wrap gap-2">
           {[4.5, 4, 3].map((r) => (
-            <Chip key={r} className="h-9" selected={params.rating === r} onClick={() => update({ rating: params.rating === r ? null : r })}>
+            <Chip
+              key={r}
+              className="h-9"
+              selected={params.rating === r}
+              onClick={() => update({ rating: params.rating === r ? null : r })}
+            >
               {r}★ & up
             </Chip>
           ))}
         </div>
       </FilterGroup>
       <FilterGroup title="Availability">
-        <Switch checked={params.stock} onCheckedChange={(v) => update({ stock: v })} label="In stock only" description="Hide sold-out items" />
+        <Switch
+          checked={params.stock}
+          onCheckedChange={(v) => update({ stock: v })}
+          label="In stock only"
+          description="Hide sold-out items"
+        />
       </FilterGroup>
     </div>
   );

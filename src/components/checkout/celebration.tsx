@@ -20,10 +20,26 @@ export function Celebration() {
             <motion.span
               key={i}
               className="absolute top-1/2 left-1/2 block"
-              style={{ width: i % 2 ? 6 : 10, height: i % 2 ? 10 : 4, background: COLORS[i % COLORS.length], borderRadius: i % 3 === 0 ? 999 : 2 }}
+              style={{
+                width: i % 2 ? 6 : 10,
+                height: i % 2 ? 10 : 4,
+                background: COLORS[i % COLORS.length],
+                borderRadius: i % 3 === 0 ? 999 : 2,
+              }}
               initial={{ x: "-50%", y: "-50%", opacity: 0, rotate: 0, scale: 0.4 }}
-              animate={{ x: `calc(-50% + ${Math.cos(angle) * dist}px)`, y: `calc(-50% + ${Math.sin(angle) * dist + 24}px)`, opacity: [0, 1, 1, 0], rotate: (i % 2 ? 1 : -1) * 220, scale: 1 }}
-              transition={{ duration: 1.1, delay: 0.25, ease: [0.16, 1, 0.3, 1], opacity: { times: [0, 0.1, 0.7, 1], duration: 1.3, delay: 0.25 } }}
+              animate={{
+                x: `calc(-50% + ${Math.cos(angle) * dist}px)`,
+                y: `calc(-50% + ${Math.sin(angle) * dist + 24}px)`,
+                opacity: [0, 1, 1, 0],
+                rotate: (i % 2 ? 1 : -1) * 220,
+                scale: 1,
+              }}
+              transition={{
+                duration: 1.1,
+                delay: 0.25,
+                ease: [0.16, 1, 0.3, 1],
+                opacity: { times: [0, 0.1, 0.7, 1], duration: 1.3, delay: 0.25 },
+              }}
             />
           );
         })}
@@ -39,7 +55,11 @@ export function Celebration() {
         animate={reduce ? { opacity: 1 } : { scale: 1 }}
         transition={spring.bouncy}
       >
-        <motion.span initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...spring.bouncy, delay: 0.15 }}>
+        <motion.span
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ ...spring.bouncy, delay: 0.15 }}
+        >
           <Check className="size-12" strokeWidth={2.5} />
         </motion.span>
       </motion.span>

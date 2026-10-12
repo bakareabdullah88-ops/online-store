@@ -10,9 +10,17 @@ export const metadata: Metadata = { title: "Messages", robots: { index: false } 
 export default function MessagesPage() {
   return (
     <Page>
-      <DashboardHeader eyebrow="Messages" title="Messages" description="Chats with the brands you buy from." />
+      <DashboardHeader
+        eyebrow="Messages"
+        title="Messages"
+        description="Chats with the brands you buy from."
+      />
       <Suspense fallback={<Skeleton className="h-[60dvh] w-full" rounded="lg" />}>
-        <InboxView as="buyer" title="Conversations" emptyBody="Message a brand from its page or a product to ask about sizes, pickup times or custom orders." />
+        <InboxView
+          as="buyer"
+          title="Conversations"
+          emptyBody="Message a brand from its page or a product to ask about sizes, pickup times or custom orders."
+        />
       </Suspense>
     </Page>
   );

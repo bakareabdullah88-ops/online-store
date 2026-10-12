@@ -26,7 +26,8 @@ export function useUnreadCount() {
 export function useMarkRead() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string | "all") => (id === "all" ? services.notifications.markAllRead() : services.notifications.markRead(id)),
+    mutationFn: (id: string | "all") =>
+      id === "all" ? services.notifications.markAllRead() : services.notifications.markRead(id),
     onMutate: (id) => {
       const prev = qc.getQueryData<AppNotification[]>(qk.notifications);
       qc.setQueryData<AppNotification[]>(qk.notifications, (list) =>
@@ -40,7 +41,12 @@ export function useMarkRead() {
 
 export function useThreads(as: "buyer" | "brand") {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.threads(as), queryFn: () => services.messages.listThreads(as), enabled: isSignedIn, refetchInterval: 20_000 });
+  return useQuery({
+    queryKey: qk.threads(as),
+    queryFn: () => services.messages.listThreads(as),
+    enabled: isSignedIn,
+    refetchInterval: 20_000,
+  });
 }
 
 export function useThread(id: string | null, as: "buyer" | "brand") {
@@ -60,7 +66,8 @@ export function useThread(id: string | null, as: "buyer" | "brand") {
 export function useStartThread() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { brandId: string; productId?: string }) => services.messages.startThread(input),
+    mutationFn: (input: { brandId: string; productId?: string }) =>
+      services.messages.startThread(input),
     onSuccess: (t) => {
       qc.setQueryData(qk.thread(t.id, "buyer"), t);
       void qc.invalidateQueries({ queryKey: qk.threads("buyer") });
@@ -71,14 +78,18 @@ export function useStartThread() {
 export function useSendMessage(as: "buyer" | "brand") {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { threadId: string; body: string }) => services.messages.send({ ...input, as }),
+    mutationFn: (input: { threadId: string; body: string }) =>
+      services.messages.send({ ...input, as }),
     onMutate: async ({ threadId, body }) => {
       await qc.cancelQueries({ queryKey: qk.thread(threadId, as) });
       const prev = qc.getQueryData<Thread>(qk.thread(threadId, as));
       if (prev) {
         qc.setQueryData<Thread>(qk.thread(threadId, as), {
           ...prev,
-          messages: [...prev.messages, { id: `optimistic-${Date.now()}`, from: as, body, at: new Date().toISOString() }],
+          messages: [
+            ...prev.messages,
+            { id: `optimistic-${Date.now()}`, from: as, body, at: new Date().toISOString() },
+          ],
         });
       }
       return { prev };
@@ -93,7 +104,11 @@ export function useSendMessage(as: "buyer" | "brand") {
 
 export function useWallet() {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.wallet, queryFn: () => services.wallet.getWallet(), enabled: isSignedIn });
+  return useQuery({
+    queryKey: qk.wallet,
+    queryFn: () => services.wallet.getWallet(),
+    enabled: isSignedIn,
+  });
 }
 
 export function useTopUp() {
@@ -106,15 +121,25 @@ export function useTopUp() {
 
 export function usePlaces() {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.places, queryFn: () => services.places.list(), enabled: isSignedIn });
+  return useQuery({
+    queryKey: qk.places,
+    queryFn: () => services.places.list(),
+    enabled: isSignedIn,
+  });
 }
 
 export function useSavePlace() {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (i: PlaceInput) => services.places.save(i), onSuccess: () => qc.invalidateQueries({ queryKey: qk.places }) });
+  return useMutation({
+    mutationFn: (i: PlaceInput) => services.places.save(i),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.places }),
+  });
 }
 
 export function useRemovePlace() {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: (id: string) => services.places.remove(id), onSuccess: () => qc.invalidateQueries({ queryKey: qk.places }) });
+  return useMutation({
+    mutationFn: (id: string) => services.places.remove(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.places }),
+  });
 }

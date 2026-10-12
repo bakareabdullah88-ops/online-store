@@ -69,7 +69,11 @@ export function ChipGroup({
   const layoutId = useId();
   return (
     <ChipGroupContext.Provider value={{ value, onChange, layoutId }}>
-      <div role="radiogroup" aria-label={label} className={cn("flex items-center gap-2", className)}>
+      <div
+        role="radiogroup"
+        aria-label={label}
+        className={cn("flex items-center gap-2", className)}
+      >
         {children}
       </div>
     </ChipGroupContext.Provider>
@@ -105,7 +109,8 @@ export function ChipOption({
           ? Array.from(group.querySelectorAll<HTMLButtonElement>('[role="radio"]'))
           : [];
         const i = radios.indexOf(e.currentTarget);
-        const next = radios[(i + (e.key === "ArrowRight" ? 1 : -1) + radios.length) % radios.length];
+        const next =
+          radios[(i + (e.key === "ArrowRight" ? 1 : -1) + radios.length) % radios.length];
         next?.focus();
         next?.click();
       }}

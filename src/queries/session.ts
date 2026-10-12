@@ -13,7 +13,11 @@ import { qk } from "./keys";
  * report "unknown" so client markup always matches the server HTML.
  */
 export function useSession() {
-  const q = useQuery({ queryKey: qk.session, queryFn: () => services.auth.getSession(), staleTime: 5 * 60_000 });
+  const q = useQuery({
+    queryKey: qk.session,
+    queryFn: () => services.auth.getSession(),
+    staleTime: 5 * 60_000,
+  });
   const user = q.data ?? null;
   return { ...q, user, isSignedIn: !!user, isReady: q.isFetched };
 }
@@ -22,7 +26,9 @@ export function useSession() {
 function useOnIdentityChange() {
   const qc = useQueryClient();
   return (user: User | null) => {
-    qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "session" && q.queryKey[0] !== "campuses" });
+    qc.removeQueries({
+      predicate: (q) => q.queryKey[0] !== "session" && q.queryKey[0] !== "campuses",
+    });
     qc.setQueryData(qk.session, user);
   };
 }
@@ -39,7 +45,10 @@ export function useSignUp() {
 
 export function useSignInDemo() {
   const done = useOnIdentityChange();
-  return useMutation({ mutationFn: (k: "buyer" | "seller") => services.auth.signInDemo(k), onSuccess: done });
+  return useMutation({
+    mutationFn: (k: "buyer" | "seller") => services.auth.signInDemo(k),
+    onSuccess: done,
+  });
 }
 
 export function useSignOut() {
@@ -48,7 +57,9 @@ export function useSignOut() {
 }
 
 export function useRequestReset() {
-  return useMutation({ mutationFn: (email: string) => services.auth.requestPasswordReset({ email }) });
+  return useMutation({
+    mutationFn: (email: string) => services.auth.requestPasswordReset({ email }),
+  });
 }
 
 export function useUpdateProfile() {
@@ -65,7 +76,11 @@ export function useUpdateNotificationPrefs() {
     mutationFn: (p: Partial<User["notificationPrefs"]>) => services.auth.updateNotificationPrefs(p),
     onMutate: async (p) => {
       const prev = qc.getQueryData<User | null>(qk.session);
-      if (prev) qc.setQueryData(qk.session, { ...prev, notificationPrefs: { ...prev.notificationPrefs, ...p } });
+      if (prev)
+        qc.setQueryData(qk.session, {
+          ...prev,
+          notificationPrefs: { ...prev.notificationPrefs, ...p },
+        });
       return { prev };
     },
     onError: (_e, _p, ctx) => ctx?.prev && qc.setQueryData(qk.session, ctx.prev),

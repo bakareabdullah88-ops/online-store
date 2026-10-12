@@ -124,8 +124,8 @@ export function MenuItem({
       onSelect={onSelect}
       disabled={disabled}
       className={cn(
-        "flex h-10 cursor-pointer select-none items-center gap-2.5 rounded-sm px-2.5 text-small font-medium outline-none",
-        "data-[highlighted]:bg-ink/[0.06] data-[disabled]:pointer-events-none data-[disabled]:opacity-45",
+        "flex h-10 cursor-pointer items-center gap-2.5 rounded-sm px-2.5 text-small font-medium outline-none select-none",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-ink/[0.06]",
         danger ? "text-danger" : "text-ink",
       )}
     >
@@ -137,7 +137,7 @@ export function MenuItem({
 }
 
 export function MenuLabel({ children }: { children: ReactNode }) {
-  return <RMenu.Label className="eyebrow px-2.5 pt-2 pb-1 text-muted">{children}</RMenu.Label>;
+  return <RMenu.Label className="px-2.5 pt-2 pb-1 eyebrow text-muted">{children}</RMenu.Label>;
 }
 
 export function MenuSeparator() {
@@ -175,7 +175,7 @@ export function Select<T extends string>({
         className={cn(
           "flex h-11 w-full items-center justify-between gap-2 rounded-md bg-surface px-3.5 text-left text-body text-ink",
           "shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--muted)]",
-          "focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)]",
+          "focus-visible:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)] focus-visible:outline-none",
           "aria-invalid:shadow-[inset_0_0_0_1.5px_var(--danger)] data-[placeholder]:text-faint",
           className,
         )}
@@ -200,7 +200,7 @@ export function Select<T extends string>({
               <RSelect.Item
                 key={o.value}
                 value={o.value}
-                className="relative flex h-10 cursor-pointer select-none items-center gap-2 rounded-sm pr-8 pl-2.5 text-small font-medium text-ink outline-none data-[highlighted]:bg-ink/[0.06]"
+                className="relative flex h-10 cursor-pointer items-center gap-2 rounded-sm pr-8 pl-2.5 text-small font-medium text-ink outline-none select-none data-[highlighted]:bg-ink/[0.06]"
               >
                 <RSelect.ItemText>{o.label}</RSelect.ItemText>
                 {o.hint && <span className="text-muted">{o.hint}</span>}

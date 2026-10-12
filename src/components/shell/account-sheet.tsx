@@ -37,7 +37,12 @@ export function AccountSheet() {
       : accountNav.filter((n) => n.href !== "/orders");
 
   return (
-    <BottomSheet open={open} onOpenChange={setOpen} title={user ? "Account" : `Welcome to ${brand.name}`} hideTitle={!!user}>
+    <BottomSheet
+      open={open}
+      onOpenChange={setOpen}
+      title={user ? "Account" : `Welcome to ${brand.name}`}
+      hideTitle={!!user}
+    >
       {user ? (
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-3 pt-2">
@@ -50,10 +55,16 @@ export function AccountSheet() {
             </div>
           </div>
           <div>
-            <p className="eyebrow mb-2 text-muted">Mode</p>
-            <ModeSwitch className="w-full [&>button]:flex-1 [&>button]:justify-center" onSwitch={close} />
+            <p className="mb-2 eyebrow text-muted">Mode</p>
+            <ModeSwitch
+              className="w-full [&>button]:flex-1 [&>button]:justify-center"
+              onSwitch={close}
+            />
           </div>
-          <nav aria-label={mode === "selling" ? "Studio" : "Account"} className="-mx-2 flex flex-col">
+          <nav
+            aria-label={mode === "selling" ? "Studio" : "Account"}
+            className="-mx-2 flex flex-col"
+          >
             {links.map((item) => {
               const Icon = item.icon;
               return (
@@ -103,7 +114,9 @@ export function AccountSheet() {
         </div>
       ) : (
         <div className="flex flex-col gap-3 pt-1 pb-2">
-          <p className="text-body text-muted">Log in to track orders, save favourites and open your own shop.</p>
+          <p className="text-body text-muted">
+            Log in to track orders, save favourites and open your own shop.
+          </p>
           <ButtonLink href="/signup" onClick={close} size="lg">
             Create an account
           </ButtonLink>

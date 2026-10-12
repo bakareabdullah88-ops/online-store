@@ -29,7 +29,9 @@ export function EmptyState({
     >
       <Illustration name={illustration} className={compact ? "w-32" : "w-44"} />
       <div className="max-w-sm">
-        <h2 className={cn("font-display text-ink", compact ? "text-title-lg" : "text-display-sm")}>{title}</h2>
+        <h2 className={cn("font-display text-ink", compact ? "text-title-lg" : "text-display-sm")}>
+          {title}
+        </h2>
         {body && <p className="mt-2 text-body text-muted">{body}</p>}
       </div>
       {(action || secondary) && (

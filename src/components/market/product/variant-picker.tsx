@@ -45,11 +45,21 @@ export function VariantPicker({
                       onClick={() => onChange({ ...selection, [o.id]: v.id })}
                       className={cn(
                         "relative flex size-11 items-center justify-center rounded-full transition-shadow",
-                        active ? "shadow-[0_0_0_2px_var(--canvas),0_0_0_3.5px_var(--ink)]" : "hover:shadow-[0_0_0_2px_var(--canvas),0_0_0_3px_var(--line-strong)]",
+                        active
+                          ? "shadow-[0_0_0_2px_var(--canvas),0_0_0_3.5px_var(--ink)]"
+                          : "hover:shadow-[0_0_0_2px_var(--canvas),0_0_0_3px_var(--line-strong)]",
                       )}
                     >
-                      <span className="size-9 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.12)]" style={{ background: v.swatch }} />
-                      {!available && <span className="absolute h-0.5 w-10 rotate-45 rounded-full bg-ink/70" aria-hidden />}
+                      <span
+                        className="size-9 rounded-full shadow-[inset_0_0_0_1px_rgb(0_0_0/0.12)]"
+                        style={{ background: v.swatch }}
+                      />
+                      {!available && (
+                        <span
+                          className="absolute h-0.5 w-10 rotate-45 rounded-full bg-ink/70"
+                          aria-hidden
+                        />
+                      )}
                     </button>
                   );
                 }
@@ -63,11 +73,20 @@ export function VariantPicker({
                     onClick={() => onChange({ ...selection, [o.id]: v.id })}
                     className={cn(
                       "relative h-11 min-w-12 rounded-md px-4 text-small font-medium transition-[color,box-shadow]",
-                      active ? "text-on-primary" : "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
+                      active
+                        ? "text-on-primary"
+                        : "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
                       !available && !active && "text-muted line-through decoration-1",
                     )}
                   >
-                    {active && <motion.span layoutId={`${id}-${o.id}`} className="absolute inset-0 rounded-md bg-primary" transition={spring.snappy} aria-hidden />}
+                    {active && (
+                      <motion.span
+                        layoutId={`${id}-${o.id}`}
+                        className="absolute inset-0 rounded-md bg-primary"
+                        transition={spring.snappy}
+                        aria-hidden
+                      />
+                    )}
                     <span className="relative">{v.label}</span>
                   </button>
                 );

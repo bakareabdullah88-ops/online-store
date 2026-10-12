@@ -12,14 +12,62 @@ export type Category = {
 
 /** Static taxonomy. BACKEND-SEAM: could be served by the API later. */
 export const categories: readonly Category[] = [
-  { id: "fashion", name: "Fashion", blurb: "Made-on-campus streetwear and tailoring", motif: "tee", palette: "clay" },
-  { id: "thrift", name: "Thrift", blurb: "Vintage finds, one of one", motif: "jacket", palette: "sand" },
-  { id: "food", name: "Food & snacks", blurb: "Small chops, jollof, late-night bites", motif: "bowl", palette: "ochre" },
-  { id: "beauty", name: "Skincare & beauty", blurb: "Shea, black soap, glow oils", motif: "dropper", palette: "rose" },
-  { id: "accessories", name: "Accessories", blurb: "Beads, bags and little extras", motif: "bracelet", palette: "plum" },
-  { id: "print", name: "Print & design", blurb: "Posters, stickers, custom cards", motif: "poster", palette: "sea" },
-  { id: "tech", name: "Tech accessories", blurb: "Cases, cables, earbuds", motif: "earbuds", palette: "ink" },
-  { id: "books", name: "Books & notes", blurb: "Past questions, novels, study packs", motif: "book", palette: "sage" },
+  {
+    id: "fashion",
+    name: "Fashion",
+    blurb: "Made-on-campus streetwear and tailoring",
+    motif: "tee",
+    palette: "clay",
+  },
+  {
+    id: "thrift",
+    name: "Thrift",
+    blurb: "Vintage finds, one of one",
+    motif: "jacket",
+    palette: "sand",
+  },
+  {
+    id: "food",
+    name: "Food & snacks",
+    blurb: "Small chops, jollof, late-night bites",
+    motif: "bowl",
+    palette: "ochre",
+  },
+  {
+    id: "beauty",
+    name: "Skincare & beauty",
+    blurb: "Shea, black soap, glow oils",
+    motif: "dropper",
+    palette: "rose",
+  },
+  {
+    id: "accessories",
+    name: "Accessories",
+    blurb: "Beads, bags and little extras",
+    motif: "bracelet",
+    palette: "plum",
+  },
+  {
+    id: "print",
+    name: "Print & design",
+    blurb: "Posters, stickers, custom cards",
+    motif: "poster",
+    palette: "sea",
+  },
+  {
+    id: "tech",
+    name: "Tech accessories",
+    blurb: "Cases, cables, earbuds",
+    motif: "earbuds",
+    palette: "ink",
+  },
+  {
+    id: "books",
+    name: "Books & notes",
+    blurb: "Past questions, novels, study packs",
+    motif: "book",
+    palette: "sage",
+  },
 ] as const;
 
 export function categoryById(id: CategoryId): Category {

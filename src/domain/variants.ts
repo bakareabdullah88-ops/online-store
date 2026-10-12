@@ -5,7 +5,10 @@ export type Selection = Record<string, string>;
 
 export const DEFAULT_VARIANT_KEY = "default";
 
-export function variantKeyFor(options: readonly ProductOption[], selection: Selection): string | null {
+export function variantKeyFor(
+  options: readonly ProductOption[],
+  selection: Selection,
+): string | null {
   if (options.length === 0) return DEFAULT_VARIANT_KEY;
   const ids: string[] = [];
   for (const o of options) {

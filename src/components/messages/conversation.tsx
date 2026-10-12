@@ -13,7 +13,17 @@ import { errorMessage } from "@/services/errors";
 import { toast } from "@/stores/toast";
 
 /** A chat thread with an auto-growing composer. `as` decides which side is "me". */
-export function Conversation({ threadId, as, className, emptyHint }: { threadId: string; as: "buyer" | "brand"; className?: string; emptyHint?: string }) {
+export function Conversation({
+  threadId,
+  as,
+  className,
+  emptyHint,
+}: {
+  threadId: string;
+  as: "buyer" | "brand";
+  className?: string;
+  emptyHint?: string;
+}) {
   const { data: thread, isPending } = useThread(threadId, as);
   const send = useSendMessage(as);
   const [body, setBody] = useState("");
@@ -45,7 +55,13 @@ export function Conversation({ threadId, as, className, emptyHint }: { threadId:
   let lastDay = "";
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
-      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-1 py-4" role="log" aria-live="polite" aria-label="Messages">
+      <div
+        ref={listRef}
+        className="min-h-0 flex-1 overflow-y-auto px-1 py-4"
+        role="log"
+        aria-live="polite"
+        aria-label="Messages"
+      >
         {isPending ? (
           <div className="flex flex-col gap-3" aria-hidden>
             <Skeleton className="h-10 w-2/3" rounded="lg" />
@@ -53,7 +69,9 @@ export function Conversation({ threadId, as, className, emptyHint }: { threadId:
             <Skeleton className="h-14 w-3/5" rounded="lg" />
           </div>
         ) : count === 0 ? (
-          <p className="mx-auto max-w-xs py-10 text-center text-small text-muted">{emptyHint ?? "Say hi. Ask about sizes, pickup times or custom orders."}</p>
+          <p className="mx-auto max-w-xs py-10 text-center text-small text-muted">
+            {emptyHint ?? "Say hi. Ask about sizes, pickup times or custom orders."}
+          </p>
         ) : (
           <ul className="flex flex-col gap-1.5">
             <AnimatePresence initial={false}>
@@ -71,15 +89,24 @@ export function Conversation({ threadId, as, className, emptyHint }: { threadId:
                     transition={spring.smooth}
                     className="flex flex-col"
                   >
-                    {showDay && mounted && <span className="eyebrow my-3 self-center text-muted">{day}</span>}
+                    {showDay && mounted && (
+                      <span className="my-3 self-center eyebrow text-muted">{day}</span>
+                    )}
                     <div
                       className={cn(
                         "max-w-[80%] rounded-lg px-3.5 py-2.5 text-body",
-                        mine ? "self-end rounded-br-xs bg-primary text-on-primary" : "self-start rounded-bl-xs bg-canvas-sunk text-ink",
+                        mine
+                          ? "self-end rounded-br-xs bg-primary text-on-primary"
+                          : "self-start rounded-bl-xs bg-canvas-sunk text-ink",
                       )}
                     >
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                      <p className={cn("mt-1 text-right font-mono text-[10px]", mine ? "opacity-60" : "text-muted")}>
+                      <p className="break-words whitespace-pre-wrap">{m.body}</p>
+                      <p
+                        className={cn(
+                          "mt-1 text-right font-mono text-[10px]",
+                          mine ? "opacity-60" : "text-muted",
+                        )}
+                      >
                         {mounted ? formatTime(m.at) : " "}
                         {m.id.startsWith("optimistic") && " · sending"}
                       </p>

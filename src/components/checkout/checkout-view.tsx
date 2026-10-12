@@ -3,7 +3,19 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AlertCircle, Banknote, Bike, Building2, Check, CreditCard, Lock, MapPin, Tag, Wallet, X } from "lucide-react";
+import {
+  AlertCircle,
+  Banknote,
+  Bike,
+  Building2,
+  Check,
+  CreditCard,
+  Lock,
+  MapPin,
+  Tag,
+  Wallet,
+  X,
+} from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { RadioCards } from "@/components/ui/controls";
@@ -39,14 +51,36 @@ type GroupState = {
 };
 
 const demoCards = [
-  { id: "visa", brand: "Visa", last4: "4242", name: "Demo card", tone: "from-[#22304A] to-[#3B4F73]" },
-  { id: "verve", brand: "Verve", last4: "0618", name: "Demo card", tone: "from-[#1E5B45] to-[#2F7A5E]" },
-  { id: "master", brand: "Mastercard", last4: "5100", name: "Demo card", tone: "from-[#6E2335] to-[#9A3A50]" },
+  {
+    id: "visa",
+    brand: "Visa",
+    last4: "4242",
+    name: "Demo card",
+    tone: "from-[#22304A] to-[#3B4F73]",
+  },
+  {
+    id: "verve",
+    brand: "Verve",
+    last4: "0618",
+    name: "Demo card",
+    tone: "from-[#1E5B45] to-[#2F7A5E]",
+  },
+  {
+    id: "master",
+    brand: "Mastercard",
+    last4: "5100",
+    name: "Demo card",
+    tone: "from-[#6E2335] to-[#9A3A50]",
+  },
 ];
 
 function CardCarousel({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   return (
-    <div role="radiogroup" aria-label="Saved demo cards" className="scrollbar-none -mx-2 flex snap-x scroll-px-2 gap-3 overflow-x-auto p-2">
+    <div
+      role="radiogroup"
+      aria-label="Saved demo cards"
+      className="-mx-2 scrollbar-none flex snap-x scroll-px-2 gap-3 overflow-x-auto p-2"
+    >
       {demoCards.map((c) => {
         const active = c.id === value;
         return (
@@ -66,7 +100,9 @@ function CardCarousel({ value, onChange }: { value: string; onChange: (id: strin
             )}
           >
             <span className="flex items-center justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-wider opacity-80">Demo · not real</span>
+              <span className="font-mono text-[11px] tracking-wider uppercase opacity-80">
+                Demo · not real
+              </span>
               {active && (
                 <span className="flex size-5 items-center justify-center rounded-full bg-white text-ink">
                   <Check className="size-3" strokeWidth={3} />
@@ -87,9 +123,24 @@ function CardCarousel({ value, onChange }: { value: string; onChange: (id: strin
   );
 }
 
-function SummaryRow({ label, value, tone, strong }: { label: string; value: number; tone?: "discount"; strong?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  tone,
+  strong,
+}: {
+  label: string;
+  value: number;
+  tone?: "discount";
+  strong?: boolean;
+}) {
   return (
-    <div className={cn("flex items-baseline justify-between", strong ? "text-body font-semibold" : "text-small")}>
+    <div
+      className={cn(
+        "flex items-baseline justify-between",
+        strong ? "text-body font-semibold" : "text-small",
+      )}
+    >
       <span className={strong ? "text-ink" : "text-muted"}>{label}</span>
       <span className={cn("font-mono tabular", tone === "discount" && "text-success")}>
         {tone === "discount" && value > 0 ? "−" : ""}
@@ -121,10 +172,21 @@ function GroupSection({
   const promoCode = useBag((s) => s.promoCodes[group.brandId]);
   if (!b) return <Skeleton className="h-64 w-full" rounded="lg" />;
   const zones = campus?.zones.filter((z) => b.fulfilment.zoneIds.includes(z.id)) ?? [];
-  const points = campus?.pickupPoints.filter((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? [];
+  const points =
+    campus?.pickupPoints.filter((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? [];
   const methods = [
-    ...(b.fulfilment.delivery ? [{ value: "delivery" as const, label: `Delivery · ${formatNaira(b.fulfilment.deliveryFeeKobo)}`, icon: <Bike className="size-4" /> }] : []),
-    ...(b.fulfilment.pickup ? [{ value: "pickup" as const, label: "Pickup · Free", icon: <MapPin className="size-4" /> }] : []),
+    ...(b.fulfilment.delivery
+      ? [
+          {
+            value: "delivery" as const,
+            label: `Delivery · ${formatNaira(b.fulfilment.deliveryFeeKobo)}`,
+            icon: <Bike className="size-4" />,
+          },
+        ]
+      : []),
+    ...(b.fulfilment.pickup
+      ? [{ value: "pickup" as const, label: "Pickup · Free", icon: <MapPin className="size-4" /> }]
+      : []),
   ];
 
   return (
@@ -142,23 +204,33 @@ function GroupSection({
             {group.count} item{group.count === 1 ? "" : "s"} · {campus?.shortName} · separate order
           </p>
         </div>
-        <span className="font-mono text-small tabular">{formatNaira(quote?.totalKobo ?? group.subtotalKobo)}</span>
+        <span className="font-mono text-small tabular">
+          {formatNaira(quote?.totalKobo ?? group.subtotalKobo)}
+        </span>
       </header>
 
       <div className="flex flex-col gap-5 p-4 md:p-5">
-        <ul className="flex gap-2 overflow-x-auto scrollbar-none" aria-label="Items">
+        <ul className="scrollbar-none flex gap-2 overflow-x-auto" aria-label="Items">
           {group.items.map((i) => (
             <li key={i.id} className="relative size-14 shrink-0 overflow-hidden rounded-sm">
               <AppImage image={i.product?.images[0]} alt={i.product?.name ?? ""} />
               {i.line.quantity > 1 && (
-                <span className="absolute right-1 bottom-1 rounded-xs bg-primary px-1 font-mono text-[10px] text-on-primary">×{i.line.quantity}</span>
+                <span className="absolute right-1 bottom-1 rounded-xs bg-primary px-1 font-mono text-[10px] text-on-primary">
+                  ×{i.line.quantity}
+                </span>
               )}
             </li>
           ))}
         </ul>
 
         {methods.length > 1 ? (
-          <SegmentedControl label={`How to get your ${b.name} order`} value={state.method} onChange={(m) => onChange({ method: m })} options={methods} className="w-full [&>button]:flex-1" />
+          <SegmentedControl
+            label={`How to get your ${b.name} order`}
+            value={state.method}
+            onChange={(m) => onChange({ method: m })}
+            options={methods}
+            className="w-full [&>button]:flex-1"
+          />
         ) : (
           <p className="flex items-center gap-2 text-small font-medium">
             {methods[0]?.icon} {b.name} offers {state.method} only
@@ -167,16 +239,40 @@ function GroupSection({
 
         <AnimatePresence mode="wait" initial={false}>
           {state.method === "delivery" ? (
-            <motion.div key="delivery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={spring.snappy} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <motion.div
+              key="delivery"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={spring.snappy}
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+            >
               <Field label="Deliver to" error={errors.zoneId}>
-                <Select label="Delivery zone" value={state.zoneId || undefined} onValueChange={(v) => onChange({ zoneId: v })} placeholder="Choose a zone" options={zones.map((z) => ({ value: z.id, label: z.name }))} />
+                <Select
+                  label="Delivery zone"
+                  value={state.zoneId || undefined}
+                  onValueChange={(v) => onChange({ zoneId: v })}
+                  placeholder="Choose a zone"
+                  options={zones.map((z) => ({ value: z.id, label: z.name }))}
+                />
               </Field>
               <Field label="Room, block or landmark" error={errors.addressLine}>
-                <Input value={state.addressLine} onChange={(e) => onChange({ addressLine: e.target.value })} placeholder="e.g. Room 12, Block C" maxLength={120} />
+                <Input
+                  value={state.addressLine}
+                  onChange={(e) => onChange({ addressLine: e.target.value })}
+                  placeholder="e.g. Room 12, Block C"
+                  maxLength={120}
+                />
               </Field>
             </motion.div>
           ) : (
-            <motion.div key="pickup" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={spring.snappy}>
+            <motion.div
+              key="pickup"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={spring.snappy}
+            >
               <RadioCards
                 label="Pickup point"
                 value={state.pickupPointId || undefined}
@@ -184,13 +280,20 @@ function GroupSection({
                 columns={points.length > 1 ? 2 : 1}
                 options={points.map((p) => ({ value: p.id, title: p.name, description: p.hint }))}
               />
-              {errors.pickupPointId && <p className="mt-2 text-small font-medium text-danger">{errors.pickupPointId}</p>}
+              {errors.pickupPointId && (
+                <p className="mt-2 text-small font-medium text-danger">{errors.pickupPointId}</p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
         <Field label="Note for the brand" optional>
-          <Input value={state.note} onChange={(e) => onChange({ note: e.target.value })} placeholder="e.g. Please call when you're at the gate" maxLength={200} />
+          <Input
+            value={state.note}
+            onChange={(e) => onChange({ note: e.target.value })}
+            placeholder="e.g. Please call when you're at the gate"
+            maxLength={200}
+          />
         </Field>
 
         {/* Promo code */}
@@ -199,9 +302,15 @@ function GroupSection({
             <div className="flex items-center gap-3 rounded-md bg-success-soft px-3.5 py-2.5 text-small text-success">
               <Tag className="size-4" />
               <span className="flex-1">
-                <span className="font-mono font-semibold">{quote.promo.code}</span> · {quote.promo.label}
+                <span className="font-mono font-semibold">{quote.promo.code}</span> ·{" "}
+                {quote.promo.label}
               </span>
-              <button type="button" onClick={() => setPromo(group.brandId, null)} className="flex size-7 items-center justify-center rounded-sm hover:bg-success/10" aria-label={`Remove code ${quote.promo.code}`}>
+              <button
+                type="button"
+                onClick={() => setPromo(group.brandId, null)}
+                className="flex size-7 items-center justify-center rounded-sm hover:bg-success/10"
+                aria-label={`Remove code ${quote.promo.code}`}
+              >
                 <X className="size-4" />
               </button>
             </div>
@@ -214,10 +323,28 @@ function GroupSection({
                 if (code) setPromo(group.brandId, code);
               }}
             >
-              <Field label="Promo code" className="flex-1" error={promoCode && quote?.promo?.status === "invalid" ? quote.promo.reason : undefined} hint="Try KIOSK10, FRESHER or FREEDEL">
-                <Input value={state.promoInput} onChange={(e) => onChange({ promoInput: e.target.value.toUpperCase() })} placeholder="CODE" className="font-mono uppercase" autoCapitalize="characters" />
+              <Field
+                label="Promo code"
+                className="flex-1"
+                error={
+                  promoCode && quote?.promo?.status === "invalid" ? quote.promo.reason : undefined
+                }
+                hint="Try KIOSK10, FRESHER or FREEDEL"
+              >
+                <Input
+                  value={state.promoInput}
+                  onChange={(e) => onChange({ promoInput: e.target.value.toUpperCase() })}
+                  placeholder="CODE"
+                  className="font-mono uppercase"
+                  autoCapitalize="characters"
+                />
               </Field>
-              <Button type="submit" variant="secondary" className="mt-6.5" disabled={!state.promoInput.trim()}>
+              <Button
+                type="submit"
+                variant="secondary"
+                className="mt-6.5"
+                disabled={!state.promoInput.trim()}
+              >
                 Apply
               </Button>
             </form>
@@ -261,17 +388,25 @@ export function CheckoutView() {
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const [placed, setPlaced] = useState(false);
 
-  const campusById = useMemo(() => new Map((campuses.data ?? []).map((c) => [c.id, c])), [campuses.data]);
+  const campusById = useMemo(
+    () => new Map((campuses.data ?? []).map((c) => [c.id, c])),
+    [campuses.data],
+  );
 
   /** Per-brand choices: the user's edits, falling back to sensible defaults (saved places). */
   const stateFor = (g: BagGroupView): GroupState | undefined => {
     if (overrides[g.brandId]) return overrides[g.brandId];
     const b = g.brand;
     if (!b) return undefined;
-    const place = places.data?.find((p) => p.isDefault && p.campusId === b.campusId) ?? places.data?.find((p) => p.campusId === b.campusId);
+    const place =
+      places.data?.find((p) => p.isDefault && p.campusId === b.campusId) ??
+      places.data?.find((p) => p.campusId === b.campusId);
     return {
       method: b.fulfilment.delivery ? "delivery" : "pickup",
-      zoneId: place && b.fulfilment.zoneIds.includes(place.zoneId) ? place.zoneId : (b.fulfilment.zoneIds[0] ?? ""),
+      zoneId:
+        place && b.fulfilment.zoneIds.includes(place.zoneId)
+          ? place.zoneId
+          : (b.fulfilment.zoneIds[0] ?? ""),
       pickupPointId: b.fulfilment.pickupPointIds[0] ?? "",
       addressLine: place?.addressLine ?? "",
       note: "",
@@ -284,7 +419,10 @@ export function CheckoutView() {
     if (st) state[g.brandId] = st;
   }
 
-  const ready = groups.length > 0 && groups.every((g) => g.brand && state[g.brandId] && g.items.every((i) => i.product)) && !places.isPending;
+  const ready =
+    groups.length > 0 &&
+    groups.every((g) => g.brand && state[g.brandId] && g.items.every((i) => i.product)) &&
+    !places.isPending;
   const blockedGroup = groups.find((g) => g.blockedReason);
 
   const buildInput = (forQuote: boolean): CheckoutInput | null => {
@@ -295,14 +433,32 @@ export function CheckoutView() {
       paymentMethod: payment,
       groups: groups.map((g) => {
         const s = state[g.brandId]!;
-        const pickupZone = campusById.get(g.brand!.campusId)?.pickupPoints.find((p) => p.id === s.pickupPointId)?.zoneId;
+        const pickupZone = campusById
+          .get(g.brand!.campusId)
+          ?.pickupPoints.find((p) => p.id === s.pickupPointId)?.zoneId;
         return {
           brandId: g.brandId,
-          lines: g.items.filter((i) => !i.unavailable).map((i) => ({ productId: i.line.productId, variantKey: i.line.variantKey, quantity: i.line.quantity })),
+          lines: g.items
+            .filter((i) => !i.unavailable)
+            .map((i) => ({
+              productId: i.line.productId,
+              variantKey: i.line.variantKey,
+              quantity: i.line.quantity,
+            })),
           fulfilment:
             s.method === "delivery"
-              ? { method: "delivery" as const, zoneId: s.zoneId, addressLine: forQuote ? "quote" : s.addressLine, ...(s.note && !forQuote ? { note: s.note } : {}) }
-              : { method: "pickup" as const, zoneId: pickupZone ?? s.zoneId, pickupPointId: s.pickupPointId, ...(s.note && !forQuote ? { note: s.note } : {}) },
+              ? {
+                  method: "delivery" as const,
+                  zoneId: s.zoneId,
+                  addressLine: forQuote ? "quote" : s.addressLine,
+                  ...(s.note && !forQuote ? { note: s.note } : {}),
+                }
+              : {
+                  method: "pickup" as const,
+                  zoneId: pickupZone ?? s.zoneId,
+                  pickupPointId: s.pickupPointId,
+                  ...(s.note && !forQuote ? { note: s.note } : {}),
+                },
           ...(promoCodes[g.brandId] ? { promoCode: promoCodes[g.brandId] } : {}),
         };
       }),
@@ -383,13 +539,30 @@ export function CheckoutView() {
   }
 
   const payOptions = [
-    { value: "card" as const, title: "Card", description: "Pay now with a saved demo card", icon: <CreditCard className="size-5" /> },
-    { value: "transfer" as const, title: "Bank transfer", description: "Transfer to a one-time demo account", icon: <Building2 className="size-5" /> },
-    { value: "pay_on_pickup" as const, title: "Pay on pickup or delivery", description: "Cash or transfer when you get it", icon: <Banknote className="size-5" /> },
+    {
+      value: "card" as const,
+      title: "Card",
+      description: "Pay now with a saved demo card",
+      icon: <CreditCard className="size-5" />,
+    },
+    {
+      value: "transfer" as const,
+      title: "Bank transfer",
+      description: "Transfer to a one-time demo account",
+      icon: <Building2 className="size-5" />,
+    },
+    {
+      value: "pay_on_pickup" as const,
+      title: "Pay on pickup or delivery",
+      description: "Cash or transfer when you get it",
+      icon: <Banknote className="size-5" />,
+    },
     {
       value: "wallet" as const,
       title: "Kiosk wallet",
-      description: wallet.data ? `Demo balance ${formatNaira(balance)}${balance < total ? " · not enough" : ""}` : "Loading balance…",
+      description: wallet.data
+        ? `Demo balance ${formatNaira(balance)}${balance < total ? " · not enough" : ""}`
+        : "Loading balance…",
       icon: <Wallet className="size-5" />,
       disabled: !!wallet.data && balance < total,
     },
@@ -419,7 +592,13 @@ export function CheckoutView() {
                 <Input value={user?.name ?? ""} readOnly className="bg-surface-2" />
               </Field>
               <Field label="Phone for the rider" error={phoneError}>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder="0803 123 4567" />
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="0803 123 4567"
+                />
               </Field>
             </div>
           </section>
@@ -431,7 +610,12 @@ export function CheckoutView() {
               index={i}
               campus={g.brand ? campusById.get(g.brand.campusId) : undefined}
               state={state[g.brandId]!}
-              onChange={(patch) => setOverrides((o) => ({ ...o, [g.brandId]: { ...state[g.brandId]!, ...o[g.brandId], ...patch } }))}
+              onChange={(patch) =>
+                setOverrides((o) => ({
+                  ...o,
+                  [g.brandId]: { ...state[g.brandId]!, ...o[g.brandId], ...patch },
+                }))
+              }
               quote={quoteByBrand.get(g.brandId)}
               errors={errors[g.brandId] ?? {}}
             />
@@ -443,20 +627,43 @@ export function CheckoutView() {
               <h2 id="pay" className="text-body font-semibold">
                 Payment
               </h2>
-              <span className="ml-auto rounded-full bg-warning-soft px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-warning">Demo</span>
+              <span className="ml-auto rounded-full bg-warning-soft px-2.5 py-1 font-mono text-[10px] font-semibold tracking-wider text-warning uppercase">
+                Demo
+              </span>
             </div>
-            <RadioCards label="Payment method" value={payment} onChange={setPayment} options={payOptions} />
+            <RadioCards
+              label="Payment method"
+              value={payment}
+              onChange={setPayment}
+              options={payOptions}
+            />
             <AnimatePresence initial={false} mode="wait">
               {payment === "card" && (
-                <motion.div key="card" initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }} transition={spring.smooth} className="overflow-hidden">
+                <motion.div
+                  key="card"
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                  transition={spring.smooth}
+                  className="overflow-hidden"
+                >
                   <div className="pt-5">
-                    <p className="mb-3 text-small text-muted">Pick a saved card. These are pretend cards; nothing is charged.</p>
+                    <p className="mb-3 text-small text-muted">
+                      Pick a saved card. These are pretend cards; nothing is charged.
+                    </p>
                     <CardCarousel value={card} onChange={setCard} />
                   </div>
                 </motion.div>
               )}
               {payment === "transfer" && (
-                <motion.div key="transfer" initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }} transition={spring.smooth} className="overflow-hidden">
+                <motion.div
+                  key="transfer"
+                  initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                  transition={spring.smooth}
+                  className="overflow-hidden"
+                >
                   <dl className="mt-5 grid grid-cols-2 gap-3 rounded-md bg-canvas-sunk p-4 text-small">
                     <div>
                       <dt className="text-muted">Bank</dt>
@@ -466,7 +673,9 @@ export function CheckoutView() {
                       <dt className="text-muted">Account</dt>
                       <dd className="font-mono font-medium">00 0000 0000</dd>
                     </div>
-                    <p className="col-span-2 text-muted">In the demo, placing the order marks the transfer as received.</p>
+                    <p className="col-span-2 text-muted">
+                      In the demo, placing the order marks the transfer as received.
+                    </p>
                   </dl>
                 </motion.div>
               )}
@@ -475,10 +684,12 @@ export function CheckoutView() {
         </div>
 
         <aside className="min-w-0 lg:col-span-5">
-          <div className="rounded-lg bg-surface p-5 hairline lg:sticky lg:top-24 md:p-6">
+          <div className="rounded-lg bg-surface p-5 hairline md:p-6 lg:sticky lg:top-24">
             <div className="flex items-center justify-between">
               <h2 className="text-title font-semibold">Order summary</h2>
-              {quote.isFetching && <Spinner className="size-4 text-muted" label="Updating totals" />}
+              {quote.isFetching && (
+                <Spinner className="size-4 text-muted" label="Updating totals" />
+              )}
             </div>
             <div className="mt-5 flex flex-col gap-2.5">
               {(quote.data?.groups ?? []).map((g) => (
@@ -492,7 +703,13 @@ export function CheckoutView() {
             <div className="flex flex-col gap-2">
               <SummaryRow label="Subtotal" value={quote.data?.subtotalKobo ?? 0} />
               <SummaryRow label="Delivery" value={quote.data?.deliveryKobo ?? 0} />
-              {(quote.data?.discountKobo ?? 0) > 0 && <SummaryRow label="Discounts" value={quote.data?.discountKobo ?? 0} tone="discount" />}
+              {(quote.data?.discountKobo ?? 0) > 0 && (
+                <SummaryRow
+                  label="Discounts"
+                  value={quote.data?.discountKobo ?? 0}
+                  tone="discount"
+                />
+              )}
             </div>
             <div className="mt-5 flex items-baseline justify-between border-t border-line pt-5">
               <span className="text-body font-semibold">Total</span>
@@ -500,11 +717,24 @@ export function CheckoutView() {
                 <NumberTicker value={total} format={(n) => formatNaira(n)} step={100} />
               </span>
             </div>
-            {blockedGroup && <p className="mt-4 rounded-md bg-warning-soft px-3 py-2 text-small text-warning">{blockedGroup.blockedReason} Remove it from your bag to continue.</p>}
-            <Button size="lg" className="mt-6 hidden w-full lg:flex" loading={create.isPending} disabled={!!blockedGroup || problems || !quote.data} onClick={place}>
+            {blockedGroup && (
+              <p className="mt-4 rounded-md bg-warning-soft px-3 py-2 text-small text-warning">
+                {blockedGroup.blockedReason} Remove it from your bag to continue.
+              </p>
+            )}
+            <Button
+              size="lg"
+              className="mt-6 hidden w-full lg:flex"
+              loading={create.isPending}
+              disabled={!!blockedGroup || problems || !quote.data}
+              onClick={place}
+            >
               Place {groups.length > 1 ? `${groups.length} orders` : "order"} · {formatNaira(total)}
             </Button>
-            <p className="mt-3 text-small text-muted">Each brand gets its own order and updates it separately. You can cancel any order until the brand accepts it.</p>
+            <p className="mt-3 text-small text-muted">
+              Each brand gets its own order and updates it separately. You can cancel any order
+              until the brand accepts it.
+            </p>
           </div>
         </aside>
       </div>
@@ -519,7 +749,13 @@ export function CheckoutView() {
               <NumberTicker value={total} format={(n) => formatNaira(n)} step={100} />
             </p>
           </div>
-          <Button size="lg" className="ml-auto flex-1 max-w-72" loading={create.isPending} disabled={!!blockedGroup || problems || !quote.data} onClick={place}>
+          <Button
+            size="lg"
+            className="ml-auto max-w-72 flex-1"
+            loading={create.isPending}
+            disabled={!!blockedGroup || problems || !quote.data}
+            onClick={place}
+          >
             Place {groups.length > 1 ? `${groups.length} orders` : "order"}
           </Button>
         </div>

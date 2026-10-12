@@ -25,7 +25,11 @@ export type CheckoutQuote = {
   totalKobo: Kobo;
 };
 
-export function groupTotal(g: { subtotalKobo: Kobo; deliveryFeeKobo: Kobo; discountKobo: Kobo }): Kobo {
+export function groupTotal(g: {
+  subtotalKobo: Kobo;
+  deliveryFeeKobo: Kobo;
+  discountKobo: Kobo;
+}): Kobo {
   return Math.max(0, g.subtotalKobo + g.deliveryFeeKobo - g.discountKobo);
 }
 

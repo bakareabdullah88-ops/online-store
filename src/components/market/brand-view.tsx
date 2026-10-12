@@ -34,8 +34,16 @@ function OpenBadge({ brand }: { brand: Brand }) {
   if (!now) return <Skeleton className="h-6 w-36" rounded="full" />;
   const s = openState(brand.openHours, brand.vacation, new Date(now));
   return (
-    <span className={cn("inline-flex h-7 items-center gap-2 rounded-full px-3 text-small font-medium", s.open ? "bg-success-soft text-success" : "bg-ink/[0.06] text-ink-2")}>
-      <span className={cn("size-1.5 rounded-full", s.open ? "bg-success" : "bg-faint")} aria-hidden />
+    <span
+      className={cn(
+        "inline-flex h-7 items-center gap-2 rounded-full px-3 text-small font-medium",
+        s.open ? "bg-success-soft text-success" : "bg-ink/[0.06] text-ink-2",
+      )}
+    >
+      <span
+        className={cn("size-1.5 rounded-full", s.open ? "bg-success" : "bg-faint")}
+        aria-hidden
+      />
       {s.label}
     </span>
   );
@@ -55,17 +63,29 @@ function FollowButton({ brand }: { brand: Brand }) {
         if (!user) {
           toast("Log in to follow brands", {
             description: "You'll hear about new drops first.",
-            action: { label: "Log in", onClick: () => router.push(`/login?next=${encodeURIComponent(pathname)}`) },
+            action: {
+              label: "Log in",
+              onClick: () => router.push(`/login?next=${encodeURIComponent(pathname)}`),
+            },
           });
           return;
         }
         toggle.mutate(brand, {
-          onSuccess: (r) => r.following && toast.success(`Following ${brand.name}`, { description: "New drops will show in your notifications." }),
+          onSuccess: (r) =>
+            r.following &&
+            toast.success(`Following ${brand.name}`, {
+              description: "New drops will show in your notifications.",
+            }),
         });
       }}
       className="min-w-28"
     >
-      <motion.span key={following ? "f" : "n"} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={spring.snappy}>
+      <motion.span
+        key={following ? "f" : "n"}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={spring.snappy}
+      >
         {following ? "Following" : "Follow"}
       </motion.span>
     </Button>
@@ -76,7 +96,14 @@ function BrandProducts({ brand }: { brand: Brand }) {
   const [sort, setSort] = useState<SortKey>("popular");
   const { data, isPending } = useProducts({ brandId: brand.id, sort, pageSize: 48 });
   if (!isPending && data?.items.length === 0) {
-    return <EmptyState compact illustration="products" title="No products yet" body={`${brand.name} is setting up. Follow to hear when they drop.`} />;
+    return (
+      <EmptyState
+        compact
+        illustration="products"
+        title="No products yet"
+        body={`${brand.name} is setting up. Follow to hear when they drop.`}
+      />
+    );
   }
   return (
     <div>
@@ -116,15 +143,20 @@ function BrandProducts({ brand }: { brand: Brand }) {
 
 function BrandAbout({ brand }: { brand: Brand }) {
   const campus = useCampus(brand.campusId);
-  const points = campus?.pickupPoints.filter((p) => brand.fulfilment.pickupPointIds.includes(p.id)) ?? [];
+  const points =
+    campus?.pickupPoints.filter((p) => brand.fulfilment.pickupPointIds.includes(p.id)) ?? [];
   const zones = campus?.zones.filter((z) => brand.fulfilment.zoneIds.includes(z.id)) ?? [];
   return (
     <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
       <div className="md:col-span-7">
         <p className="eyebrow text-muted">The story</p>
         <p className="mt-3 font-display text-display-sm text-balance text-ink">{brand.tagline}</p>
-        <p className="mt-4 max-w-prose text-body-lg text-ink-2">{brand.bio || "This brand hasn't written a bio yet."}</p>
-        <p className="mt-6 text-small text-muted">On {campus?.name ?? "campus"} since {formatDate(brand.createdAt, { year: true })}</p>
+        <p className="mt-4 max-w-prose text-body-lg text-ink-2">
+          {brand.bio || "This brand hasn't written a bio yet."}
+        </p>
+        <p className="mt-6 text-small text-muted">
+          On {campus?.name ?? "campus"} since {formatDate(brand.createdAt, { year: true })}
+        </p>
       </div>
       <dl className="flex flex-col gap-6 md:col-span-5">
         <div className="rounded-lg bg-surface p-5 hairline">
@@ -132,7 +164,8 @@ function BrandAbout({ brand }: { brand: Brand }) {
             <Clock className="size-4" /> Opening hours
           </dt>
           <dd className="mt-2 text-small text-ink-2">
-            {describeDays(brand.openHours.days)}, {formatClock(brand.openHours.opens)}–{formatClock(brand.openHours.closes)}
+            {describeDays(brand.openHours.days)}, {formatClock(brand.openHours.opens)}–
+            {formatClock(brand.openHours.closes)}
           </dd>
         </div>
         {brand.fulfilment.pickup && (
@@ -158,8 +191,12 @@ function BrandAbout({ brand }: { brand: Brand }) {
               <Bike className="size-4" /> Delivery · {formatNaira(brand.fulfilment.deliveryFeeKobo)}
             </dt>
             <dd className="mt-2 text-small text-ink-2">
-              To {zones.length} {zones.length === 1 ? "zone" : "zones"} on {campus?.shortName}: {zones.map((z) => z.name).join(", ")}. Ready in about{" "}
-              {brand.fulfilment.prepMinutes >= 60 ? `${Math.round(brand.fulfilment.prepMinutes / 60)}h` : `${brand.fulfilment.prepMinutes} min`}.
+              To {zones.length} {zones.length === 1 ? "zone" : "zones"} on {campus?.shortName}:{" "}
+              {zones.map((z) => z.name).join(", ")}. Ready in about{" "}
+              {brand.fulfilment.prepMinutes >= 60
+                ? `${Math.round(brand.fulfilment.prepMinutes / 60)}h`
+                : `${brand.fulfilment.prepMinutes} min`}
+              .
             </dd>
           </div>
         )}
@@ -176,7 +213,10 @@ export function BrandSkeleton() {
       </div>
       <div className="container-page">
         <div className="flex flex-col gap-4 md:flex-row md:items-end">
-          <Skeleton className="-mt-12 size-24 ring-4 ring-canvas md:-mt-16 md:size-32" rounded="full" />
+          <Skeleton
+            className="-mt-12 size-24 ring-4 ring-canvas md:-mt-16 md:size-32"
+            rounded="full"
+          />
           <div className="flex-1">
             <Skeleton className="h-3 w-32" />
             <Skeleton className="mt-3 h-10 w-64" />
@@ -210,7 +250,11 @@ export function BrandView() {
       <div className="container-page">
         <EmptyState
           illustration="lost"
-          title={isServiceError(error) && error.code === "NOT_FOUND" ? "We can't find that brand" : "Something went wrong"}
+          title={
+            isServiceError(error) && error.code === "NOT_FOUND"
+              ? "We can't find that brand"
+              : "Something went wrong"
+          }
           body="It may have changed its handle or closed. Explore other brands on campus."
           action={<ButtonLink href="/explore">Explore brands</ButtonLink>}
         />
@@ -236,7 +280,12 @@ export function BrandView() {
       <div className="container-page">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:gap-6">
           <div className="-mt-12 size-24 shrink-0 overflow-hidden rounded-full shadow-md ring-4 ring-canvas md:-mt-16 md:size-32">
-            <AppImage image={brand.logo} alt={`${brand.name} logo`} variant="logo" name={brand.name} />
+            <AppImage
+              image={brand.logo}
+              alt={`${brand.name} logo`}
+              variant="logo"
+              name={brand.name}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="eyebrow text-muted">
@@ -244,7 +293,9 @@ export function BrandView() {
             </p>
             <h1 className="mt-2 flex items-center gap-2 font-display text-display-md">
               <span className="truncate">{brand.name}</span>
-              {brand.verified && <BadgeCheck className="size-6 shrink-0 text-accent" aria-label="Verified brand" />}
+              {brand.verified && (
+                <BadgeCheck className="size-6 shrink-0 text-accent" aria-label="Verified brand" />
+              )}
             </h1>
             <p className="mt-1 text-body text-muted">{brand.tagline}</p>
           </div>
@@ -259,7 +310,9 @@ export function BrandView() {
                 <Button
                   variant="secondary"
                   leadingIcon={<MessageCircle className="size-4.5" />}
-                  onClick={() => (user ? setChat(true) : router.push(`/login?next=/brands/${brand.handle}`))}
+                  onClick={() =>
+                    user ? setChat(true) : router.push(`/login?next=/brands/${brand.handle}`)
+                  }
                 >
                   Message
                 </Button>
@@ -272,24 +325,37 @@ export function BrandView() {
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line pb-6 text-small">
           <OpenBadge brand={brand} />
           {brand.ratingCount > 0 && (
-            <button type="button" onClick={() => setTab("reviews")} className="inline-flex items-center gap-1.5 hover:underline">
+            <button
+              type="button"
+              onClick={() => setTab("reviews")}
+              className="inline-flex items-center gap-1.5 hover:underline"
+            >
               <Star className="size-4 fill-current" aria-hidden />
               <span className="font-mono font-medium tabular">{brand.rating.toFixed(1)}</span>
               <span className="text-muted">({brand.ratingCount} reviews)</span>
             </button>
           )}
           <span>
-            <NumberTicker value={brand.followerCount} format={(n) => formatCompact(n)} className="font-mono font-medium" />{" "}
+            <NumberTicker
+              value={brand.followerCount}
+              format={(n) => formatCompact(n)}
+              className="font-mono font-medium"
+            />{" "}
             <span className="text-muted">followers</span>
           </span>
           <span className="text-muted">
-            {brand.fulfilment.pickup && brand.fulfilment.delivery ? "Pickup or delivery" : brand.fulfilment.pickup ? "Pickup only" : "Delivery only"}
+            {brand.fulfilment.pickup && brand.fulfilment.delivery
+              ? "Pickup or delivery"
+              : brand.fulfilment.pickup
+                ? "Pickup only"
+                : "Delivery only"}
           </span>
         </div>
 
         {own && (
           <p className="mt-6 rounded-md bg-accent-soft px-4 py-3 text-small text-accent-ink">
-            This is your shop, as buyers see it. You can browse it, but you can&apos;t buy from yourself.
+            This is your shop, as buyers see it. You can browse it, but you can&apos;t buy from
+            yourself.
           </p>
         )}
 
@@ -310,11 +376,17 @@ export function BrandView() {
             <BrandAbout brand={brand} />
           </TabsContent>
           <TabsContent value="reviews" className="pt-8">
-            <ReviewsBlock data={reviews.data} isPending={reviews.isPending} brandName={brand.name} />
+            <ReviewsBlock
+              data={reviews.data}
+              isPending={reviews.isPending}
+              brandName={brand.name}
+            />
           </TabsContent>
         </Tabs>
       </div>
-      {!own && user && <ChatSheet open={chat} onOpenChange={setChat} brandId={brand.id} brandName={brand.name} />}
+      {!own && user && (
+        <ChatSheet open={chat} onOpenChange={setChat} brandId={brand.id} brandName={brand.name} />
+      )}
     </div>
   );
 }

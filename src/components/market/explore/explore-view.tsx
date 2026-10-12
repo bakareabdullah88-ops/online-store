@@ -23,9 +23,21 @@ import type { SortKey } from "@/services/types";
 import { BrandCard } from "../brand-card";
 import { ProductCard, ProductCardSkeleton } from "../product-card";
 import { ExploreFilters } from "./filters";
-import { activeFilterCount, sortLabels, toQuery, useExploreParams, type ExploreParams } from "./params";
+import {
+  activeFilterCount,
+  sortLabels,
+  toQuery,
+  useExploreParams,
+  type ExploreParams,
+} from "./params";
 
-function ActivePills({ params, update }: { params: ExploreParams; update: (p: Partial<ExploreParams>) => void }) {
+function ActivePills({
+  params,
+  update,
+}: {
+  params: ExploreParams;
+  update: (p: Partial<ExploreParams>) => void;
+}) {
   const campuses = useCampuses();
   const pills: { key: string; label: string; clear: Partial<ExploreParams> }[] = [];
   if (params.min !== null || params.max !== null) {
@@ -41,14 +53,22 @@ function ActivePills({ params, update }: { params: ExploreParams; update: (p: Pa
   if (campus) pills.push({ key: "campus", label: campus.shortName, clear: { campus: null } });
   const zone = campus?.zones.find((z) => z.id === params.zone);
   if (zone) pills.push({ key: "zone", label: zone.name, clear: { zone: null } });
-  if (params.rating) pills.push({ key: "rating", label: `${params.rating}★ & up`, clear: { rating: null } });
+  if (params.rating)
+    pills.push({ key: "rating", label: `${params.rating}★ & up`, clear: { rating: null } });
   if (params.stock) pills.push({ key: "stock", label: "In stock", clear: { stock: false } });
   if (!pills.length) return null;
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Active filters">
       <AnimatePresence initial={false}>
         {pills.map((p) => (
-          <motion.li key={p.key} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={spring.snappy}>
+          <motion.li
+            key={p.key}
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={spring.snappy}
+          >
             <button
               type="button"
               onClick={() => update(p.clear)}
@@ -70,10 +90,10 @@ function BrandMatches({ q }: { q: string }) {
   if (!data?.brands.length) return null;
   return (
     <section aria-label="Matching brands" className="mb-10">
-      <p className="eyebrow mb-3 text-muted">Brands</p>
+      <p className="mb-3 eyebrow text-muted">Brands</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {data.brands.map((b) => (
-          <BrandCard key={b.id} brand={b} variant="compact" className="hairline bg-surface" />
+          <BrandCard key={b.id} brand={b} variant="compact" className="bg-surface hairline" />
         ))}
       </div>
     </section>
@@ -105,9 +125,12 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
   useEffect(() => {
     const el = sentinel.current;
     if (!el || !hasNextPage) return;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting) && !isFetchingNextPage) void fetchNextPage();
-    }, { rootMargin: "600px" });
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !isFetchingNextPage) void fetchNextPage();
+      },
+      { rootMargin: "600px" },
+    );
     io.observe(el);
     return () => io.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -139,16 +162,24 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
           <h1 className="mt-2 font-display text-display-lg text-balance">{title}</h1>
         </div>
         <p className="text-body text-muted md:col-span-4 md:text-right" aria-live="polite">
-          {list.isPending ? "Loading…" : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
-          {category && !list.isPending && <span className="block text-small">{category.blurb}</span>}
+          {list.isPending
+            ? "Loading…"
+            : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
+          {category && !list.isPending && (
+            <span className="block text-small">{category.blurb}</span>
+          )}
         </p>
       </header>
 
       {/* Sticky category rail + tools */}
       <div className="sticky top-14 z-(--z-sticky) -mx-(--gutter) mt-6 bg-canvas/92 px-(--gutter) py-3 backdrop-blur-md md:-mx-8 md:px-8 lg:top-14 xl:-mx-12 xl:px-12">
         <div className="flex items-center gap-3">
-          <div className="scrollbar-none -my-1 min-w-0 flex-1 overflow-x-auto py-1">
-            <ChipGroup label="Category" value={params.category} onChange={(v) => update({ category: v as ExploreParams["category"] })}>
+          <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
+            <ChipGroup
+              label="Category"
+              value={params.category}
+              onChange={(v) => update({ category: v as ExploreParams["category"] })}
+            >
               <ChipOption value="all">All</ChipOption>
               {categories.map((c) => (
                 <ChipOption key={c.id} value={c.id}>
@@ -168,13 +199,23 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
           >
             Filters
             {filters > 0 && (
-              <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-on-primary">{filters}</span>
+              <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-on-primary">
+                {filters}
+              </span>
             )}
           </Button>
           <div className="w-48 sm:w-56">
-            <Select label="Sort by" value={params.sort} onValueChange={(v) => update({ sort: v })} options={sortOptions} className="h-9 text-small" />
+            <Select
+              label="Sort by"
+              value={params.sort}
+              onValueChange={(v) => update({ sort: v })}
+              options={sortOptions}
+              className="h-9 text-small"
+            />
           </div>
-          {(pending || (list.isFetching && !list.isFetchingNextPage)) && <Spinner className="ml-1 size-4 text-muted" label="Updating results" />}
+          {(pending || (list.isFetching && !list.isFetchingNextPage)) && (
+            <Spinner className="ml-1 size-4 text-muted" label="Updating results" />
+          )}
           <div className="ml-auto hidden min-w-0 lg:block">
             <ActivePills params={params} update={update} />
           </div>
@@ -190,7 +231,11 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-title font-semibold">Filters</h2>
               {filters > 0 && (
-                <button type="button" onClick={clearFilters} className="text-small text-muted underline underline-offset-4 hover:text-ink">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-small text-muted underline underline-offset-4 hover:text-ink"
+                >
                   Clear all
                 </button>
               )}
@@ -210,7 +255,10 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
               action={<Button onClick={() => void list.refetch()}>Try again</Button>}
             />
           ) : list.isPending ? (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-4" aria-busy>
+            <div
+              className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-4"
+              aria-busy
+            >
               {Array.from({ length: 12 }, (_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
@@ -219,18 +267,29 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
             <EmptyState
               illustration="search"
               title={params.q ? `Nothing matches “${params.q}”` : "Nothing matches these filters"}
-              body={params.q ? "Try a shorter word, a brand name, or browse a category." : "Try widening the price range or switching campus."}
+              body={
+                params.q
+                  ? "Try a shorter word, a brand name, or browse a category."
+                  : "Try widening the price range or switching campus."
+              }
               action={
                 filters > 0 ? (
                   <Button onClick={clearFilters}>Clear filters</Button>
                 ) : (
-                  <Button onClick={() => update({ q: "", category: "all" })}>Browse everything</Button>
+                  <Button onClick={() => update({ q: "", category: "all" })}>
+                    Browse everything
+                  </Button>
                 )
               }
             />
           ) : (
             <LayoutGroup>
-              <ul className={cn("grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-4 transition-opacity", list.isPlaceholderData && "opacity-60")}>
+              <ul
+                className={cn(
+                  "grid grid-cols-2 gap-x-4 gap-y-8 transition-opacity sm:grid-cols-3 xl:grid-cols-4",
+                  list.isPlaceholderData && "opacity-60",
+                )}
+              >
                 <AnimatePresence mode="popLayout" initial={false}>
                   {items.map((p, i) => (
                     <motion.li
@@ -250,11 +309,17 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
           )}
           <div ref={sentinel} className="flex justify-center py-10">
             {hasNextPage && (
-              <Button variant="secondary" loading={isFetchingNextPage} onClick={() => void fetchNextPage()}>
+              <Button
+                variant="secondary"
+                loading={isFetchingNextPage}
+                onClick={() => void fetchNextPage()}
+              >
                 Load more
               </Button>
             )}
-            {!hasNextPage && items.length > 24 && <p className="text-small text-muted">You&apos;ve seen everything. Nice.</p>}
+            {!hasNextPage && items.length > 24 && (
+              <p className="text-small text-muted">You&apos;ve seen everything. Nice.</p>
+            )}
           </div>
         </div>
       </div>
@@ -265,7 +330,12 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
         title="Filters"
         footer={
           <div className="flex gap-2">
-            <Button variant="secondary" className="flex-1" onClick={clearFilters} disabled={filters === 0}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={clearFilters}
+              disabled={filters === 0}
+            >
               Clear
             </Button>
             <Button className="flex-[2]" onClick={() => setSheet(false)}>

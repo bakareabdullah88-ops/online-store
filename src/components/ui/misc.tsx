@@ -17,7 +17,15 @@ import { formatNaira, type Kobo } from "@/domain/money";
 /* ---------------------------------- Badge --------------------------------- */
 
 /** Count badge that springs whenever the number changes. */
-export function CountBadge({ count, className, label }: { count: number; className?: string; label?: string }) {
+export function CountBadge({
+  count,
+  className,
+  label,
+}: {
+  count: number;
+  className?: string;
+  label?: string;
+}) {
   const reduce = useReducedMotion();
   return (
     <AnimatePresence initial={false}>
@@ -29,7 +37,7 @@ export function CountBadge({ count, className, label }: { count: number; classNa
           exit={{ scale: 0 }}
           transition={spring.bouncy}
           className={cn(
-            "inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-semibold leading-none text-on-accent tabular",
+            "inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] leading-none font-semibold text-on-accent tabular",
             className,
           )}
           aria-label={label}
@@ -75,7 +83,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 font-mono text-label font-medium uppercase tracking-[0.06em] whitespace-nowrap",
+        "inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 font-mono text-label font-medium tracking-[0.06em] whitespace-nowrap uppercase",
         pillTones[tone],
         className,
       )}
@@ -111,7 +119,10 @@ export function Avatar({
     .join("");
   return (
     <span
-      className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full", className)}
+      className={cn(
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full",
+        className,
+      )}
       style={{
         width: size,
         height: size,
@@ -156,7 +167,7 @@ export function QuantityStepper({
   label?: string;
 }) {
   const btn = cn(
-    "flex items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/[0.06] disabled:opacity-35 active:scale-90 transition-transform",
+    "flex items-center justify-center rounded-full text-ink transition-colors transition-transform hover:bg-ink/[0.06] active:scale-90 disabled:opacity-35",
     size === "sm" ? "size-8" : "size-10",
   );
   return (
@@ -178,7 +189,10 @@ export function QuantityStepper({
         <Minus className="size-4" />
       </button>
       <span
-        className={cn("relative overflow-hidden text-center font-mono font-medium tabular", size === "sm" ? "w-7 text-small" : "w-9 text-body")}
+        className={cn(
+          "relative overflow-hidden text-center font-mono font-medium tabular",
+          size === "sm" ? "w-7 text-small" : "w-9 text-body",
+        )}
         aria-live="polite"
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -209,10 +223,22 @@ export function QuantityStepper({
 
 /* --------------------------------- Rating --------------------------------- */
 
-export function Stars({ value, size = 14, className }: { value: number; size?: number; className?: string }) {
+export function Stars({
+  value,
+  size = 14,
+  className,
+}: {
+  value: number;
+  size?: number;
+  className?: string;
+}) {
   const id = useId();
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)} aria-label={`${value.toFixed(1)} out of 5`} role="img">
+    <span
+      className={cn("inline-flex items-center gap-0.5", className)}
+      aria-label={`${value.toFixed(1)} out of 5`}
+      role="img"
+    >
       {Array.from({ length: 5 }, (_, i) => {
         const fill = Math.max(0, Math.min(1, value - i));
         return (
@@ -234,7 +260,15 @@ export function Stars({ value, size = 14, className }: { value: number; size?: n
   );
 }
 
-export function RatingInput({ value, onChange, label = "Rating" }: { value: number; onChange: (n: number) => void; label?: string }) {
+export function RatingInput({
+  value,
+  onChange,
+  label = "Rating",
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  label?: string;
+}) {
   return (
     <div role="radiogroup" aria-label={label} className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -314,7 +348,11 @@ export function NumberTicker({
   const reduce = useReducedMotion();
   const mv = useMotionValue(value);
   const target = useRef(value);
-  const text = useTransform(mv, (v) => (Math.abs(v - target.current) < step ? format(target.current) : format(Math.round(v / step) * step)));
+  const text = useTransform(mv, (v) =>
+    Math.abs(v - target.current) < step
+      ? format(target.current)
+      : format(Math.round(v / step) * step),
+  );
   const first = useRef(true);
   useEffect(() => {
     target.current = value;
@@ -354,7 +392,17 @@ export function Kbd({ children, className }: { children: ReactNode; className?: 
 
 /* -------------------------------- Progress -------------------------------- */
 
-export function ProgressBar({ value, max = 100, label, className }: { value: number; max?: number; label: string; className?: string }) {
+export function ProgressBar({
+  value,
+  max = 100,
+  label,
+  className,
+}: {
+  value: number;
+  max?: number;
+  label: string;
+  className?: string;
+}) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div
@@ -377,6 +425,14 @@ export function ProgressBar({ value, max = 100, label, className }: { value: num
 
 /* ------------------------------- Eyebrow ---------------------------------- */
 
-export function Eyebrow({ children, className, as: Tag = "p" }: { children: ReactNode; className?: string; as?: "p" | "span" | "h2" | "h3" }) {
+export function Eyebrow({
+  children,
+  className,
+  as: Tag = "p",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "p" | "span" | "h2" | "h3";
+}) {
   return <Tag className={cn("eyebrow text-muted", className)}>{children}</Tag>;
 }

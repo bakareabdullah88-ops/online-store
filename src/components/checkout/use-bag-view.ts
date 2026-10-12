@@ -35,7 +35,10 @@ export function useBagView() {
   const { user } = useSession();
   const productIds = useMemo(() => [...new Set(lines.map((l) => l.productId))].sort(), [lines]);
   const brandIds = useMemo(() => [...new Set(lines.map((l) => l.brandId))].sort(), [lines]);
-  const products = useProducts({ ids: productIds, pageSize: 48 }, { enabled: productIds.length > 0 });
+  const products = useProducts(
+    { ids: productIds, pageSize: 48 },
+    { enabled: productIds.length > 0 },
+  );
   const brands = useBrands({ ids: brandIds });
 
   const groups = useMemo<BagGroupView[]>(() => {
@@ -75,6 +78,8 @@ export function useBagView() {
 
   const subtotalKobo = groups.reduce((n, g) => n + g.subtotalKobo, 0);
   const count = lines.reduce((n, l) => n + l.quantity, 0);
-  const loading = productIds.length > 0 && (products.isPending || (products.isPlaceholderData && products.isFetching));
+  const loading =
+    productIds.length > 0 &&
+    (products.isPending || (products.isPlaceholderData && products.isFetching));
   return { groups, subtotalKobo, count, loading, isEmpty: lines.length === 0 };
 }

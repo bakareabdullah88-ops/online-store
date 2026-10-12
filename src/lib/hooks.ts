@@ -7,7 +7,11 @@ const noop = () => () => undefined;
 
 /** True after hydration. Use to gate time- or device-dependent rendering. */
 export function useMounted() {
-  return useSyncExternalStore(noop, () => true, () => false);
+  return useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
 }
 
 /** Current time, ticking. Null during SSR/hydration so markup always matches. */

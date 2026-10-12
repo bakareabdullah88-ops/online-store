@@ -11,12 +11,20 @@ import { useSession } from "./session";
 
 export function useWishlist() {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.wishlist, queryFn: () => services.social.getWishlist(), enabled: isSignedIn });
+  return useQuery({
+    queryKey: qk.wishlist,
+    queryFn: () => services.social.getWishlist(),
+    enabled: isSignedIn,
+  });
 }
 
 export function useFollowing() {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.following, queryFn: () => services.social.getFollowing(), enabled: isSignedIn });
+  return useQuery({
+    queryKey: qk.following,
+    queryFn: () => services.social.getFollowing(),
+    enabled: isSignedIn,
+  });
 }
 
 /** Optimistic: the heart fills instantly; rolls back with a toast on failure. */
@@ -77,7 +85,8 @@ export function useToggleFollow() {
     },
     onSuccess: (res, brand) => {
       const b = qc.getQueryData<Brand>(qk.brand(brand.handle));
-      if (b) qc.setQueryData<Brand>(qk.brand(brand.handle), { ...b, followerCount: res.followerCount });
+      if (b)
+        qc.setQueryData<Brand>(qk.brand(brand.handle), { ...b, followerCount: res.followerCount });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: qk.following }),
   });

@@ -8,7 +8,11 @@ import type { Page, ProductQuery, ProductWithBrand } from "@/services/types";
 import { qk } from "./keys";
 
 export function useCampuses() {
-  return useQuery({ queryKey: qk.campuses, queryFn: () => services.catalog.listCampuses(), staleTime: Infinity });
+  return useQuery({
+    queryKey: qk.campuses,
+    queryFn: () => services.catalog.listCampuses(),
+    staleTime: Infinity,
+  });
 }
 
 export function useCampus(id: string | null | undefined) {
@@ -36,12 +40,18 @@ export function useInfiniteProducts(query: Omit<ProductQuery, "page">) {
 
 /** Look through cached product lists for a product (instant product pages). */
 function findCachedProduct(qc: QueryClient, slug: string): ProductWithBrand | undefined {
-  const lists = qc.getQueriesData<Page<ProductWithBrand> | { pages: Page<ProductWithBrand>[] } | ProductWithBrand[]>({
+  const lists = qc.getQueriesData<
+    Page<ProductWithBrand> | { pages: Page<ProductWithBrand>[] } | ProductWithBrand[]
+  >({
     queryKey: ["products"],
   });
   for (const [, data] of lists) {
     if (!data) continue;
-    const items = Array.isArray(data) ? data : "pages" in data ? data.pages.flatMap((p) => p.items) : data.items;
+    const items = Array.isArray(data)
+      ? data
+      : "pages" in data
+        ? data.pages.flatMap((p) => p.items)
+        : data.items;
     const hit = items.find((p) => p.slug === slug);
     if (hit) return hit;
   }
@@ -70,7 +80,11 @@ export function useRelatedProducts(productId: string | undefined) {
 }
 
 export function usePriceRange() {
-  return useQuery({ queryKey: qk.priceRange, queryFn: () => services.catalog.getPriceRange(), staleTime: Infinity });
+  return useQuery({
+    queryKey: qk.priceRange,
+    queryFn: () => services.catalog.getPriceRange(),
+    staleTime: Infinity,
+  });
 }
 
 export function useBrands(query: BrandQuery = {}) {

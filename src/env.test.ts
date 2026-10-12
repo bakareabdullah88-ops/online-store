@@ -7,7 +7,13 @@ describe("parseEnv", () => {
   });
 
   it("parses every supported value", () => {
-    expect(parseEnv({ NEXT_PUBLIC_DATA_SOURCE: "remote", NEXT_PUBLIC_SITE_URL: "https://kiosk.example", NEXT_PUBLIC_MOCK_LATENCY: "0" })).toEqual({
+    expect(
+      parseEnv({
+        NEXT_PUBLIC_DATA_SOURCE: "remote",
+        NEXT_PUBLIC_SITE_URL: "https://kiosk.example",
+        NEXT_PUBLIC_MOCK_LATENCY: "0",
+      }),
+    ).toEqual({
       NEXT_PUBLIC_DATA_SOURCE: "remote",
       NEXT_PUBLIC_SITE_URL: "https://kiosk.example",
       NEXT_PUBLIC_MOCK_LATENCY: 0,
@@ -15,7 +21,9 @@ describe("parseEnv", () => {
   });
 
   it("rejects bad values with a readable message", () => {
-    expect(() => parseEnv({ NEXT_PUBLIC_DATA_SOURCE: "firebase" })).toThrow(/NEXT_PUBLIC_DATA_SOURCE/);
+    expect(() => parseEnv({ NEXT_PUBLIC_DATA_SOURCE: "firebase" })).toThrow(
+      /NEXT_PUBLIC_DATA_SOURCE/,
+    );
     expect(() => parseEnv({ NEXT_PUBLIC_SITE_URL: "kiosk.example" })).toThrow(/absolute URL/);
     expect(() => parseEnv({ NEXT_PUBLIC_MOCK_LATENCY: "-5" })).toThrow(/0 to 5000/);
     expect(() => parseEnv({ NEXT_PUBLIC_MOCK_LATENCY: "fast" })).toThrow(/0 to 5000/);

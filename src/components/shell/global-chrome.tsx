@@ -48,7 +48,8 @@ function Overlays() {
   useEffect(() => {
     const warm = () => void Promise.all([loadPalette(), loadBag(), loadAccount()]);
     const id = window.setTimeout(() => {
-      if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(warm, { timeout: 4000 });
+      if (typeof window.requestIdleCallback === "function")
+        window.requestIdleCallback(warm, { timeout: 4000 });
       else warm();
     }, 6000);
     return () => window.clearTimeout(id);

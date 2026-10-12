@@ -14,7 +14,9 @@ export type Toast = {
 
 type ToastState = {
   toasts: Toast[];
-  push: (t: Omit<Toast, "id" | "tone" | "duration"> & Partial<Pick<Toast, "tone" | "duration">>) => string;
+  push: (
+    t: Omit<Toast, "id" | "tone" | "duration"> & Partial<Pick<Toast, "tone" | "duration">>,
+  ) => string;
   dismiss: (id: string) => void;
 };
 

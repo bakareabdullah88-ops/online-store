@@ -47,10 +47,24 @@ function suggestHandle(name: string) {
 function Preview({ s, campusName }: { s: State; campusName: string }) {
   const cat = s.category ? categoryById(s.category) : null;
   const seed = hashString(s.handle || s.name || "kiosk");
-  const logo: ImageRef = s.logo?.ref ?? { kind: "art", motif: "monogram", palette: cat?.palette ?? "sand", seed };
-  const cover: ImageRef = s.cover?.ref ?? { kind: "art", motif: cat?.motif ?? "tote", palette: cat?.palette ?? "sand", seed };
+  const logo: ImageRef = s.logo?.ref ?? {
+    kind: "art",
+    motif: "monogram",
+    palette: cat?.palette ?? "sand",
+    seed,
+  };
+  const cover: ImageRef = s.cover?.ref ?? {
+    kind: "art",
+    motif: cat?.motif ?? "tote",
+    palette: cat?.palette ?? "sand",
+    seed,
+  };
   return (
-    <div className="overflow-hidden rounded-lg bg-surface shadow-lg hairline" aria-label="Live preview of your shop" role="img">
+    <div
+      className="overflow-hidden rounded-lg bg-surface shadow-lg hairline"
+      aria-label="Live preview of your shop"
+      role="img"
+    >
       <div className="aspect-[16/7]">
         <AppImage image={cover} alt="" variant="cover" />
       </div>
@@ -58,16 +72,20 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
         <div className="-mt-12 size-16 overflow-hidden rounded-full ring-4 ring-surface">
           <AppImage image={logo} alt="" variant="logo" name={s.name || "Your brand"} />
         </div>
-        <p className="eyebrow mt-3 text-muted">
+        <p className="mt-3 eyebrow text-muted">
           {cat?.name ?? "Category"} · {campusName} · @{s.handle || "handle"}
         </p>
         <p className="mt-1 flex items-center gap-1.5 font-display text-display-sm">
           <span className="truncate">{s.name || "Your brand"}</span>
           <BadgeCheck className="size-5 shrink-0 text-faint" aria-hidden />
         </p>
-        <p className="mt-1 line-clamp-2 text-small text-muted">{s.tagline || "A short line about what you sell."}</p>
+        <p className="mt-1 line-clamp-2 text-small text-muted">
+          {s.tagline || "A short line about what you sell."}
+        </p>
         <div className="mt-4 flex gap-2">
-          <span className="h-9 rounded-md bg-primary px-4 text-small leading-9 text-on-primary">Follow</span>
+          <span className="h-9 rounded-md bg-primary px-4 text-small leading-9 text-on-primary">
+            Follow
+          </span>
           <span className="h-9 rounded-md px-4 text-small leading-9 hairline">Message</span>
         </div>
       </div>
@@ -86,7 +104,9 @@ export function OpenShopWizard() {
   const [dir, setDir] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [created, setCreated] = useState<Brand | null>(null);
-  const [handleState, setHandleState] = useState<"idle" | "checking" | "ok" | "taken" | "invalid">("idle");
+  const [handleState, setHandleState] = useState<"idle" | "checking" | "ok" | "taken" | "invalid">(
+    "idle",
+  );
   const [s, setS] = useState<State>({
     name: "",
     handle: "",
@@ -96,7 +116,14 @@ export function OpenShopWizard() {
     cover: null,
     tagline: "",
     bio: "",
-    fulfilment: { pickup: true, delivery: false, deliveryFee: "500", prepMinutes: 60, pickupPointIds: [], zoneIds: [] },
+    fulfilment: {
+      pickup: true,
+      delivery: false,
+      deliveryFee: "500",
+      prepMinutes: 60,
+      pickupPointIds: [],
+      zoneIds: [],
+    },
   });
 
   // Clear the "just opened" flag when leaving the wizard.
@@ -118,7 +145,10 @@ export function OpenShopWizard() {
 
   // Default pickup point once the campus is known.
   const firstPoint = campus?.pickupPoints[0]?.id;
-  const fulfilment = s.fulfilment.pickupPointIds.length === 0 && s.fulfilment.pickup && firstPoint ? { ...s.fulfilment, pickupPointIds: [firstPoint] } : s.fulfilment;
+  const fulfilment =
+    s.fulfilment.pickupPointIds.length === 0 && s.fulfilment.pickup && firstPoint
+      ? { ...s.fulfilment, pickupPointIds: [firstPoint] }
+      : s.fulfilment;
 
   const go = (to: number) => {
     setDir(to > step ? 1 : -1);
@@ -138,8 +168,10 @@ export function OpenShopWizard() {
     if (step === 3 && s.tagline.trim().length < 4) e.tagline = "A short line about what you sell";
     if (step === 4) {
       if (!fulfilment.pickup && !fulfilment.delivery) e.pickup = "Offer pickup, delivery or both";
-      if (fulfilment.pickup && fulfilment.pickupPointIds.length === 0) e.pickupPointIds = "Choose at least one pickup point";
-      if (fulfilment.delivery && fulfilment.zoneIds.length === 0) e.zoneIds = "Choose at least one zone";
+      if (fulfilment.pickup && fulfilment.pickupPointIds.length === 0)
+        e.pickupPointIds = "Choose at least one pickup point";
+      if (fulfilment.delivery && fulfilment.zoneIds.length === 0)
+        e.zoneIds = "Choose at least one zone";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -185,10 +217,17 @@ export function OpenShopWizard() {
     return (
       <div className="mx-auto max-w-lg py-10 text-center">
         <Celebration />
-        <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spring.smooth, delay: 0.25 }} className="mt-8 font-display text-display-lg text-balance">
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spring.smooth, delay: 0.25 }}
+          className="mt-8 font-display text-display-lg text-balance"
+        >
           {created.name} is open
         </motion.h1>
-        <p className="mt-3 text-body-lg text-muted">Your shop is live at kiosk/{created.handle}. Add a product so students can start ordering.</p>
+        <p className="mt-3 text-body-lg text-muted">
+          Your shop is live at kiosk/{created.handle}. Add a product so students can start ordering.
+        </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button size="lg" onClick={() => startCurtain("selling", "/studio/products/new")}>
             Add your first product
@@ -207,15 +246,31 @@ export function OpenShopWizard() {
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
       <div className="min-w-0">
         <div className="flex items-center gap-4">
-          <ProgressBar value={step + 1} max={steps.length} label="Shop setup progress" className="flex-1" />
+          <ProgressBar
+            value={step + 1}
+            max={steps.length}
+            label="Shop setup progress"
+            className="flex-1"
+          />
           <span className="font-mono text-label text-muted tabular">
             {step + 1}/{steps.length}
           </span>
         </div>
         <ol className="mt-3 hidden gap-4 text-small text-muted sm:flex" aria-hidden>
           {steps.map((label, i) => (
-            <li key={label} className={cn("flex items-center gap-1.5", i === step && "font-medium text-ink", i < step && "text-ink-2")}>
-              {i < step ? <Check className="size-3.5 text-accent" /> : <span className="font-mono text-[11px]">{i + 1}</span>}
+            <li
+              key={label}
+              className={cn(
+                "flex items-center gap-1.5",
+                i === step && "font-medium text-ink",
+                i < step && "text-ink-2",
+              )}
+            >
+              {i < step ? (
+                <Check className="size-3.5 text-accent" />
+              ) : (
+                <span className="font-mono text-[11px]">{i + 1}</span>
+              )}
               {label}
             </li>
           ))}
@@ -242,8 +297,12 @@ export function OpenShopWizard() {
                 <div className="flex flex-col gap-6">
                   <header>
                     <p className="eyebrow text-muted">Step 1 · Name</p>
-                    <h1 className="mt-2 font-display text-display-md text-balance">What&apos;s your brand called?</h1>
-                    <p className="mt-2 text-body text-muted">You can change the name later. Your handle is your shop link.</p>
+                    <h1 className="mt-2 font-display text-display-md text-balance">
+                      What&apos;s your brand called?
+                    </h1>
+                    <p className="mt-2 text-body text-muted">
+                      You can change the name later. Your handle is your shop link.
+                    </p>
                   </header>
                   <Field label="Brand name" error={errors.name}>
                     <Input
@@ -252,28 +311,61 @@ export function OpenShopWizard() {
                       autoFocus
                       maxLength={40}
                       placeholder="e.g. Moremi Thrift"
-                      onChange={(e) => setS((x) => ({ ...x, name: e.target.value, handle: x.handleTouched ? x.handle : suggestHandle(e.target.value) }))}
+                      onChange={(e) =>
+                        setS((x) => ({
+                          ...x,
+                          name: e.target.value,
+                          handle: x.handleTouched ? x.handle : suggestHandle(e.target.value),
+                        }))
+                      }
                     />
                   </Field>
                   <Field
                     label="Handle"
-                    error={errors.handle ?? (shownHandleState === "taken" ? "That handle is taken" : shownHandleState === "invalid" ? "Letters, numbers, dots and underscores, 3–24 characters" : undefined)}
-                    hint={shownHandleState === "ok" ? `kiosk/${s.handle} is yours` : "Your shop link, e.g. kiosk/moremithrift"}
+                    error={
+                      errors.handle ??
+                      (shownHandleState === "taken"
+                        ? "That handle is taken"
+                        : shownHandleState === "invalid"
+                          ? "Letters, numbers, dots and underscores, 3–24 characters"
+                          : undefined)
+                    }
+                    hint={
+                      shownHandleState === "ok"
+                        ? `kiosk/${s.handle} is yours`
+                        : "Your shop link, e.g. kiosk/moremithrift"
+                    }
                   >
                     <Input
                       value={s.handle}
                       maxLength={24}
                       onChange={(e) => {
                         setHandleState("idle");
-                        setS((x) => ({ ...x, handle: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""), handleTouched: true }));
+                        setS((x) => ({
+                          ...x,
+                          handle: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""),
+                          handleTouched: true,
+                        }));
                       }}
                       leading={<span className="font-mono text-small">kiosk/</span>}
                       className="pl-16 font-mono"
                       trailing={
-                        <span className="flex size-9 items-center justify-center" aria-live="polite">
-                          {shownHandleState === "checking" && <Loader2 className="size-4 animate-spin text-muted" aria-label="Checking" />}
-                          {shownHandleState === "ok" && <Check className="size-4 text-success" aria-label="Available" />}
-                          {(shownHandleState === "taken" || shownHandleState === "invalid") && <X className="size-4 text-danger" aria-label="Not available" />}
+                        <span
+                          className="flex size-9 items-center justify-center"
+                          aria-live="polite"
+                        >
+                          {shownHandleState === "checking" && (
+                            <Loader2
+                              className="size-4 animate-spin text-muted"
+                              aria-label="Checking"
+                            />
+                          )}
+                          {shownHandleState === "ok" && (
+                            <Check className="size-4 text-success" aria-label="Available" />
+                          )}
+                          {(shownHandleState === "taken" || shownHandleState === "invalid") && (
+                            <X className="size-4 text-danger" aria-label="Not available" />
+                          )}
                         </span>
                       }
                     />
@@ -286,9 +378,15 @@ export function OpenShopWizard() {
                   <header>
                     <p className="eyebrow text-muted">Step 2 · Category</p>
                     <h1 className="mt-2 font-display text-display-md">What do you sell?</h1>
-                    <p className="mt-2 text-body text-muted">Pick the closest fit. Buyers filter by category.</p>
+                    <p className="mt-2 text-body text-muted">
+                      Pick the closest fit. Buyers filter by category.
+                    </p>
                   </header>
-                  <div role="radiogroup" aria-label="Category" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div
+                    role="radiogroup"
+                    aria-label="Category"
+                    className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+                  >
                     {categories.map((c, i) => {
                       const active = s.category === c.id;
                       return (
@@ -299,17 +397,29 @@ export function OpenShopWizard() {
                           aria-checked={active}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => setS((x) => ({ ...x, category: c.id }))}
-                          className={cn("overflow-hidden rounded-md text-left transition-shadow", active ? "shadow-[0_0_0_2px_var(--canvas),0_0_0_4px_var(--ink)]" : "hairline hover:shadow-[inset_0_0_0_1px_var(--muted)]")}
+                          className={cn(
+                            "overflow-hidden rounded-md text-left transition-shadow",
+                            active
+                              ? "shadow-[0_0_0_2px_var(--canvas),0_0_0_4px_var(--ink)]"
+                              : "hairline hover:shadow-[inset_0_0_0_1px_var(--muted)]",
+                          )}
                         >
                           <div className="aspect-square">
-                            <ProductArt motif={c.motif} palette={c.palette} seed={40 + i} className="size-full" />
+                            <ProductArt
+                              motif={c.motif}
+                              palette={c.palette}
+                              seed={40 + i}
+                              className="size-full"
+                            />
                           </div>
                           <p className="bg-surface px-3 py-2.5 text-small font-medium">{c.name}</p>
                         </motion.button>
                       );
                     })}
                   </div>
-                  {errors.category && <p className="text-small font-medium text-danger">{errors.category}</p>}
+                  {errors.category && (
+                    <p className="text-small font-medium text-danger">{errors.category}</p>
+                  )}
                 </div>
               )}
 
@@ -318,10 +428,19 @@ export function OpenShopWizard() {
                   <header>
                     <p className="eyebrow text-muted">Step 3 · Look</p>
                     <h1 className="mt-2 font-display text-display-md">Add a logo and cover</h1>
-                    <p className="mt-2 text-body text-muted">Optional. We&apos;ve made you a cover from your category so you can skip this.</p>
+                    <p className="mt-2 text-body text-muted">
+                      Optional. We&apos;ve made you a cover from your category so you can skip this.
+                    </p>
                   </header>
                   <ImagePicker
-                    image={s.cover?.ref ?? { kind: "art", motif: s.category ? categoryById(s.category).motif : "tote", palette: s.category ? categoryById(s.category).palette : "sand", seed: hashString(s.handle || "x") }}
+                    image={
+                      s.cover?.ref ?? {
+                        kind: "art",
+                        motif: s.category ? categoryById(s.category).motif : "tote",
+                        palette: s.category ? categoryById(s.category).palette : "sand",
+                        seed: hashString(s.handle || "x"),
+                      }
+                    }
                     name={s.name}
                     variant="cover"
                     label="Upload a cover image"
@@ -329,13 +448,23 @@ export function OpenShopWizard() {
                   />
                   <div className="flex items-center gap-4">
                     <ImagePicker
-                      image={s.logo?.ref ?? { kind: "art", motif: "monogram", palette: s.category ? categoryById(s.category).palette : "sand", seed: hashString(s.handle || "x") }}
+                      image={
+                        s.logo?.ref ?? {
+                          kind: "art",
+                          motif: "monogram",
+                          palette: s.category ? categoryById(s.category).palette : "sand",
+                          seed: hashString(s.handle || "x"),
+                        }
+                      }
                       name={s.name || "Brand"}
                       variant="logo"
                       label="Upload a logo"
                       onUploaded={(id, ref) => setS((x) => ({ ...x, logo: { id, ref } }))}
                     />
-                    <p className="text-small text-muted">Hover or tap the images to upload. Square logos look best; covers are wide (16:6).</p>
+                    <p className="text-small text-muted">
+                      Hover or tap the images to upload. Square logos look best; covers are wide
+                      (16:6).
+                    </p>
                   </div>
                 </div>
               )}
@@ -346,11 +475,27 @@ export function OpenShopWizard() {
                     <p className="eyebrow text-muted">Step 4 · Story</p>
                     <h1 className="mt-2 font-display text-display-md">Tell students who you are</h1>
                   </header>
-                  <Field label="Tagline" error={errors.tagline} hint="One line that shows on cards, e.g. Hand-dyed tees made in Akoka">
-                    <Input value={s.tagline} onChange={(e) => setS((x) => ({ ...x, tagline: e.target.value }))} maxLength={80} />
+                  <Field
+                    label="Tagline"
+                    error={errors.tagline}
+                    hint="One line that shows on cards, e.g. Hand-dyed tees made in Akoka"
+                  >
+                    <Input
+                      value={s.tagline}
+                      onChange={(e) => setS((x) => ({ ...x, tagline: e.target.value }))}
+                      maxLength={80}
+                    />
                   </Field>
-                  <Field label="Short bio" optional hint={`${s.bio.length}/400 · Who's behind it, what makes it good`}>
-                    <Textarea value={s.bio} onChange={(e) => setS((x) => ({ ...x, bio: e.target.value }))} maxLength={400} />
+                  <Field
+                    label="Short bio"
+                    optional
+                    hint={`${s.bio.length}/400 · Who's behind it, what makes it good`}
+                  >
+                    <Textarea
+                      value={s.bio}
+                      onChange={(e) => setS((x) => ({ ...x, bio: e.target.value }))}
+                      maxLength={400}
+                    />
                   </Field>
                 </div>
               )}
@@ -359,10 +504,19 @@ export function OpenShopWizard() {
                 <div className="flex flex-col gap-6">
                   <header>
                     <p className="eyebrow text-muted">Step 5 · Pickup & delivery</p>
-                    <h1 className="mt-2 font-display text-display-md">How do buyers get their order?</h1>
-                    <p className="mt-2 text-body text-muted">On {campus?.name ?? "your campus"}. You can change this any time.</p>
+                    <h1 className="mt-2 font-display text-display-md">
+                      How do buyers get their order?
+                    </h1>
+                    <p className="mt-2 text-body text-muted">
+                      On {campus?.name ?? "your campus"}. You can change this any time.
+                    </p>
                   </header>
-                  <FulfilmentFields value={fulfilment} onChange={(f) => setS((x) => ({ ...x, fulfilment: f }))} campus={campus} errors={errors} />
+                  <FulfilmentFields
+                    value={fulfilment}
+                    onChange={(f) => setS((x) => ({ ...x, fulfilment: f }))}
+                    campus={campus}
+                    errors={errors}
+                  />
                 </div>
               )}
 
@@ -371,7 +525,9 @@ export function OpenShopWizard() {
                   <header>
                     <p className="eyebrow text-muted">Step 6 · Launch</p>
                     <h1 className="mt-2 font-display text-display-md">Ready to open?</h1>
-                    <p className="mt-2 text-body text-muted">Here&apos;s your shop. You&apos;ll add products next.</p>
+                    <p className="mt-2 text-body text-muted">
+                      Here&apos;s your shop. You&apos;ll add products next.
+                    </p>
                   </header>
                   <div className="lg:hidden">
                     <Preview s={{ ...s, fulfilment }} campusName={campusName} />
@@ -385,21 +541,48 @@ export function OpenShopWizard() {
                     <dd>{s.category ? categoryById(s.category).name : ""}</dd>
                     <dt className="text-muted">Fulfilment</dt>
                     <dd>
-                      {[fulfilment.pickup && `Pickup (${fulfilment.pickupPointIds.length} point${fulfilment.pickupPointIds.length === 1 ? "" : "s"})`, fulfilment.delivery && `Delivery to ${fulfilment.zoneIds.length} zones · ₦${fulfilment.deliveryFee}`].filter(Boolean).join(" · ")}
+                      {[
+                        fulfilment.pickup &&
+                          `Pickup (${fulfilment.pickupPointIds.length} point${fulfilment.pickupPointIds.length === 1 ? "" : "s"})`,
+                        fulfilment.delivery &&
+                          `Delivery to ${fulfilment.zoneIds.length} zones · ₦${fulfilment.deliveryFee}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </dd>
                   </dl>
-                  <p className="text-small text-muted">By opening a shop you agree to sell honestly and fulfil the orders you accept. (Demo: nothing is binding.)</p>
+                  <p className="text-small text-muted">
+                    By opening a shop you agree to sell honestly and fulfil the orders you accept.
+                    (Demo: nothing is binding.)
+                  </p>
                 </div>
               )}
 
               <div className="mt-10 flex items-center gap-3">
                 {step > 0 && (
-                  <Button type="button" variant="ghost" leadingIcon={<ArrowLeft className="size-4.5" />} onClick={() => go(step - 1)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    leadingIcon={<ArrowLeft className="size-4.5" />}
+                    onClick={() => go(step - 1)}
+                  >
                     Back
                   </Button>
                 )}
-                <Button type="submit" size="lg" className="ml-auto" loading={create.isPending} trailingIcon={step < steps.length - 1 ? <ArrowRight className="size-4.5" /> : undefined}>
-                  {step === steps.length - 1 ? "Open my shop" : step === 2 && !s.logo && !s.cover ? "Skip for now" : "Continue"}
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="ml-auto"
+                  loading={create.isPending}
+                  trailingIcon={
+                    step < steps.length - 1 ? <ArrowRight className="size-4.5" /> : undefined
+                  }
+                >
+                  {step === steps.length - 1
+                    ? "Open my shop"
+                    : step === 2 && !s.logo && !s.cover
+                      ? "Skip for now"
+                      : "Continue"}
                 </Button>
               </div>
             </motion.form>
@@ -408,7 +591,7 @@ export function OpenShopWizard() {
       </div>
       <aside className="hidden lg:block">
         <div className="sticky top-24">
-          <p className="eyebrow mb-3 text-muted">Live preview</p>
+          <p className="mb-3 eyebrow text-muted">Live preview</p>
           <Preview s={{ ...s, fulfilment }} campusName={campusName} />
           <p className="mt-3 text-small text-muted">This is how your shop appears to buyers.</p>
         </div>

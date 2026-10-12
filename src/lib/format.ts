@@ -1,9 +1,20 @@
 const dateFmt = new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short" });
-const dateYearFmt = new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric" });
-const timeFmt = new Intl.DateTimeFormat("en-NG", { hour: "numeric", minute: "2-digit", hour12: true });
+const dateYearFmt = new Intl.DateTimeFormat("en-NG", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+const timeFmt = new Intl.DateTimeFormat("en-NG", {
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
 const weekdayFmt = new Intl.DateTimeFormat("en-NG", { weekday: "short" });
 const numberFmt = new Intl.NumberFormat("en-NG");
-const compactFmt = new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 });
+const compactFmt = new Intl.NumberFormat("en-NG", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto", style: "short" });
 
 export function formatDate(iso: string | number, opts: { year?: boolean } = {}) {

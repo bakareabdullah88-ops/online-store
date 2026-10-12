@@ -29,17 +29,34 @@ const motifs: Record<ArtMotif, MotifDraw> = {
   ),
   dress: (c) => (
     <g>
-      <path d="M176 118 L184 118 L188 168 L180 168 Z M216 118 L224 118 L220 168 L212 168 Z" fill={c.shade} />
-      <path d="M172 166 Q200 182 228 166 L240 214 Q290 320 306 392 Q200 410 94 392 Q110 320 160 214 Z" fill={c.obj} />
+      <path
+        d="M176 118 L184 118 L188 168 L180 168 Z M216 118 L224 118 L220 168 L212 168 Z"
+        fill={c.shade}
+      />
+      <path
+        d="M172 166 Q200 182 228 166 L240 214 Q290 320 306 392 Q200 410 94 392 Q110 320 160 214 Z"
+        fill={c.obj}
+      />
       <path d="M160 214 Q200 230 240 214 L244 228 Q200 244 156 228 Z" fill={c.shade} />
-      <path d="M200 240 Q230 320 248 398 Q276 396 306 392 Q290 320 240 214 Z" fill={c.shade} opacity="0.35" />
+      <path
+        d="M200 240 Q230 320 248 398 Q276 396 306 392 Q290 320 240 214 Z"
+        fill={c.shade}
+        opacity="0.35"
+      />
     </g>
   ),
   cap: (c) => (
     <g>
       <path d="M112 300 Q118 190 210 184 Q300 190 304 300 Z" fill={c.obj} />
-      <path d="M270 210 Q304 240 304 300 L262 300 Q266 250 248 206 Z" fill={c.shade} opacity="0.5" />
-      <path d="M96 300 Q200 286 330 300 Q356 306 338 322 Q200 344 96 316 Q84 306 96 300 Z" fill={c.shade} />
+      <path
+        d="M270 210 Q304 240 304 300 L262 300 Q266 250 248 206 Z"
+        fill={c.shade}
+        opacity="0.5"
+      />
+      <path
+        d="M96 300 Q200 286 330 300 Q356 306 338 322 Q200 344 96 316 Q84 306 96 300 Z"
+        fill={c.shade}
+      />
       <circle cx="208" cy="186" r="8" fill={c.shade} />
       <path d="M160 248 h56" stroke={c.detail} strokeWidth="8" strokeLinecap="round" />
     </g>
@@ -63,13 +80,27 @@ const motifs: Record<ArtMotif, MotifDraw> = {
         fill={c.obj}
       />
       <path d="M76 340 H348 Q350 366 330 366 H92 Q74 366 76 340 Z" fill={c.detail} />
-      <path d="M150 276 l20 -12 M166 292 l22 -14 M184 306 l22 -14" stroke={c.detail} strokeWidth="6" strokeLinecap="round" />
-      <path d="M238 270 Q290 286 326 300 Q340 306 344 322 L250 318 Z" fill={c.shade} opacity="0.5" />
+      <path
+        d="M150 276 l20 -12 M166 292 l22 -14 M184 306 l22 -14"
+        stroke={c.detail}
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M238 270 Q290 286 326 300 Q340 306 344 322 L250 318 Z"
+        fill={c.shade}
+        opacity="0.5"
+      />
     </g>
   ),
   tote: (c) => (
     <g>
-      <path d="M160 200 Q160 120 200 120 Q240 120 240 200" fill="none" stroke={c.shade} strokeWidth="12" />
+      <path
+        d="M160 200 Q160 120 200 120 Q240 120 240 200"
+        fill="none"
+        stroke={c.shade}
+        strokeWidth="12"
+      />
       <path d="M118 196 H282 L296 392 H104 Z" fill={c.obj} />
       <path d="M250 196 H282 L296 392 H262 Z" fill={c.shade} opacity="0.35" />
       <circle cx="200" cy="292" r="34" fill={c.detail} opacity="0.9" />
@@ -85,16 +116,27 @@ const motifs: Record<ArtMotif, MotifDraw> = {
       <circle cx="186" cy="226" r="7" fill={c.detail} />
       <circle cx="226" cy="230" r="6" fill={c.detail} />
       <path d="M82 262 Q92 372 200 376 Q308 372 318 262 Z" fill={c.detail} />
-      <path d="M260 262 L318 262 Q312 340 250 366 Q286 318 260 262 Z" fill={c.bgDeep} opacity="0.6" />
+      <path
+        d="M260 262 L318 262 Q312 340 250 366 Q286 318 260 262 Z"
+        fill={c.bgDeep}
+        opacity="0.6"
+      />
     </g>
   ),
   jar: (c) => (
     <g>
       <rect x="138" y="150" width="124" height="34" rx="6" fill={c.shade} />
-      <path d="M128 190 Q128 180 140 180 H260 Q272 180 272 190 V372 Q272 392 252 392 H148 Q128 392 128 372 Z" fill={c.obj} />
+      <path
+        d="M128 190 Q128 180 140 180 H260 Q272 180 272 190 V372 Q272 392 252 392 H148 Q128 392 128 372 Z"
+        fill={c.obj}
+      />
       <rect x="128" y="250" width="144" height="70" fill={c.detail} />
       <path d="M160 285 h80" stroke={c.shade} strokeWidth="6" strokeLinecap="round" />
-      <path d="M240 190 H262 Q272 190 272 200 V372 Q272 392 252 392 H240 Z" fill={c.shade} opacity="0.3" />
+      <path
+        d="M240 190 H262 Q272 190 272 200 V372 Q272 392 252 392 H240 Z"
+        fill={c.shade}
+        opacity="0.3"
+      />
     </g>
   ),
   cookie: (c) => (
@@ -119,7 +161,11 @@ const motifs: Record<ArtMotif, MotifDraw> = {
     <g>
       <path d="M236 120 L212 196" stroke={c.shade} strokeWidth="9" strokeLinecap="round" />
       <path d="M140 180 H260 L246 386 Q244 396 234 396 H166 Q156 396 154 386 Z" fill={c.obj} />
-      <path d="M146 228 H254 L246 386 Q244 396 234 396 H166 Q156 396 154 386 Z" fill={c.shade} opacity="0.55" />
+      <path
+        d="M146 228 H254 L246 386 Q244 396 234 396 H166 Q156 396 154 386 Z"
+        fill={c.shade}
+        opacity="0.55"
+      />
       <rect x="132" y="170" width="136" height="16" rx="6" fill={c.detail} />
       <circle cx="184" cy="260" r="8" fill={c.detail} opacity="0.6" />
       <circle cx="214" cy="300" r="6" fill={c.detail} opacity="0.6" />
@@ -129,17 +175,27 @@ const motifs: Record<ArtMotif, MotifDraw> = {
     <g>
       <path d="M190 96 H236 V112 H206 V140 H190 Z" fill={c.shade} />
       <rect x="182" y="136" width="36" height="34" rx="4" fill={c.shade} />
-      <path d="M150 196 Q150 170 176 170 H224 Q250 170 250 196 V376 Q250 394 232 394 H168 Q150 394 150 376 Z" fill={c.obj} />
+      <path
+        d="M150 196 Q150 170 176 170 H224 Q250 170 250 196 V376 Q250 394 232 394 H168 Q150 394 150 376 Z"
+        fill={c.obj}
+      />
       <rect x="150" y="246" width="100" height="84" fill={c.detail} />
       <path d="M170 276 h60 M178 296 h44" stroke={c.shade} strokeWidth="5" strokeLinecap="round" />
-      <path d="M228 170 Q250 170 250 196 V376 Q250 394 232 394 H228 Z" fill={c.shade} opacity="0.3" />
+      <path
+        d="M228 170 Q250 170 250 196 V376 Q250 394 232 394 H228 Z"
+        fill={c.shade}
+        opacity="0.3"
+      />
     </g>
   ),
   dropper: (c) => (
     <g>
       <path d="M188 104 Q188 88 200 88 Q212 88 212 104 V176 H188 Z" fill={c.shade} />
       <rect x="176" y="170" width="48" height="26" rx="5" fill={c.detail} />
-      <path d="M160 214 Q160 196 178 196 H222 Q240 196 240 214 V378 Q240 394 224 394 H176 Q160 394 160 378 Z" fill={c.obj} />
+      <path
+        d="M160 214 Q160 196 178 196 H222 Q240 196 240 214 V378 Q240 394 224 394 H176 Q160 394 160 378 Z"
+        fill={c.obj}
+      />
       <rect x="160" y="270" width="80" height="60" fill={c.detail} opacity="0.85" />
       <path d="M176 300 h48" stroke={c.shade} strokeWidth="5" strokeLinecap="round" />
     </g>
@@ -162,7 +218,13 @@ const motifs: Record<ArtMotif, MotifDraw> = {
     return (
       <g>
         {beads.map((b, i) => (
-          <circle key={i} cx={b.x} cy={b.y} r={b.big ? 22 : 16} fill={b.big ? c.detail : i % 2 ? c.obj : c.shade} />
+          <circle
+            key={i}
+            cx={b.x}
+            cy={b.y}
+            r={b.big ? 22 : 16}
+            fill={b.big ? c.detail : i % 2 ? c.obj : c.shade}
+          />
         ))}
       </g>
     );
@@ -188,8 +250,14 @@ const motifs: Record<ArtMotif, MotifDraw> = {
   ),
   sticker: (c) => (
     <g>
-      <path d="M200 132 L228 214 L314 216 L246 268 L270 352 L200 302 L130 352 L154 268 L86 216 L172 214 Z" fill={c.detail} />
-      <path d="M200 150 L223 220 L296 222 L238 266 L258 336 L200 294 L142 336 L162 266 L104 222 L177 220 Z" fill={c.obj} />
+      <path
+        d="M200 132 L228 214 L314 216 L246 268 L270 352 L200 302 L130 352 L154 268 L86 216 L172 214 Z"
+        fill={c.detail}
+      />
+      <path
+        d="M200 150 L223 220 L296 222 L238 266 L258 336 L200 294 L142 336 L162 266 L104 222 L177 220 Z"
+        fill={c.obj}
+      />
       <circle cx="200" cy="248" r="22" fill={c.detail} />
     </g>
   ),
@@ -210,8 +278,14 @@ const motifs: Record<ArtMotif, MotifDraw> = {
       <rect x="120" y="230" width="160" height="128" rx="56" fill={c.detail} />
       <path d="M120 290 H280" stroke={c.shade} strokeWidth="3" />
       <circle cx="200" cy="318" r="5" fill={c.obj} />
-      <path d="M150 136 q30 0 30 34 v52 q0 12 -12 12 h-4 q-12 0 -12 -12 v-36 q-30 -4 -30 -24 q0 -26 28 -26" fill={c.obj} />
-      <path d="M252 136 q-30 0 -30 34 v52 q0 12 12 12 h4 q12 0 12 -12 v-36 q30 -4 30 -24 q0 -26 -28 -26" fill={c.obj} />
+      <path
+        d="M150 136 q30 0 30 34 v52 q0 12 -12 12 h-4 q-12 0 -12 -12 v-36 q-30 -4 -30 -24 q0 -26 28 -26"
+        fill={c.obj}
+      />
+      <path
+        d="M252 136 q-30 0 -30 34 v52 q0 12 12 12 h4 q12 0 12 -12 v-36 q30 -4 30 -24 q0 -26 -28 -26"
+        fill={c.obj}
+      />
     </g>
   ),
   case: (c) => (
@@ -246,7 +320,10 @@ const motifs: Record<ArtMotif, MotifDraw> = {
     <g>
       <path d="M200 128 Q218 156 206 176 Q200 186 194 176 Q182 156 200 128 Z" fill={c.detail} />
       <path d="M200 176 V200" stroke={c.shade} strokeWidth="4" />
-      <path d="M134 210 Q134 200 146 200 H254 Q266 200 266 210 V376 Q266 394 248 394 H152 Q134 394 134 376 Z" fill={c.obj} />
+      <path
+        d="M134 210 Q134 200 146 200 H254 Q266 200 266 210 V376 Q266 394 248 394 H152 Q134 394 134 376 Z"
+        fill={c.obj}
+      />
       <rect x="134" y="262" width="132" height="66" fill={c.detail} opacity="0.9" />
       <path d="M168 296 h64" stroke={c.shade} strokeWidth="5" strokeLinecap="round" />
     </g>
@@ -259,7 +336,13 @@ function Backdrop({ c, variant, patternId }: { c: Colors; variant: number; patte
     case 1:
       return <circle cx="200" cy="250" r="150" fill={c.detail} opacity="0.55" />;
     case 2:
-      return <path d="M86 420 V230 Q86 116 200 116 Q314 116 314 230 V420 Z" fill={c.detail} opacity="0.5" />;
+      return (
+        <path
+          d="M86 420 V230 Q86 116 200 116 Q314 116 314 230 V420 Z"
+          fill={c.detail}
+          opacity="0.5"
+        />
+      );
     case 3:
       return <rect x="0" y="330" width="400" height="170" fill={c.bgDeep} opacity="0.6" />;
     case 4:
@@ -353,7 +436,10 @@ export const BrandMark = memo(function BrandMark({
         textAnchor="middle"
         dominantBaseline="central"
         fill={bg}
-        style={{ font: `400 ${letters.length > 1 ? 44 : 56}px var(--font-instrument-serif), serif`, letterSpacing: "-1px" }}
+        style={{
+          font: `400 ${letters.length > 1 ? 44 : 56}px var(--font-instrument-serif), serif`,
+          letterSpacing: "-1px",
+        }}
       >
         {letters}
       </text>
@@ -379,7 +465,12 @@ export const CoverArt = memo(function CoverArt({
   const gid = `cv${seed}`;
   const xs = [r.int(200, 260), r.int(450, 510), r.int(700, 760)];
   return (
-    <svg viewBox="0 0 960 360" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden>
+    <svg
+      viewBox="0 0 960 360"
+      preserveAspectRatio="xMidYMid slice"
+      className={className}
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={bg} />

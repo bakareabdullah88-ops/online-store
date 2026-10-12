@@ -41,7 +41,13 @@ export function ChatSheet({
   }, [open, threadId, brandId, productId, mutate, onOpenChange]);
 
   return (
-    <ResponsiveSheet open={open} onOpenChange={onOpenChange} title={brandName} description="Usually replies within an hour" width="md">
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={brandName}
+      description="Usually replies within an hour"
+      width="md"
+    >
       <div className="flex h-[min(60dvh,560px)] flex-col md:h-[calc(100dvh-180px)]">
         {threadId ? (
           <Conversation threadId={threadId} as="buyer" className="h-full" />

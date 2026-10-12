@@ -32,18 +32,37 @@ function StudioNav() {
       {studioNav.map((item) => {
         const active = isActive(item, pathname);
         const Icon = item.icon;
-        const badge = item.href === "/studio/orders" ? newOrders : item.href === "/studio/messages" ? unread : 0;
+        const badge =
+          item.href === "/studio/orders"
+            ? newOrders
+            : item.href === "/studio/messages"
+              ? unread
+              : 0;
         return (
           <Link
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={cn("relative flex h-10 items-center gap-3 rounded-md px-3 text-small font-medium transition-colors", active ? "text-ink" : "text-muted hover:text-ink")}
+            className={cn(
+              "relative flex h-10 items-center gap-3 rounded-md px-3 text-small font-medium transition-colors",
+              active ? "text-ink" : "text-muted hover:text-ink",
+            )}
           >
-            {active && <motion.span layoutId={id} className="absolute inset-0 rounded-md bg-surface shadow-sm hairline" transition={spring.snappy} aria-hidden />}
+            {active && (
+              <motion.span
+                layoutId={id}
+                className="absolute inset-0 rounded-md bg-surface shadow-sm hairline"
+                transition={spring.snappy}
+                aria-hidden
+              />
+            )}
             <Icon className="relative size-4.5" />
             <span className="relative flex-1">{item.label}</span>
-            {badge > 0 && <span className="relative rounded-full bg-accent px-1.5 font-mono text-[10px] leading-5 text-on-accent">{badge}</span>}
+            {badge > 0 && (
+              <span className="relative rounded-full bg-accent px-1.5 font-mono text-[10px] leading-5 text-on-accent">
+                {badge}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -62,7 +81,10 @@ function BrandBadge() {
     );
   }
   return (
-    <Link href={`/brands/${brand.handle}`} className="group flex items-center gap-3 rounded-md p-1 hover:bg-ink/[0.04]">
+    <Link
+      href={`/brands/${brand.handle}`}
+      className="group flex items-center gap-3 rounded-md p-1 hover:bg-ink/[0.04]"
+    >
       <span className="size-10 shrink-0 overflow-hidden rounded-md">
         <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
       </span>
@@ -83,17 +105,32 @@ function StudioHeader() {
   return (
     <header
       style={{ viewTransitionName: "site-header" }}
-      className={cn("sticky top-0 z-(--z-header) transition-[background-color,box-shadow] duration-300", scrolled ? "bg-canvas/85 shadow-[0_1px_0_var(--line)] backdrop-blur-lg" : "bg-canvas")}
+      className={cn(
+        "sticky top-0 z-(--z-header) transition-[background-color,box-shadow] duration-300",
+        scrolled ? "bg-canvas/85 shadow-[0_1px_0_var(--line)] backdrop-blur-lg" : "bg-canvas",
+      )}
     >
       <div className="flex h-(--header-h) items-center gap-3 px-(--gutter) md:px-8 lg:h-16">
         <Logo href="/studio" suffix="Studio" />
         <div className="ml-auto flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" className="size-10" aria-label="Search" onClick={() => setCommandOpen(true)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10"
+            aria-label="Search"
+            onClick={() => setCommandOpen(true)}
+          >
             <Search className="size-5" />
           </Button>
           <ModeSwitch className="mr-1 hidden md:inline-flex" />
           {brand && (
-            <ButtonLink href={`/brands/${brand.handle}`} variant="ghost" size="sm" className="hidden xl:inline-flex" trailingIcon={<ExternalLink className="size-3.5" />}>
+            <ButtonLink
+              href={`/brands/${brand.handle}`}
+              variant="ghost"
+              size="sm"
+              className="hidden xl:inline-flex"
+              trailingIcon={<ExternalLink className="size-3.5" />}
+            >
               View shop
             </ButtonLink>
           )}
@@ -140,7 +177,10 @@ export function StudioShell({ children }: { children: ReactNode }) {
               </Suspense>
               <div className="rounded-lg bg-canvas-sunk p-4 text-small text-muted">
                 <p className="font-medium text-ink">Demo shop data</p>
-                <p className="mt-1">Payouts and payments are simulated. Orders from real accounts on this device appear here.</p>
+                <p className="mt-1">
+                  Payouts and payments are simulated. Orders from real accounts on this device
+                  appear here.
+                </p>
               </div>
             </div>
           </aside>
@@ -161,7 +201,17 @@ export function StudioShell({ children }: { children: ReactNode }) {
 }
 
 /** Standard page heading inside Studio. */
-export function StudioHeaderBlock({ eyebrow, title, description, actions }: { eyebrow: string; title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
+export function StudioHeaderBlock({
+  eyebrow,
+  title,
+  description,
+  actions,
+}: {
+  eyebrow: string;
+  title: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+}) {
   return (
     <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">

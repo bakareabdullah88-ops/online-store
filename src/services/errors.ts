@@ -21,11 +21,17 @@ export class ServiceError extends Error {
 }
 
 export function isServiceError(e: unknown): e is ServiceError {
-  return e instanceof ServiceError || (typeof e === "object" && e !== null && (e as { name?: string }).name === "ServiceError");
+  return (
+    e instanceof ServiceError ||
+    (typeof e === "object" && e !== null && (e as { name?: string }).name === "ServiceError")
+  );
 }
 
 /** Human message for any thrown value. */
-export function errorMessage(e: unknown, fallback = "Something went wrong. Please try again."): string {
+export function errorMessage(
+  e: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
   if (isServiceError(e)) return e.message;
   if (e instanceof Error && e.message) return e.message;
   return fallback;

@@ -18,17 +18,38 @@ async function audit(page: Page, path: string) {
   await page.goto(path);
   await settle(page);
 
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
   expect.soft(overflow, `${path} overflows horizontally by ${overflow}px`).toBeLessThanOrEqual(0);
 
-  const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  const summary = violations.map((v) => `${v.id} (${v.impact}): ${v.help}\n  ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join("\n  ")}`);
+  const { violations } = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  const summary = violations.map(
+    (v) =>
+      `${v.id} (${v.impact}): ${v.help}\n  ${v.nodes
+        .slice(0, 3)
+        .map((n) => n.target.join(" "))
+        .join("\n  ")}`,
+  );
   expect.soft(summary, `${path} has accessibility violations`).toEqual([]);
 }
 
 test("public pages", async ({ page }) => {
   const errors = trackErrors(page);
-  for (const path of ["/", "/explore", "/search?q=jollof", "/brands/adirelab", "/bag", "/login", "/signup", "/design-system", "/offline", "/this-page-does-not-exist"]) {
+  for (const path of [
+    "/",
+    "/explore",
+    "/search?q=jollof",
+    "/brands/adirelab",
+    "/bag",
+    "/login",
+    "/signup",
+    "/design-system",
+    "/offline",
+    "/this-page-does-not-exist",
+  ]) {
     await audit(page, path);
   }
   await page.goto("/brands/adirelab");
@@ -41,7 +62,16 @@ test("public pages", async ({ page }) => {
 test("buyer pages", async ({ page }) => {
   const errors = trackErrors(page);
   await demoLogin(page, "buyer");
-  for (const path of ["/orders", "/account", "/account/places", "/account/wallet", "/account/settings", "/wishlist", "/notifications", "/messages"]) {
+  for (const path of [
+    "/orders",
+    "/account",
+    "/account/places",
+    "/account/wallet",
+    "/account/settings",
+    "/wishlist",
+    "/notifications",
+    "/messages",
+  ]) {
     await audit(page, path);
   }
   await expectNoAppErrors(page, errors);
@@ -50,7 +80,18 @@ test("buyer pages", async ({ page }) => {
 test("seller pages", async ({ page }) => {
   const errors = trackErrors(page);
   await demoLogin(page, "seller", "/studio");
-  for (const path of ["/studio", "/studio/products", "/studio/products/new", "/studio/orders", "/studio/customers", "/studio/reviews", "/studio/promotions", "/studio/analytics", "/studio/brand", "/studio/payouts"]) {
+  for (const path of [
+    "/studio",
+    "/studio/products",
+    "/studio/products/new",
+    "/studio/orders",
+    "/studio/customers",
+    "/studio/reviews",
+    "/studio/promotions",
+    "/studio/analytics",
+    "/studio/brand",
+    "/studio/payouts",
+  ]) {
     await audit(page, path);
   }
   await expectNoAppErrors(page, errors);
@@ -62,7 +103,8 @@ test.describe("dark mode", () => {
     const errors = trackErrors(page);
     for (const path of ["/", "/explore", "/brands/adirelab", "/login"]) await audit(page, path);
     await demoLogin(page, "seller", "/studio");
-    for (const path of ["/orders", "/account", "/studio", "/studio/orders", "/studio/analytics"]) await audit(page, path);
+    for (const path of ["/orders", "/account", "/studio", "/studio/orders", "/studio/analytics"])
+      await audit(page, path);
     await expectNoAppErrors(page, errors);
   });
 });

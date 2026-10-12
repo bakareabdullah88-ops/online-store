@@ -14,12 +14,26 @@ import { ChatSheet } from "@/components/messages/chat-sheet";
 import { spring } from "@/design/motion";
 import { purchaseBlock, MAX_LINE_QUANTITY } from "@/domain/bag";
 import { discountPercent, formatNaira } from "@/domain/money";
-import { findVariant, stockState, unitPrice, variantKeyFor, type Selection } from "@/domain/variants";
+import {
+  findVariant,
+  stockState,
+  unitPrice,
+  variantKeyFor,
+  type Selection,
+} from "@/domain/variants";
 import { flyToBag } from "@/lib/fly-to-bag";
 import { useDocumentTitle } from "@/lib/hooks";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { cn } from "@/lib/cn";
-import { recordEvent, useBrand, useCampus, useProduct, useProductReviews, useProducts, useRelatedProducts } from "@/queries/catalog";
+import {
+  recordEvent,
+  useBrand,
+  useCampus,
+  useProduct,
+  useProductReviews,
+  useProducts,
+  useRelatedProducts,
+} from "@/queries/catalog";
 import { useSession } from "@/queries/session";
 import { isServiceError } from "@/services/errors";
 import type { ProductWithBrand } from "@/services/types";
@@ -41,13 +55,23 @@ function firstAvailable(p: ProductWithBrand): Selection {
   return Object.fromEntries(p.options.map((o, i) => [o.id, ids[i] ?? o.values[0]?.id ?? ""]));
 }
 
-function ProductRail({ title, items, isPending }: { title: string; items: ProductWithBrand[] | undefined; isPending: boolean }) {
+function ProductRail({
+  title,
+  items,
+  isPending,
+}: {
+  title: string;
+  items: ProductWithBrand[] | undefined;
+  isPending: boolean;
+}) {
   if (!isPending && !items?.length) return null;
   return (
     <section aria-label={title} className="mt-20">
       <h2 className="mb-8 font-display text-display-sm">{title}</h2>
       <Rail label={title} itemClassName="w-[46vw] sm:w-[30vw] md:w-[23vw] lg:w-[18vw] max-w-60">
-        {isPending ? Array.from({ length: 5 }, (_, i) => <ProductCardSkeleton key={i} />) : (items ?? []).map((p) => <ProductCard key={p.id} product={p} />)}
+        {isPending
+          ? Array.from({ length: 5 }, (_, i) => <ProductCardSkeleton key={i} />)
+          : (items ?? []).map((p) => <ProductCard key={p.id} product={p} />)}
       </Rail>
     </section>
   );
@@ -58,7 +82,10 @@ export function ProductSkeleton() {
     <div className="container-page pt-4 md:pt-8" aria-hidden>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
         <div className="md:col-span-7">
-          <Skeleton className="aspect-[4/5] w-full max-md:-mx-(--gutter) max-md:w-[calc(100%+2*var(--gutter))]" rounded="lg" />
+          <Skeleton
+            className="aspect-[4/5] w-full max-md:-mx-(--gutter) max-md:w-[calc(100%+2*var(--gutter))]"
+            rounded="lg"
+          />
         </div>
         <div className="md:col-span-5">
           <Skeleton className="h-3 w-28" />
@@ -81,7 +108,10 @@ export function ProductView() {
   const { user } = useSession();
   const reviews = useProductReviews(p?.id);
   const related = useRelatedProducts(p?.id);
-  const moreFromBrand = useProducts({ brandId: p?.brandId, sort: "popular", pageSize: 9 }, { enabled: !!p });
+  const moreFromBrand = useProducts(
+    { brandId: p?.brandId, sort: "popular", pageSize: 9 },
+    { enabled: !!p },
+  );
   const add = useBag((s) => s.add);
   const setBagOpen = useUi((s) => s.setBagOpen);
   const router = useRouter();
@@ -110,7 +140,11 @@ export function ProductView() {
       <div className="container-page">
         <EmptyState
           illustration="lost"
-          title={isServiceError(error) && error.code === "NOT_FOUND" ? "This product isn't here anymore" : "Something went wrong"}
+          title={
+            isServiceError(error) && error.code === "NOT_FOUND"
+              ? "This product isn't here anymore"
+              : "Something went wrong"
+          }
           body="It may have sold out for good or been removed by the brand."
           action={<ButtonLink href="/explore">Keep exploring</ButtonLink>}
         />
@@ -118,13 +152,20 @@ export function ProductView() {
     );
   }
 
-  const block = purchaseBlock(p, key, { userBrandIds: user?.brandIds ?? [], brandOnVacation: p.brand.vacation });
-  const off = discountPercent(price, p.compareAtKobo ? p.compareAtKobo + (variant?.priceDeltaKobo ?? 0) : undefined);
+  const block = purchaseBlock(p, key, {
+    userBrandIds: user?.brandIds ?? [],
+    brandOnVacation: p.brand.vacation,
+  });
+  const off = discountPercent(
+    price,
+    p.compareAtKobo ? p.compareAtKobo + (variant?.priceDeltaKobo ?? 0) : undefined,
+  );
   const stockInfo = stockState(stock);
   const own = block.blocked && block.reason === "own_product";
   const canAdd = !block.blocked && !!key;
   const fulfilment = brand?.fulfilment;
-  const points = campus?.pickupPoints.filter((pp) => fulfilment?.pickupPointIds.includes(pp.id)) ?? [];
+  const points =
+    campus?.pickupPoints.filter((pp) => fulfilment?.pickupPointIds.includes(pp.id)) ?? [];
 
   const onAdd = () => {
     if (!key || !canAdd) return;
@@ -135,20 +176,47 @@ export function ProductView() {
     window.setTimeout(() => setAdded(false), 1600);
     toast("Added to bag", {
       description: `${p.name}${qty > 1 ? ` × ${qty}` : ""}`,
-      action: { label: "View bag", onClick: () => (desktop ? setBagOpen(true) : router.push("/bag")) },
+      action: {
+        label: "View bag",
+        onClick: () => (desktop ? setBagOpen(true) : router.push("/bag")),
+      },
     });
   };
 
   const addButton = (className?: string) =>
     own ? (
-      <ButtonLink href={`/studio/products/${p.id}`} variant="secondary" size="lg" className={className} leadingIcon={<Store className="size-4.5" />}>
+      <ButtonLink
+        href={`/studio/products/${p.id}`}
+        variant="secondary"
+        size="lg"
+        className={className}
+        leadingIcon={<Store className="size-4.5" />}
+      >
         Edit in Studio
       </ButtonLink>
     ) : (
-      <Button size="lg" className={className} disabled={!canAdd} onClick={onAdd} leadingIcon={<ShoppingBag className="size-4.5" />}>
+      <Button
+        size="lg"
+        className={className}
+        disabled={!canAdd}
+        onClick={onAdd}
+        leadingIcon={<ShoppingBag className="size-4.5" />}
+      >
         <AnimatePresence mode="wait" initial={false}>
-          <motion.span key={added ? "added" : stockInfo === "sold_out" ? "sold" : "add"} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={spring.snappy}>
-            {added ? "Added" : stockInfo === "sold_out" ? "Sold out" : p.brand.vacation ? "Shop on break" : `Add to bag · ${formatNaira(price * qty)}`}
+          <motion.span
+            key={added ? "added" : stockInfo === "sold_out" ? "sold" : "add"}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={spring.snappy}
+          >
+            {added
+              ? "Added"
+              : stockInfo === "sold_out"
+                ? "Sold out"
+                : p.brand.vacation
+                  ? "Shop on break"
+                  : `Add to bag · ${formatNaira(price * qty)}`}
           </motion.span>
         </AnimatePresence>
       </Button>
@@ -158,11 +226,23 @@ export function ProductView() {
     <div className="container-page pt-0 md:pt-8">
       <nav aria-label="Breadcrumb" className="mb-4 hidden text-small text-muted md:block">
         <ol className="flex items-center gap-2">
-          <li><Link href="/explore" className="hover:text-ink">Explore</Link></li>
+          <li>
+            <Link href="/explore" className="hover:text-ink">
+              Explore
+            </Link>
+          </li>
           <li aria-hidden>/</li>
-          <li><Link href={`/explore?category=${p.category}`} className="capitalize hover:text-ink">{p.category}</Link></li>
+          <li>
+            <Link href={`/explore?category=${p.category}`} className="capitalize hover:text-ink">
+              {p.category}
+            </Link>
+          </li>
           <li aria-hidden>/</li>
-          <li><Link href={`/brands/${p.brand.handle}`} className="hover:text-ink">{p.brand.name}</Link></li>
+          <li>
+            <Link href={`/brands/${p.brand.handle}`} className="hover:text-ink">
+              {p.brand.name}
+            </Link>
+          </li>
         </ol>
       </nav>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10 xl:gap-16">
@@ -173,17 +253,25 @@ export function ProductView() {
         </div>
 
         <div className="md:col-span-5">
-          <Link href={`/brands/${p.brand.handle}`} className="group inline-flex items-center gap-2.5">
+          <Link
+            href={`/brands/${p.brand.handle}`}
+            className="group inline-flex items-center gap-2.5"
+          >
             <span className="size-8 overflow-hidden rounded-full">
               <AppImage image={p.brand.logo} alt="" variant="logo" name={p.brand.name} />
             </span>
             <span className="text-small font-medium group-hover:underline">{p.brand.name}</span>
-            {p.brand.verified && <BadgeCheck className="size-4 text-accent" aria-label="Verified" />}
+            {p.brand.verified && (
+              <BadgeCheck className="size-4 text-accent" aria-label="Verified" />
+            )}
           </Link>
           <h1 className="mt-4 font-display text-display-md text-balance">{p.name}</h1>
           <div className="mt-3 flex items-center gap-3">
             {p.ratingCount > 0 ? (
-              <a href="#reviews" className="inline-flex items-center gap-2 text-small hover:underline">
+              <a
+                href="#reviews"
+                className="inline-flex items-center gap-2 text-small hover:underline"
+              >
                 <Stars value={p.rating} size={14} className="text-ink" />
                 <span className="text-muted">
                   {p.rating.toFixed(1)} · {p.ratingCount} reviews
@@ -195,8 +283,18 @@ export function ProductView() {
             <span className="text-small text-muted">· {p.salesCount} sold</span>
           </div>
           <div className="mt-6 flex items-center gap-3">
-            <Price kobo={price} compareAt={p.compareAtKobo ? p.compareAtKobo + (variant?.priceDeltaKobo ?? 0) : undefined} size="display" />
-            {off && <span className="rounded-full bg-accent px-2.5 py-1 font-mono text-[11px] font-semibold text-on-accent">−{off}%</span>}
+            <Price
+              kobo={price}
+              compareAt={
+                p.compareAtKobo ? p.compareAtKobo + (variant?.priceDeltaKobo ?? 0) : undefined
+              }
+              size="display"
+            />
+            {off && (
+              <span className="rounded-full bg-accent px-2.5 py-1 font-mono text-[11px] font-semibold text-on-accent">
+                −{off}%
+              </span>
+            )}
           </div>
 
           <p className="mt-6 text-body-lg text-ink-2">{p.description}</p>
@@ -210,31 +308,71 @@ export function ProductView() {
           <p
             className={cn(
               "mt-6 flex items-center gap-2 text-small font-medium",
-              stockInfo === "sold_out" ? "text-danger" : stockInfo === "low" ? "text-warning" : "text-success",
+              stockInfo === "sold_out"
+                ? "text-danger"
+                : stockInfo === "low"
+                  ? "text-warning"
+                  : "text-success",
             )}
             aria-live="polite"
           >
             <span className="size-1.5 rounded-full bg-current" aria-hidden />
-            {stockInfo === "sold_out" ? "Sold out in this option" : stockInfo === "low" ? `Only ${stock} left` : "In stock"}
+            {stockInfo === "sold_out"
+              ? "Sold out in this option"
+              : stockInfo === "low"
+                ? `Only ${stock} left`
+                : "In stock"}
           </p>
 
           {block.blocked && block.reason !== "sold_out" && (
-            <div className={cn("mt-6 rounded-lg p-4", own ? "bg-accent-soft text-accent-ink" : "bg-warning-soft text-warning")} role="note">
-              <p className="text-small font-semibold">{own ? "This one's yours" : "Not available right now"}</p>
+            <div
+              className={cn(
+                "mt-6 rounded-lg p-4",
+                own ? "bg-accent-soft text-accent-ink" : "bg-warning-soft text-warning",
+              )}
+              role="note"
+            >
+              <p className="text-small font-semibold">
+                {own ? "This one's yours" : "Not available right now"}
+              </p>
               <p className="mt-1 text-small">{block.message}</p>
             </div>
           )}
 
           <div className="mt-6 hidden items-center gap-3 lg:flex">
             {!own && (
-              <QuantityStepper value={qty} onChange={setQty} max={Math.max(1, Math.min(stock, MAX_LINE_QUANTITY))} label="Quantity" />
+              <QuantityStepper
+                value={qty}
+                onChange={setQty}
+                max={Math.max(1, Math.min(stock, MAX_LINE_QUANTITY))}
+                label="Quantity"
+              />
             )}
             {addButton("flex-1")}
-            <WishlistButton productId={p.id} productName={p.name} size="lg" variant="plain" className="shadow-[inset_0_0_0_1px_var(--line-strong)]" />
+            <WishlistButton
+              productId={p.id}
+              productName={p.name}
+              size="lg"
+              variant="plain"
+              className="shadow-[inset_0_0_0_1px_var(--line-strong)]"
+            />
           </div>
           <div className="mt-6 flex items-center gap-3 lg:hidden">
-            {!own && <QuantityStepper value={qty} onChange={setQty} max={Math.max(1, Math.min(stock, MAX_LINE_QUANTITY))} label="Quantity" />}
-            <WishlistButton productId={p.id} productName={p.name} size="lg" variant="plain" className="shadow-[inset_0_0_0_1px_var(--line-strong)]" />
+            {!own && (
+              <QuantityStepper
+                value={qty}
+                onChange={setQty}
+                max={Math.max(1, Math.min(stock, MAX_LINE_QUANTITY))}
+                label="Quantity"
+              />
+            )}
+            <WishlistButton
+              productId={p.id}
+              productName={p.name}
+              size="lg"
+              variant="plain"
+              className="shadow-[inset_0_0_0_1px_var(--line-strong)]"
+            />
             <ShareButton title={p.name} path={`/products/${p.slug}`} />
           </div>
 
@@ -244,8 +382,13 @@ export function ProductView() {
                 <div className="flex gap-3 p-4">
                   <Bike className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
-                    <p className="font-medium">Delivery · {formatNaira(fulfilment.deliveryFeeKobo)}</p>
-                    <p className="text-muted">To {fulfilment.zoneIds.length} zones on {campus?.shortName}. Promo codes like FREEDEL work at checkout.</p>
+                    <p className="font-medium">
+                      Delivery · {formatNaira(fulfilment.deliveryFeeKobo)}
+                    </p>
+                    <p className="text-muted">
+                      To {fulfilment.zoneIds.length} zones on {campus?.shortName}. Promo codes like
+                      FREEDEL work at checkout.
+                    </p>
                   </div>
                 </div>
               )}
@@ -254,15 +397,24 @@ export function ProductView() {
                   <MapPin className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
                     <p className="font-medium">Free pickup</p>
-                    <p className="text-muted">{points.map((pp) => pp.name).join(" · ") || "Pickup points on campus"}</p>
+                    <p className="text-muted">
+                      {points.map((pp) => pp.name).join(" · ") || "Pickup points on campus"}
+                    </p>
                   </div>
                 </div>
               )}
               <div className="flex gap-3 p-4">
                 <Clock className="mt-0.5 size-5 shrink-0" />
                 <div className="text-small">
-                  <p className="font-medium">Usually ready in {fulfilment.prepMinutes >= 60 ? `${Math.round(fulfilment.prepMinutes / 60)} hour${fulfilment.prepMinutes >= 120 ? "s" : ""}` : `${fulfilment.prepMinutes} minutes`}</p>
-                  <p className="text-muted">Each brand ships its own order. You&apos;ll track it live.</p>
+                  <p className="font-medium">
+                    Usually ready in{" "}
+                    {fulfilment.prepMinutes >= 60
+                      ? `${Math.round(fulfilment.prepMinutes / 60)} hour${fulfilment.prepMinutes >= 120 ? "s" : ""}`
+                      : `${fulfilment.prepMinutes} minutes`}
+                  </p>
+                  <p className="text-muted">
+                    Each brand ships its own order. You&apos;ll track it live.
+                  </p>
                 </div>
               </div>
             </div>
@@ -272,7 +424,9 @@ export function ProductView() {
             <details className="group mt-8 border-t border-line pt-5" open>
               <summary className="flex cursor-pointer list-none items-center justify-between text-title font-semibold [&::-webkit-details-marker]:hidden">
                 Details
-                <span className="text-muted transition-transform group-open:rotate-45" aria-hidden>+</span>
+                <span className="text-muted transition-transform group-open:rotate-45" aria-hidden>
+                  +
+                </span>
               </summary>
               <ul className="mt-3 flex flex-col gap-2">
                 {p.details.map((d) => (
@@ -290,7 +444,9 @@ export function ProductView() {
               <Button
                 variant="ghost"
                 leadingIcon={<MessageCircle className="size-4.5" />}
-                onClick={() => (user ? setChat(true) : router.push(`/login?next=/products/${p.slug}`))}
+                onClick={() =>
+                  user ? setChat(true) : router.push(`/login?next=/products/${p.slug}`)
+                }
               >
                 Ask {p.brand.name} a question
               </Button>
@@ -302,7 +458,11 @@ export function ProductView() {
         </div>
       </div>
 
-      <section id="reviews" aria-labelledby="reviews-title" className="mt-20 scroll-mt-24 border-t border-line pt-12">
+      <section
+        id="reviews"
+        aria-labelledby="reviews-title"
+        className="mt-20 scroll-mt-24 border-t border-line pt-12"
+      >
         <h2 id="reviews-title" className="mb-8 font-display text-display-sm">
           What students say
         </h2>
@@ -328,7 +488,15 @@ export function ProductView() {
         </div>
       </div>
 
-      {user && !own && <ChatSheet open={chat} onOpenChange={setChat} brandId={p.brandId} brandName={p.brand.name} productId={p.id} />}
+      {user && !own && (
+        <ChatSheet
+          open={chat}
+          onOpenChange={setChat}
+          brandId={p.brandId}
+          brandName={p.brand.name}
+          productId={p.id}
+        />
+      )}
     </div>
   );
 }

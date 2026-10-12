@@ -21,7 +21,15 @@ import type { SavedPlace } from "@/services/types";
 import { toast } from "@/stores/toast";
 import { DashboardHeader } from "./dashboard-shell";
 
-type Draft = { id?: string; label: string; campusId: string; zoneId: string; pickupPointId: string; addressLine: string; isDefault: boolean };
+type Draft = {
+  id?: string;
+  label: string;
+  campusId: string;
+  zoneId: string;
+  pickupPointId: string;
+  addressLine: string;
+  isDefault: boolean;
+};
 
 function PlaceForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
   const [d, setD] = useState(draft);
@@ -55,26 +63,58 @@ function PlaceForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
       }}
     >
       <Field label="Name" error={errors.label} hint="e.g. Hostel, Department, Cousin's place">
-        <Input value={d.label} onChange={(e) => setD({ ...d, label: e.target.value })} maxLength={30} />
+        <Input
+          value={d.label}
+          onChange={(e) => setD({ ...d, label: e.target.value })}
+          maxLength={30}
+        />
       </Field>
       <Field label="Campus">
-        <Select value={d.campusId} onValueChange={(v) => setD({ ...d, campusId: v, zoneId: "", pickupPointId: "" })} options={(campuses.data ?? []).map((c) => ({ value: c.id, label: c.shortName, hint: c.city }))} label="Campus" />
+        <Select
+          value={d.campusId}
+          onValueChange={(v) => setD({ ...d, campusId: v, zoneId: "", pickupPointId: "" })}
+          options={(campuses.data ?? []).map((c) => ({
+            value: c.id,
+            label: c.shortName,
+            hint: c.city,
+          }))}
+          label="Campus"
+        />
       </Field>
       <Field label="Hostel, faculty or area" error={errors.zoneId}>
-        <Select value={d.zoneId || undefined} onValueChange={(v) => setD({ ...d, zoneId: v })} placeholder="Choose a zone" options={(campus?.zones ?? []).map((z) => ({ value: z.id, label: z.name }))} label="Zone" />
+        <Select
+          value={d.zoneId || undefined}
+          onValueChange={(v) => setD({ ...d, zoneId: v })}
+          placeholder="Choose a zone"
+          options={(campus?.zones ?? []).map((z) => ({ value: z.id, label: z.name }))}
+          label="Zone"
+        />
       </Field>
       <Field label="Room, block or landmark" error={errors.addressLine}>
-        <Input value={d.addressLine} onChange={(e) => setD({ ...d, addressLine: e.target.value })} placeholder="Room 12, Block C" maxLength={120} />
+        <Input
+          value={d.addressLine}
+          onChange={(e) => setD({ ...d, addressLine: e.target.value })}
+          placeholder="Room 12, Block C"
+          maxLength={120}
+        />
       </Field>
       <Field label="Preferred pickup point" optional>
         <Select
           value={d.pickupPointId || "none"}
           onValueChange={(v) => setD({ ...d, pickupPointId: v === "none" ? "" : v })}
-          options={[{ value: "none", label: "No preference" }, ...(campus?.pickupPoints ?? []).map((p) => ({ value: p.id, label: p.name }))]}
+          options={[
+            { value: "none", label: "No preference" },
+            ...(campus?.pickupPoints ?? []).map((p) => ({ value: p.id, label: p.name })),
+          ]}
           label="Pickup point"
         />
       </Field>
-      <Checkbox checked={d.isDefault} onCheckedChange={(v) => setD({ ...d, isDefault: v })} label="Use as my default" description="Checkout fills this in for brands on this campus." />
+      <Checkbox
+        checked={d.isDefault}
+        onCheckedChange={(v) => setD({ ...d, isDefault: v })}
+        label="Use as my default"
+        description="Checkout fills this in for brands on this campus."
+      />
       <Button type="submit" size="lg" loading={save.isPending}>
         {d.id ? "Save changes" : "Save place"}
       </Button>
@@ -90,7 +130,14 @@ export function PlacesView() {
   const [editing, setEditing] = useState<Draft | null>(null);
   const [confirm, setConfirm] = useState<SavedPlace | null>(null);
 
-  const blank: Draft = { label: "", campusId: user?.campusId ?? campuses.data?.[0]?.id ?? "", zoneId: "", pickupPointId: "", addressLine: "", isDefault: !data?.length };
+  const blank: Draft = {
+    label: "",
+    campusId: user?.campusId ?? campuses.data?.[0]?.id ?? "",
+    zoneId: "",
+    pickupPointId: "",
+    addressLine: "",
+    isDefault: !data?.length,
+  };
 
   return (
     <div>
@@ -111,7 +158,12 @@ export function PlacesView() {
           ))}
         </div>
       ) : !data?.length ? (
-        <EmptyState illustration="places" title="No saved places" body="Add your hostel room or a favourite pickup point." action={<Button onClick={() => setEditing(blank)}>Add a place</Button>} />
+        <EmptyState
+          illustration="places"
+          title="No saved places"
+          body="Add your hostel room or a favourite pickup point."
+          action={<Button onClick={() => setEditing(blank)}>Add a place</Button>}
+        />
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AnimatePresence initial={false}>
@@ -120,7 +172,13 @@ export function PlacesView() {
               const zone = campus?.zones.find((z) => z.id === p.zoneId);
               const point = campus?.pickupPoints.find((x) => x.id === p.pickupPointId);
               return (
-                <motion.li key={p.id} layout exit={{ opacity: 0, scale: 0.95 }} transition={spring.smooth} className="flex flex-col rounded-lg bg-surface p-5 hairline">
+                <motion.li
+                  key={p.id}
+                  layout
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={spring.smooth}
+                  className="flex flex-col rounded-lg bg-surface p-5 hairline"
+                >
                   <div className="flex items-start gap-3">
                     <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
                       <MapPin className="size-5" />
@@ -137,13 +195,22 @@ export function PlacesView() {
                     </div>
                   </div>
                   <div className="mt-4 flex gap-1 border-t border-line pt-3">
-                    <Button size="sm" variant="ghost" leadingIcon={<Pencil className="size-4" />} onClick={() => setEditing({ ...p, pickupPointId: p.pickupPointId ?? "" })}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      leadingIcon={<Pencil className="size-4" />}
+                      onClick={() => setEditing({ ...p, pickupPointId: p.pickupPointId ?? "" })}
+                    >
                       Edit
                     </Button>
-                    {!p.isDefault && (
-                      <SetDefaultButton place={p} />
-                    )}
-                    <Button size="sm" variant="ghost" className="ml-auto text-danger" leadingIcon={<Trash2 className="size-4" />} onClick={() => setConfirm(p)}>
+                    {!p.isDefault && <SetDefaultButton place={p} />}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="ml-auto text-danger"
+                      leadingIcon={<Trash2 className="size-4" />}
+                      onClick={() => setConfirm(p)}
+                    >
                       Delete
                     </Button>
                   </div>
@@ -153,8 +220,14 @@ export function PlacesView() {
           </AnimatePresence>
         </ul>
       )}
-      <ResponsiveSheet open={!!editing} onOpenChange={(v) => !v && setEditing(null)} title={editing?.id ? "Edit place" : "Add a place"}>
-        {editing && <PlaceForm key={editing.id ?? "new"} draft={editing} onDone={() => setEditing(null)} />}
+      <ResponsiveSheet
+        open={!!editing}
+        onOpenChange={(v) => !v && setEditing(null)}
+        title={editing?.id ? "Edit place" : "Add a place"}
+      >
+        {editing && (
+          <PlaceForm key={editing.id ?? "new"} draft={editing} onDone={() => setEditing(null)} />
+        )}
       </ResponsiveSheet>
       <Dialog
         open={!!confirm}
@@ -197,7 +270,12 @@ function SetDefaultButton({ place }: { place: SavedPlace }) {
       variant="ghost"
       loading={save.isPending}
       leadingIcon={<Star className="size-4" />}
-      onClick={() => save.mutate({ ...place, isDefault: true }, { onSuccess: () => toast.success(`${place.label} is now your default`) })}
+      onClick={() =>
+        save.mutate(
+          { ...place, isDefault: true },
+          { onSuccess: () => toast.success(`${place.label} is now your default`) },
+        )
+      }
     >
       Make default
     </Button>

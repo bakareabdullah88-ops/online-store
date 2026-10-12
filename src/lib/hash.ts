@@ -24,7 +24,9 @@ export function randomSalt(bytes = 16) {
 
 export async function hashPassword(password: string, saltHex: string): Promise<string> {
   const subtle = globalThis.crypto.subtle;
-  const key = await subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const key = await subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, [
+    "deriveBits",
+  ]);
   const bits = await subtle.deriveBits(
     { name: "PBKDF2", hash: "SHA-256", salt: fromHex(saltHex), iterations: ITERATIONS },
     key,

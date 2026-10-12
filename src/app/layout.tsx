@@ -7,7 +7,11 @@ import { themeBootScript } from "@/components/providers/theme";
 import "./globals.css";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"], display: "swap" });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" });
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
@@ -18,7 +22,10 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
-  title: { default: `${brand.name} · ${brand.tagline}`, template: `%s${brand.titleSeparator}${brand.name}` },
+  title: {
+    default: `${brand.name} · ${brand.tagline}`,
+    template: `%s${brand.titleSeparator}${brand.name}`,
+  },
   description: brand.description,
   applicationName: brand.name,
   openGraph: {
@@ -28,7 +35,12 @@ export const metadata: Metadata = {
     description: brand.description,
     locale: "en_NG",
   },
-  twitter: { card: "summary_large_image", site: brand.social.twitter, title: brand.name, description: brand.shortDescription },
+  twitter: {
+    card: "summary_large_image",
+    site: brand.social.twitter,
+    title: brand.name,
+    description: brand.shortDescription,
+  },
   appleWebApp: { capable: true, title: brand.name, statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };

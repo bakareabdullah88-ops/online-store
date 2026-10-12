@@ -43,8 +43,18 @@ export type DbSnapshot = {
 };
 
 export const DEMO = {
-  buyer: { id: "u_demo_buyer", email: "ada@demo.kiosk", password: "kiosk-demo-1", name: "Ada Okafor" },
-  seller: { id: "u_demo_seller", email: "tolu@demo.kiosk", password: "kiosk-demo-1", name: "Tolu Adeyemi" },
+  buyer: {
+    id: "u_demo_buyer",
+    email: "ada@demo.kiosk",
+    password: "kiosk-demo-1",
+    name: "Ada Okafor",
+  },
+  seller: {
+    id: "u_demo_seller",
+    email: "tolu@demo.kiosk",
+    password: "kiosk-demo-1",
+    name: "Tolu Adeyemi",
+  },
   sellerBrandHandle: "adirelab",
 } as const;
 
@@ -52,17 +62,41 @@ const SEED = 20251012;
 const DAY = 86_400_000;
 
 const customerNames = [
-  "Kunle Adebayo", "Zainab Musa", "Tobi Fashola", "Emeka Nwankwo", "Halima Bello", "Seyi Kolawole",
-  "Ngozi Eze", "Ibrahim Sani", "Funke Akindele", "Chidi Uche", "Amaka Ibe", "Bolu Dada", "Hauwa Garba",
-  "Dare Ogunleye", "Nkechi Chukwu", "Yusuf Tanko", "Ronke Jimoh", "Ikenna Peters", "Mariam Yakubu",
-  "Tomiwa Lawal", "Esther Ayodele", "Obinna Kalu", "Rukayat Shittu", "Damilola Williams", "Uche Madu",
+  "Kunle Adebayo",
+  "Zainab Musa",
+  "Tobi Fashola",
+  "Emeka Nwankwo",
+  "Halima Bello",
+  "Seyi Kolawole",
+  "Ngozi Eze",
+  "Ibrahim Sani",
+  "Funke Akindele",
+  "Chidi Uche",
+  "Amaka Ibe",
+  "Bolu Dada",
+  "Hauwa Garba",
+  "Dare Ogunleye",
+  "Nkechi Chukwu",
+  "Yusuf Tanko",
+  "Ronke Jimoh",
+  "Ikenna Peters",
+  "Mariam Yakubu",
+  "Tomiwa Lawal",
+  "Esther Ayodele",
+  "Obinna Kalu",
+  "Rukayat Shittu",
+  "Damilola Williams",
+  "Uche Madu",
 ];
 
 function iso(t: number) {
   return new Date(t).toISOString();
 }
 
-function parseOptions(specs: string[] | undefined, productId: string): { options: ProductOption[]; deltas: Map<string, number> } {
+function parseOptions(
+  specs: string[] | undefined,
+  productId: string,
+): { options: ProductOption[]; deltas: Map<string, number> } {
   const deltas = new Map<string, number>();
   const options: ProductOption[] = (specs ?? []).map((spec, oi) => {
     let name: string;
@@ -95,7 +129,12 @@ function parseOptions(specs: string[] | undefined, productId: string): { options
   return { options, deltas };
 }
 
-function buildVariants(options: ProductOption[], deltas: Map<string, number>, spec: ProductSpec, rng: Rng): Variant[] {
+function buildVariants(
+  options: ProductOption[],
+  deltas: Map<string, number>,
+  spec: ProductSpec,
+  rng: Rng,
+): Variant[] {
   return allVariantKeys(options).map((key) => {
     const ids = key === DEFAULT_VARIANT_KEY ? [] : key.split("|");
     const delta = ids.reduce((n, id) => n + (deltas.get(id) ?? 0), 0);
@@ -118,7 +157,12 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
   const salt = "6b696f736b2d64656d6f2d73616c7400"; // fixed demo salt so seeding is deterministic
   const demoHash = await hashPassword(DEMO.buyer.password, salt);
 
-  const basePrefs = { orderUpdates: true, messages: true, promotions: false, newFromFollowed: true };
+  const basePrefs = {
+    orderUpdates: true,
+    messages: true,
+    promotions: false,
+    newFromFollowed: true,
+  };
   const users: UserRecord[] = [];
 
   const unilag = campusBySlug.get("unilag")!;
@@ -225,7 +269,9 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       followerCount: rng.int(80, 2400),
       productCount: spec.products.length,
       createdAt: iso(brandCreated),
-      payoutAccount: isDemoBrand ? { bankName: "GTBank", accountLast4: "4821", accountName: spec.owner } : null,
+      payoutAccount: isDemoBrand
+        ? { bankName: "GTBank", accountLast4: "4821", accountName: spec.owner }
+        : null,
       verified: !!spec.verified,
     });
 
@@ -233,9 +279,14 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       const productId = `p_${spec.handle}_${String(pi + 1).padStart(2, "0")}`;
       const { options, deltas } = parseOptions(ps.options, productId);
       const variants = buildVariants(options, deltas, ps, rng);
-      const created = brandCreated + rng.int(1, Math.max(2, Math.floor((now - brandCreated) / DAY) - 2)) * DAY;
+      const created =
+        brandCreated + rng.int(1, Math.max(2, Math.floor((now - brandCreated) / DAY) - 2)) * DAY;
       const imgCount = rng.int(2, 4);
-      const palettes = [spec.palette, spec.palette, rng.pick(["sand", "clay", "sage", "ochre", "ink"] as const)];
+      const palettes = [
+        spec.palette,
+        spec.palette,
+        rng.pick(["sand", "clay", "sage", "ochre", "ink"] as const),
+      ];
       const product: Product = {
         id: productId,
         brandId,
@@ -287,7 +338,12 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
           ...(label ? { variantLabel: label } : {}),
           createdAt: iso(at),
           ...(rng.chance(isDemoBrand ? 0.45 : 0.3)
-            ? { reply: { body: replyFor(pick.r, spec.owner), createdAt: iso(at + rng.int(1, 30) * 3_600_000) } }
+            ? {
+                reply: {
+                  body: replyFor(pick.r, spec.owner),
+                  createdAt: iso(at + rng.int(1, 30) * 3_600_000),
+                },
+              }
             : {}),
         };
         reviews.push(review);
@@ -322,7 +378,8 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
 
   // ----------------------------- Orders -----------------------------------
   const orders: Order[] = [];
-  const productsByBrand = (id: string) => products.filter((p) => p.brandId === id && p.status === "published");
+  const productsByBrand = (id: string) =>
+    products.filter((p) => p.brandId === id && p.status === "published");
   const brandById = new Map(brands.map((b) => [b.id, b]));
   const campusById = new Map(campuses.map((c) => [c.id, c]));
 
@@ -351,7 +408,9 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
         image: p.images[0]!,
       };
     });
-    const method = args.method ?? (b.fulfilment.delivery && (!b.fulfilment.pickup || rng.chance(0.6)) ? "delivery" : "pickup");
+    const method =
+      args.method ??
+      (b.fulfilment.delivery && (!b.fulfilment.pickup || rng.chance(0.6)) ? "delivery" : "pickup");
     const campus = campusById.get(b.campusId)!;
     const zone = rng.pick(campus.zones);
     const subtotal = items.reduce((n, it) => n + it.unitPriceKobo * it.quantity, 0);
@@ -373,7 +432,9 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       });
     }
     const paymentMethod = rng.pick(["card", "transfer", "pay_on_pickup", "card"] as const);
-    const pickupPoint = campus.pickupPoints.find((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? campus.pickupPoints[0];
+    const pickupPoint =
+      campus.pickupPoints.find((p) => b.fulfilment.pickupPointIds.includes(p.id)) ??
+      campus.pickupPoints[0];
     return {
       id: args.id,
       code: `${appBrand.orderPrefix}-${Array.from({ length: 4 }, () => "ABCDEFGHJKMNPQRSTVWXYZ23456789"[rng.int(0, 29)]).join("")}`,
@@ -388,12 +449,26 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       items,
       fulfilment:
         method === "pickup"
-          ? { method, campusId: campus.id, zoneId: pickupPoint?.zoneId ?? zone.id, ...(pickupPoint ? { pickupPointId: pickupPoint.id } : {}) }
-          : { method, campusId: campus.id, zoneId: zone.id, addressLine: `Room ${rng.pick(["A", "B", "C", "D"])}${rng.int(101, 420)}` },
+          ? {
+              method,
+              campusId: campus.id,
+              zoneId: pickupPoint?.zoneId ?? zone.id,
+              ...(pickupPoint ? { pickupPointId: pickupPoint.id } : {}),
+            }
+          : {
+              method,
+              campusId: campus.id,
+              zoneId: zone.id,
+              addressLine: `Room ${rng.pick(["A", "B", "C", "D"])}${rng.int(101, 420)}`,
+            },
       subtotalKobo: subtotal,
       deliveryFeeKobo: fee,
       discountKobo: discount,
-      totalKobo: groupTotal({ subtotalKobo: subtotal, deliveryFeeKobo: fee, discountKobo: discount }),
+      totalKobo: groupTotal({
+        subtotalKobo: subtotal,
+        deliveryFeeKobo: fee,
+        discountKobo: discount,
+      }),
       ...(discount ? { promoCode: "KIOSK10" } : {}),
       payment: {
         method: paymentMethod,
@@ -415,7 +490,15 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
   };
 
   // Demo buyer's history across brands (all completed)
-  const buyerBrands = ["b_mamaputexpress", "b_sweettoothtobi", "b_glowtheory", "b_secondlap", "b_plughub", "b_zoborepublic", "b_inkandpaper"];
+  const buyerBrands = [
+    "b_mamaputexpress",
+    "b_sweettoothtobi",
+    "b_glowtheory",
+    "b_secondlap",
+    "b_plughub",
+    "b_zoborepublic",
+    "b_inkandpaper",
+  ];
   buyerBrands.forEach((bid, i) => {
     const b = brandById.get(bid)!;
     orders.push(
@@ -457,13 +540,23 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       const u = rng.pick(customers);
       const placedAt = day - rng.int(1, 13) * 3_600_000 - rng.int(0, 59) * 60_000;
       let status: OrderStatus = "delivered";
-      if (d === 1) status = rng.pick(["delivered", "ready", "out_for_delivery", "preparing"] as const);
+      if (d === 1)
+        status = rng.pick(["delivered", "ready", "out_for_delivery", "preparing"] as const);
       else if (rng.chance(0.04)) status = "declined";
       else if (rng.chance(0.03)) status = "cancelled";
-      const methodGuess: "pickup" | "delivery" = status === "ready" ? "pickup" : status === "out_for_delivery" ? "delivery" : rng.chance(0.55) ? "delivery" : "pickup";
+      const methodGuess: "pickup" | "delivery" =
+        status === "ready"
+          ? "pickup"
+          : status === "out_for_delivery"
+            ? "delivery"
+            : rng.chance(0.55)
+              ? "delivery"
+              : "pickup";
       orders.push(
         makeOrder({
-          id: `o_tl_${String(++oi).padStart(3, "0")}${Math.floor(rng.next() * 46656).toString(36).padStart(3, "0")}`,
+          id: `o_tl_${String(++oi).padStart(3, "0")}${Math.floor(rng.next() * 46656)
+            .toString(36)
+            .padStart(3, "0")}`,
           buyer: u,
           brand: demoBrand,
           placedAt: Math.min(placedAt, now - 5 * 60_000),
@@ -495,10 +588,16 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
     const day = new Date(now - d * DAY);
     const date = day.toISOString().slice(0, 10);
     const dayOrders = orders.filter(
-      (o) => o.brandId === demoBrand.id && o.placedAt.slice(0, 10) === date && o.status !== "declined" && o.status !== "cancelled",
+      (o) =>
+        o.brandId === demoBrand.id &&
+        o.placedAt.slice(0, 10) === date &&
+        o.status !== "declined" &&
+        o.status !== "cancelled",
     );
     const weekday = day.getDay();
-    const views = Math.round((90 + rng.int(0, 70)) * (weekday === 5 || weekday === 6 ? 1.35 : 1) * (0.7 + (90 - d) / 150));
+    const views = Math.round(
+      (90 + rng.int(0, 70)) * (weekday === 5 || weekday === 6 ? 1.35 : 1) * (0.7 + (90 - d) / 150),
+    );
     const hourly = Array.from({ length: 24 }, (_, h) => {
       const w = h < 7 ? 0.15 : h < 11 ? 0.7 : h < 15 ? 1.4 : h < 19 ? 0.9 : h < 23 ? 1.7 : 0.6;
       return Math.round((views / 24) * w * (0.8 + rng.next() * 0.4));
@@ -516,22 +615,144 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
 
   // ----------------------------- Promos -----------------------------------
   const promos: Promo[] = [
-    { id: "pr_kiosk10", code: "KIOSK10", brandId: null, kind: "percent", value: 10, maxDiscountKobo: 200_000, minSubtotalKobo: 300_000, active: true, usageCount: 1284, description: "10% off orders over ₦3,000 (max ₦2,000)", createdAt: iso(now - 60 * DAY) },
-    { id: "pr_fresher", code: "FRESHER", brandId: null, kind: "fixed", value: 50_000, minSubtotalKobo: 250_000, active: true, usageCount: 412, description: "₦500 off your order over ₦2,500", createdAt: iso(now - 40 * DAY) },
-    { id: "pr_freedel", code: "FREEDEL", brandId: null, kind: "free_delivery", value: 0, minSubtotalKobo: 0, active: true, usageCount: 2210, description: "Free delivery on any order", createdAt: iso(now - 30 * DAY) },
-    { id: "pr_adire15", code: "ADIRE15", brandId: demoBrand.id, kind: "percent", value: 15, minSubtotalKobo: 1_000_000, active: true, usageCount: 23, usageLimit: 100, description: "15% off Àdìrẹ Lab orders over ₦10,000", createdAt: iso(now - 20 * DAY) },
-    { id: "pr_hallweek", code: "HALLWEEK", brandId: demoBrand.id, kind: "fixed", value: 100_000, minSubtotalKobo: 800_000, active: false, usageCount: 61, description: "Hall week special: ₦1,000 off", createdAt: iso(now - 75 * DAY) },
-    { id: "pr_sweet20", code: "SWEET20", brandId: "b_sweettoothtobi", kind: "percent", value: 20, maxDiscountKobo: 200_000, minSubtotalKobo: 0, active: true, usageCount: 88, description: "20% off Sweet Tooth treats (max ₦2,000)", createdAt: iso(now - 10 * DAY) },
+    {
+      id: "pr_kiosk10",
+      code: "KIOSK10",
+      brandId: null,
+      kind: "percent",
+      value: 10,
+      maxDiscountKobo: 200_000,
+      minSubtotalKobo: 300_000,
+      active: true,
+      usageCount: 1284,
+      description: "10% off orders over ₦3,000 (max ₦2,000)",
+      createdAt: iso(now - 60 * DAY),
+    },
+    {
+      id: "pr_fresher",
+      code: "FRESHER",
+      brandId: null,
+      kind: "fixed",
+      value: 50_000,
+      minSubtotalKobo: 250_000,
+      active: true,
+      usageCount: 412,
+      description: "₦500 off your order over ₦2,500",
+      createdAt: iso(now - 40 * DAY),
+    },
+    {
+      id: "pr_freedel",
+      code: "FREEDEL",
+      brandId: null,
+      kind: "free_delivery",
+      value: 0,
+      minSubtotalKobo: 0,
+      active: true,
+      usageCount: 2210,
+      description: "Free delivery on any order",
+      createdAt: iso(now - 30 * DAY),
+    },
+    {
+      id: "pr_adire15",
+      code: "ADIRE15",
+      brandId: demoBrand.id,
+      kind: "percent",
+      value: 15,
+      minSubtotalKobo: 1_000_000,
+      active: true,
+      usageCount: 23,
+      usageLimit: 100,
+      description: "15% off Àdìrẹ Lab orders over ₦10,000",
+      createdAt: iso(now - 20 * DAY),
+    },
+    {
+      id: "pr_hallweek",
+      code: "HALLWEEK",
+      brandId: demoBrand.id,
+      kind: "fixed",
+      value: 100_000,
+      minSubtotalKobo: 800_000,
+      active: false,
+      usageCount: 61,
+      description: "Hall week special: ₦1,000 off",
+      createdAt: iso(now - 75 * DAY),
+    },
+    {
+      id: "pr_sweet20",
+      code: "SWEET20",
+      brandId: "b_sweettoothtobi",
+      kind: "percent",
+      value: 20,
+      maxDiscountKobo: 200_000,
+      minSubtotalKobo: 0,
+      active: true,
+      usageCount: 88,
+      description: "20% off Sweet Tooth treats (max ₦2,000)",
+      createdAt: iso(now - 10 * DAY),
+    },
   ];
 
   // --------------------------- Notifications ------------------------------
   const notifications: AppNotification[] = [
-    { id: "n_1", userId: buyer.id, kind: "order", title: "Your Àdìrẹ Lab order is being prepared", body: "Tolu is packing your order. We'll tell you when it's on the way.", href: "/orders/o_ada_live_a7b2", read: false, createdAt: iso(now - 30 * 60_000) },
-    { id: "n_2", userId: buyer.id, kind: "promo", title: "FREEDEL is live this week", body: "Free delivery on any order. Use code FREEDEL at checkout.", read: false, createdAt: iso(now - 5 * 3_600_000) },
-    { id: "n_3", userId: buyer.id, kind: "follow", title: "Second Lap Thrift dropped 3 new pieces", body: "One-of-one vintage, gone when it's gone.", href: "/brands/secondlap", read: true, createdAt: iso(now - 2 * DAY) },
-    { id: "n_4", userId: buyer.id, kind: "review", title: "How was your Sweet Tooth order?", body: "Leave a quick review to help other students.", href: "/orders", read: true, createdAt: iso(now - 6 * DAY) },
-    { id: "n_5", userId: DEMO.seller.id, kind: "order", title: "3 new orders waiting", body: "Accept them soon so customers aren't left waiting.", href: "/studio/orders", read: false, createdAt: iso(now - 40 * 60_000) },
-    { id: "n_6", userId: DEMO.seller.id, kind: "review", title: "New 5-star review on Indigo Àdìrẹ Boxy Tee", body: "\"The colour is even better in person.\"", href: "/studio/reviews", read: false, createdAt: iso(now - 9 * 3_600_000) },
+    {
+      id: "n_1",
+      userId: buyer.id,
+      kind: "order",
+      title: "Your Àdìrẹ Lab order is being prepared",
+      body: "Tolu is packing your order. We'll tell you when it's on the way.",
+      href: "/orders/o_ada_live_a7b2",
+      read: false,
+      createdAt: iso(now - 30 * 60_000),
+    },
+    {
+      id: "n_2",
+      userId: buyer.id,
+      kind: "promo",
+      title: "FREEDEL is live this week",
+      body: "Free delivery on any order. Use code FREEDEL at checkout.",
+      read: false,
+      createdAt: iso(now - 5 * 3_600_000),
+    },
+    {
+      id: "n_3",
+      userId: buyer.id,
+      kind: "follow",
+      title: "Second Lap Thrift dropped 3 new pieces",
+      body: "One-of-one vintage, gone when it's gone.",
+      href: "/brands/secondlap",
+      read: true,
+      createdAt: iso(now - 2 * DAY),
+    },
+    {
+      id: "n_4",
+      userId: buyer.id,
+      kind: "review",
+      title: "How was your Sweet Tooth order?",
+      body: "Leave a quick review to help other students.",
+      href: "/orders",
+      read: true,
+      createdAt: iso(now - 6 * DAY),
+    },
+    {
+      id: "n_5",
+      userId: DEMO.seller.id,
+      kind: "order",
+      title: "3 new orders waiting",
+      body: "Accept them soon so customers aren't left waiting.",
+      href: "/studio/orders",
+      read: false,
+      createdAt: iso(now - 40 * 60_000),
+    },
+    {
+      id: "n_6",
+      userId: DEMO.seller.id,
+      kind: "review",
+      title: "New 5-star review on Indigo Àdìrẹ Boxy Tee",
+      body: '"The colour is even better in person."',
+      href: "/studio/reviews",
+      read: false,
+      createdAt: iso(now - 9 * 3_600_000),
+    },
   ];
 
   // ------------------------------ Threads ---------------------------------
@@ -547,10 +768,30 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       brandLogo: sweet.logo,
       productId: "p_sweettoothtobi_03",
       messages: [
-        { id: "m1", from: "buyer", body: "Hi! Can you write 'Happy 21st Bisi' on the bento cake?", at: iso(now - 26 * 3_600_000) },
-        { id: "m2", from: "brand", body: "Yes of course! Pink or white icing for the letters?", at: iso(now - 25 * 3_600_000) },
-        { id: "m3", from: "buyer", body: "Pink please. Can it be ready by Friday 4pm?", at: iso(now - 24 * 3_600_000) },
-        { id: "m4", from: "brand", body: "Done ✓ Place the order by Thursday and add the message in the note.", at: iso(now - 23 * 3_600_000) },
+        {
+          id: "m1",
+          from: "buyer",
+          body: "Hi! Can you write 'Happy 21st Bisi' on the bento cake?",
+          at: iso(now - 26 * 3_600_000),
+        },
+        {
+          id: "m2",
+          from: "brand",
+          body: "Yes of course! Pink or white icing for the letters?",
+          at: iso(now - 25 * 3_600_000),
+        },
+        {
+          id: "m3",
+          from: "buyer",
+          body: "Pink please. Can it be ready by Friday 4pm?",
+          at: iso(now - 24 * 3_600_000),
+        },
+        {
+          id: "m4",
+          from: "brand",
+          body: "Done ✓ Place the order by Thursday and add the message in the note.",
+          at: iso(now - 23 * 3_600_000),
+        },
       ],
       updatedAt: iso(now - 23 * 3_600_000),
       unreadForBuyer: 1,
@@ -566,7 +807,12 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       brandLogo: demoBrand.logo,
       productId: "p_adirelab_01",
       messages: [
-        { id: "m1", from: "buyer", body: "Does the boxy tee come in XXL? I'm 6'3\".", at: iso(now - 3 * 3_600_000) },
+        {
+          id: "m1",
+          from: "buyer",
+          body: "Does the boxy tee come in XXL? I'm 6'3\".",
+          at: iso(now - 3 * 3_600_000),
+        },
       ],
       updatedAt: iso(now - 3 * 3_600_000),
       unreadForBuyer: 0,
@@ -581,9 +827,24 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
       brandHandle: demoBrand.handle,
       brandLogo: demoBrand.logo,
       messages: [
-        { id: "m1", from: "buyer", body: "Hi, can I pick up at the Engineering foyer instead of Arts?", at: iso(now - 2 * DAY) },
-        { id: "m2", from: "brand", body: "Sure, I'll be there from 12 to 2pm tomorrow.", at: iso(now - 2 * DAY + 40 * 60_000) },
-        { id: "m3", from: "buyer", body: "Perfect, thank you!", at: iso(now - 2 * DAY + 55 * 60_000) },
+        {
+          id: "m1",
+          from: "buyer",
+          body: "Hi, can I pick up at the Engineering foyer instead of Arts?",
+          at: iso(now - 2 * DAY),
+        },
+        {
+          id: "m2",
+          from: "brand",
+          body: "Sure, I'll be there from 12 to 2pm tomorrow.",
+          at: iso(now - 2 * DAY + 40 * 60_000),
+        },
+        {
+          id: "m3",
+          from: "buyer",
+          body: "Perfect, thank you!",
+          at: iso(now - 2 * DAY + 55 * 60_000),
+        },
       ],
       updatedAt: iso(now - 2 * DAY + 55 * 60_000),
       unreadForBuyer: 0,
@@ -593,18 +854,70 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
 
   // ------------------------------ Wallet ----------------------------------
   const wallet: WalletTransaction[] = [
-    { id: "w1", userId: buyer.id, kind: "topup", amountKobo: 2_000_000, label: "Top-up (demo)", at: iso(now - 30 * DAY) },
-    { id: "w2", userId: buyer.id, kind: "payment", amountKobo: -480_000, label: "Sweet Tooth by Tobi", at: iso(now - 22 * DAY) },
-    { id: "w3", userId: buyer.id, kind: "payment", amountKobo: -390_000, label: "Mama Put Express", at: iso(now - 13 * DAY) },
-    { id: "w4", userId: buyer.id, kind: "refund", amountKobo: 120_000, label: "Refund · Zobo Republic", at: iso(now - 9 * DAY) },
-    { id: "w5", userId: buyer.id, kind: "topup", amountKobo: 500_000, label: "Top-up (demo)", at: iso(now - 4 * DAY) },
+    {
+      id: "w1",
+      userId: buyer.id,
+      kind: "topup",
+      amountKobo: 2_000_000,
+      label: "Top-up (demo)",
+      at: iso(now - 30 * DAY),
+    },
+    {
+      id: "w2",
+      userId: buyer.id,
+      kind: "payment",
+      amountKobo: -480_000,
+      label: "Sweet Tooth by Tobi",
+      at: iso(now - 22 * DAY),
+    },
+    {
+      id: "w3",
+      userId: buyer.id,
+      kind: "payment",
+      amountKobo: -390_000,
+      label: "Mama Put Express",
+      at: iso(now - 13 * DAY),
+    },
+    {
+      id: "w4",
+      userId: buyer.id,
+      kind: "refund",
+      amountKobo: 120_000,
+      label: "Refund · Zobo Republic",
+      at: iso(now - 9 * DAY),
+    },
+    {
+      id: "w5",
+      userId: buyer.id,
+      kind: "topup",
+      amountKobo: 500_000,
+      label: "Top-up (demo)",
+      at: iso(now - 4 * DAY),
+    },
   ];
 
   // ------------------------------- Places ---------------------------------
   const moremi = unilag.zones.find((z) => z.name === "Moremi Hall")!;
   const places: SavedPlace[] = [
-    { id: "pl_1", userId: buyer.id, label: "Hostel", campusId: unilag.id, zoneId: moremi.id, addressLine: "Room B214, Block B", isDefault: true },
-    { id: "pl_2", userId: buyer.id, label: "Department", campusId: unilag.id, zoneId: unilag.zones[4]!.id, pickupPointId: unilag.pickupPoints[0]!.id, addressLine: "Faculty of Arts, 2nd floor", isDefault: false },
+    {
+      id: "pl_1",
+      userId: buyer.id,
+      label: "Hostel",
+      campusId: unilag.id,
+      zoneId: moremi.id,
+      addressLine: "Room B214, Block B",
+      isDefault: true,
+    },
+    {
+      id: "pl_2",
+      userId: buyer.id,
+      label: "Department",
+      campusId: unilag.id,
+      zoneId: unilag.zones[4]!.id,
+      pickupPointId: unilag.pickupPoints[0]!.id,
+      addressLine: "Faculty of Arts, 2nd floor",
+      isDefault: false,
+    },
   ];
 
   // ------------------------------ Payouts ---------------------------------
@@ -617,7 +930,21 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
     reference: `PAY-${(48213 + i * 977).toString(36).toUpperCase()}`,
   }));
 
-  return { campuses, users, brands, products, reviews, orders, promos, notifications, threads, wallet, places, payouts, metrics };
+  return {
+    campuses,
+    users,
+    brands,
+    products,
+    reviews,
+    orders,
+    promos,
+    notifications,
+    threads,
+    wallet,
+    places,
+    payouts,
+    metrics,
+  };
 }
 
 function hashSeed(id: string, k: number) {

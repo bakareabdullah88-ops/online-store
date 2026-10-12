@@ -37,18 +37,31 @@ describe("seed", () => {
 
 describe("auth", () => {
   it("signs up, hashes the password and signs in again", async () => {
-    const u = await s.auth.signUp({ name: "Bisi Ade", email: "Bisi@Example.com", password: "campus123" });
+    const u = await s.auth.signUp({
+      name: "Bisi Ade",
+      email: "Bisi@Example.com",
+      password: "campus123",
+    });
     expect(u.email).toBe("bisi@example.com");
     expect(u).not.toHaveProperty("passwordHash");
     await s.auth.signOut();
     expect(await s.auth.getSession()).toBeNull();
-    await expectCode(s.auth.signIn({ email: "bisi@example.com", password: "wrong-pass1" }), "UNAUTHORIZED");
+    await expectCode(
+      s.auth.signIn({ email: "bisi@example.com", password: "wrong-pass1" }),
+      "UNAUTHORIZED",
+    );
     const again = await s.auth.signIn({ email: "bisi@example.com", password: "campus123" });
     expect(again.id).toBe(u.id);
   });
   it("rejects duplicate emails and weak passwords", async () => {
-    await expectCode(s.auth.signUp({ name: "Ada", email: DEMO.buyer.email, password: "campus123" }), "CONFLICT");
-    await expectCode(s.auth.signUp({ name: "Ada", email: "x@y.com", password: "short" }), "VALIDATION");
+    await expectCode(
+      s.auth.signUp({ name: "Ada", email: DEMO.buyer.email, password: "campus123" }),
+      "CONFLICT",
+    );
+    await expectCode(
+      s.auth.signUp({ name: "Ada", email: "x@y.com", password: "short" }),
+      "VALIDATION",
+    );
   });
   it("one-click demo login works for both roles", async () => {
     expect((await s.auth.signInDemo("buyer")).id).toBe(DEMO.buyer.id);
@@ -83,8 +96,25 @@ describe("checkout", () => {
       phone: "08031234567",
       paymentMethod: "card" as const,
       groups: [
-        { brandId: a.brandId, lines: [{ productId: a.id, variantKey: va.key, quantity: 2 }], fulfilment: { method: "delivery" as const, zoneId: "unilag-z1", addressLine: "Room B214" }, promoCode: "freedel" },
-        { brandId: b.brandId, lines: [{ productId: b.id, variantKey: vb.key, quantity: 1 }], fulfilment: { method: "pickup" as const, zoneId: "covenant-z6", pickupPointId: "covenant-pp1" } },
+        {
+          brandId: a.brandId,
+          lines: [{ productId: a.id, variantKey: va.key, quantity: 2 }],
+          fulfilment: {
+            method: "delivery" as const,
+            zoneId: "unilag-z1",
+            addressLine: "Room B214",
+          },
+          promoCode: "freedel",
+        },
+        {
+          brandId: b.brandId,
+          lines: [{ productId: b.id, variantKey: vb.key, quantity: 1 }],
+          fulfilment: {
+            method: "pickup" as const,
+            zoneId: "covenant-z6",
+            pickupPointId: "covenant-pp1",
+          },
+        },
       ],
     };
     const quote = await s.orders.quote(input);
@@ -109,7 +139,13 @@ describe("checkout", () => {
         campusId: "c_unilag",
         phone: "08031234567",
         paymentMethod: "card",
-        groups: [{ brandId: p.brandId, lines: [{ productId: p.id, variantKey: v.key, quantity: 1 }], fulfilment: { method: "pickup", zoneId: "unilag-z5", pickupPointId: "unilag-pp1" } }],
+        groups: [
+          {
+            brandId: p.brandId,
+            lines: [{ productId: p.id, variantKey: v.key, quantity: 1 }],
+            fulfilment: { method: "pickup", zoneId: "unilag-z5", pickupPointId: "unilag-pp1" },
+          },
+        ],
       }),
       "CONFLICT",
     );
@@ -127,7 +163,14 @@ describe("studio", () => {
       category: "food",
       tagline: "Small cakes, big love",
       bio: "",
-      fulfilment: { pickup: true, delivery: false, deliveryFeeKobo: 0, prepMinutes: 60, pickupPointIds: ["ui-pp1"], zoneIds: [] },
+      fulfilment: {
+        pickup: true,
+        delivery: false,
+        deliveryFeeKobo: 0,
+        prepMinutes: 60,
+        pickupPointIds: ["ui-pp1"],
+        zoneIds: [],
+      },
     });
     expect(brand.handle).toBe("kemibakes");
     const product = await s.studio.createProduct({
@@ -150,7 +193,14 @@ describe("studio", () => {
       campusId: "c_ui",
       phone: "08031234567",
       paymentMethod: "card",
-      groups: [{ brandId: brand.id, lines: [{ productId: product.id, variantKey: "default", quantity: 1 }], fulfilment: { method: "pickup", zoneId: "ui-z5", pickupPointId: "ui-pp1" }, promoCode: "KEMI20" }],
+      groups: [
+        {
+          brandId: brand.id,
+          lines: [{ productId: product.id, variantKey: "default", quantity: 1 }],
+          fulfilment: { method: "pickup", zoneId: "ui-z5", pickupPointId: "ui-pp1" },
+          promoCode: "KEMI20",
+        },
+      ],
     });
     expect(q.groups[0]!.discountKobo).toBe(80_000);
   });

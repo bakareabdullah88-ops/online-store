@@ -61,12 +61,27 @@ export function CommandPalette() {
   const hasShop = !!user && user.brandIds.length > 0;
   const pages = [
     { label: "Explore", href: "/explore", icon: LayoutGrid },
-    { label: "Your bag", action: () => { close(); setBagOpen(true); }, icon: ShoppingBag },
+    {
+      label: "Your bag",
+      action: () => {
+        close();
+        setBagOpen(true);
+      },
+      icon: ShoppingBag,
+    },
     { label: "Orders", href: "/orders", icon: Receipt },
     { label: "Saved items", href: "/wishlist", icon: Heart },
-    { label: hasShop ? "Shop Studio" : "Open your shop", href: hasShop ? "/studio" : "/open-shop", icon: Store },
+    {
+      label: hasShop ? "Shop Studio" : "Open your shop",
+      href: hasShop ? "/studio" : "/open-shop",
+      icon: Store,
+    },
     { label: "Settings", href: "/account/settings", icon: Settings },
-    { label: resolved === "dark" ? "Switch to light theme" : "Switch to dark theme", action: () => setPreference(resolved === "dark" ? "light" : "dark"), icon: Moon },
+    {
+      label: resolved === "dark" ? "Switch to light theme" : "Switch to dark theme",
+      action: () => setPreference(resolved === "dark" ? "light" : "dark"),
+      icon: Moon,
+    },
   ];
 
   return (
@@ -94,9 +109,17 @@ export function CommandPalette() {
                 <VisuallyHidden.Root>
                   <RDialog.Title>Search</RDialog.Title>
                 </VisuallyHidden.Root>
-                <Command shouldFilter={false} label="Search Kiosk" className="flex min-h-0 flex-1 flex-col">
+                <Command
+                  shouldFilter={false}
+                  label="Search Kiosk"
+                  className="flex min-h-0 flex-1 flex-col"
+                >
                   <div className="flex items-center gap-3 border-b border-line px-4">
-                    {isFetching && term ? <Spinner className="size-5 text-muted" /> : <Search className="size-5 text-muted" />}
+                    {isFetching && term ? (
+                      <Spinner className="size-5 text-muted" />
+                    ) : (
+                      <Search className="size-5 text-muted" />
+                    )}
                     <Command.Input
                       value={query}
                       onValueChange={setQuery}
@@ -104,23 +127,38 @@ export function CommandPalette() {
                       placeholder="Search products, brands, pages…"
                       className="h-14 flex-1 bg-transparent text-body-lg text-ink outline-none placeholder:text-faint"
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && term && !document.querySelector("[cmdk-item][data-selected=true]")) {
+                        if (
+                          e.key === "Enter" &&
+                          term &&
+                          !document.querySelector("[cmdk-item][data-selected=true]")
+                        ) {
                           go(`/search?q=${encodeURIComponent(term)}`, term);
                         }
                       }}
                     />
-                    <RDialog.Close className="flex size-9 items-center justify-center rounded-md text-muted hover:bg-ink/[0.06] sm:hidden" aria-label="Close search">
+                    <RDialog.Close
+                      className="flex size-9 items-center justify-center rounded-md text-muted hover:bg-ink/[0.06] sm:hidden"
+                      aria-label="Close search"
+                    >
                       <X className="size-5" />
                     </RDialog.Close>
                     <Kbd className="hidden sm:inline-flex">Esc</Kbd>
                   </div>
                   <Command.List className="min-h-0 flex-1 overflow-y-auto p-2">
                     <Command.Empty className="px-3 py-10 text-center text-body text-muted">
-                      {isFetching ? "Searching…" : <>No matches for “{term}”. Try a brand name or “jollof”.</>}
+                      {isFetching ? (
+                        "Searching…"
+                      ) : (
+                        <>No matches for “{term}”. Try a brand name or “jollof”.</>
+                      )}
                     </Command.Empty>
 
                     {term && (
-                      <Command.Item value={`search-all-${term}`} onSelect={() => go(`/search?q=${encodeURIComponent(term)}`, term)} className={itemClass}>
+                      <Command.Item
+                        value={`search-all-${term}`}
+                        onSelect={() => go(`/search?q=${encodeURIComponent(term)}`, term)}
+                        className={itemClass}
+                      >
                         <Search className="size-4.5 text-muted" />
                         <span className="flex-1 truncate">
                           Search everything for <strong className="font-medium">“{term}”</strong>
@@ -130,32 +168,58 @@ export function CommandPalette() {
                     )}
 
                     {term && !!data?.products.length && (
-                      <Command.Group heading="Products" className="[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-muted">
+                      <Command.Group
+                        heading="Products"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:text-muted"
+                      >
                         {data.products.map((p) => (
-                          <Command.Item key={p.id} value={`p-${p.id}`} onSelect={() => go(`/products/${p.slug}`, term)} className={itemClass}>
+                          <Command.Item
+                            key={p.id}
+                            value={`p-${p.id}`}
+                            onSelect={() => go(`/products/${p.slug}`, term)}
+                            className={itemClass}
+                          >
                             <span className="size-10 shrink-0 overflow-hidden rounded-sm">
                               <AppImage image={p.images[0]} alt="" />
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-small font-medium">{p.name}</span>
-                              <span className="block truncate text-small text-muted">{p.brand.name}</span>
+                              <span className="block truncate text-small font-medium">
+                                {p.name}
+                              </span>
+                              <span className="block truncate text-small text-muted">
+                                {p.brand.name}
+                              </span>
                             </span>
-                            <span className="font-mono text-small tabular text-ink-2">{formatNaira(p.priceKobo)}</span>
+                            <span className="font-mono text-small text-ink-2 tabular">
+                              {formatNaira(p.priceKobo)}
+                            </span>
                           </Command.Item>
                         ))}
                       </Command.Group>
                     )}
 
                     {term && !!data?.brands.length && (
-                      <Command.Group heading="Brands" className="[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-muted">
+                      <Command.Group
+                        heading="Brands"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:text-muted"
+                      >
                         {data.brands.map((b) => (
-                          <Command.Item key={b.id} value={`b-${b.id}`} onSelect={() => go(`/brands/${b.handle}`, term)} className={itemClass}>
+                          <Command.Item
+                            key={b.id}
+                            value={`b-${b.id}`}
+                            onSelect={() => go(`/brands/${b.handle}`, term)}
+                            className={itemClass}
+                          >
                             <span className="size-10 shrink-0 overflow-hidden rounded-full">
                               <AppImage image={b.logo} alt="" variant="logo" name={b.name} />
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-small font-medium">{b.name}</span>
-                              <span className="block truncate text-small text-muted">@{b.handle} · {b.tagline}</span>
+                              <span className="block truncate text-small font-medium">
+                                {b.name}
+                              </span>
+                              <span className="block truncate text-small text-muted">
+                                @{b.handle} · {b.tagline}
+                              </span>
                             </span>
                             <ArrowRight className="size-4 text-faint" />
                           </Command.Item>
@@ -164,14 +228,26 @@ export function CommandPalette() {
                     )}
 
                     {!term && recentSearches.length > 0 && (
-                      <Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-muted">
+                      <Command.Group
+                        heading="Recent"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:text-muted"
+                      >
                         {recentSearches.map((r) => (
-                          <Command.Item key={r} value={`r-${r}`} onSelect={() => setQuery(r)} className={itemClass}>
+                          <Command.Item
+                            key={r}
+                            value={`r-${r}`}
+                            onSelect={() => setQuery(r)}
+                            className={itemClass}
+                          >
                             <Clock className="size-4.5 text-muted" />
                             <span className="flex-1 truncate">{r}</span>
                           </Command.Item>
                         ))}
-                        <Command.Item value="clear-recent" onSelect={clearRecentSearches} className={`${itemClass} text-small text-muted`}>
+                        <Command.Item
+                          value="clear-recent"
+                          onSelect={clearRecentSearches}
+                          className={`${itemClass} text-small text-muted`}
+                        >
                           <X className="size-4.5" />
                           Clear recent searches
                         </Command.Item>
@@ -179,21 +255,37 @@ export function CommandPalette() {
                     )}
 
                     {!term && (
-                      <Command.Group heading="Categories" className="[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-muted">
+                      <Command.Group
+                        heading="Categories"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:text-muted"
+                      >
                         {categories.map((c) => (
-                          <Command.Item key={c.id} value={`c-${c.id}`} onSelect={() => go(`/explore?category=${c.id}`)} className={itemClass}>
+                          <Command.Item
+                            key={c.id}
+                            value={`c-${c.id}`}
+                            onSelect={() => go(`/explore?category=${c.id}`)}
+                            className={itemClass}
+                          >
                             <span className="size-8 shrink-0 overflow-hidden rounded-sm">
-                              <AppImage image={{ kind: "art", motif: c.motif, palette: c.palette, seed: 7 }} alt="" />
+                              <AppImage
+                                image={{ kind: "art", motif: c.motif, palette: c.palette, seed: 7 }}
+                                alt=""
+                              />
                             </span>
                             <span className="flex-1">{c.name}</span>
-                            <span className="truncate text-small text-muted max-sm:hidden">{c.blurb}</span>
+                            <span className="truncate text-small text-muted max-sm:hidden">
+                              {c.blurb}
+                            </span>
                           </Command.Item>
                         ))}
                       </Command.Group>
                     )}
 
                     {!term && (
-                      <Command.Group heading="Go to" className="[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-muted">
+                      <Command.Group
+                        heading="Go to"
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:text-muted"
+                      >
                         {pages.map((p) => {
                           const Icon = p.icon;
                           return (
@@ -212,8 +304,13 @@ export function CommandPalette() {
                     )}
                   </Command.List>
                   <div className="hidden items-center gap-4 border-t border-line px-4 py-2.5 text-small text-muted sm:flex">
-                    <span className="flex items-center gap-1.5"><Kbd>↑</Kbd><Kbd>↓</Kbd> to move</span>
-                    <span className="flex items-center gap-1.5"><Kbd>↵</Kbd> to open</span>
+                    <span className="flex items-center gap-1.5">
+                      <Kbd>↑</Kbd>
+                      <Kbd>↓</Kbd> to move
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Kbd>↵</Kbd> to open
+                    </span>
                   </div>
                 </Command>
               </motion.div>

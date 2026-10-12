@@ -21,13 +21,20 @@ export function LoginForm() {
   const next = safeNext(params.get("next"));
   const router = useRouter();
   const signIn = useSignIn();
-  const form = useForm<Values>({ resolver: zodResolver(signInSchema), defaultValues: { email: "", password: "" } });
+  const form = useForm<Values>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   const onSubmit = form.handleSubmit((v) =>
     signIn.mutateAsync(v).then(
       (u) => {
         toast.success(`Welcome back, ${u.name.split(" ")[0]}`);
-        router.push(u.onboarded ? (next ?? "/explore") : `/welcome${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+        router.push(
+          u.onboarded
+            ? (next ?? "/explore")
+            : `/welcome${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        );
       },
       (e) => applyServiceErrors(e, form.setError, ["email", "password"]),
     ),
@@ -38,19 +45,31 @@ export function LoginForm() {
       <h1 className="font-display text-display-md">Welcome back</h1>
       <p className="mt-2 text-body text-muted">
         New here?{" "}
-        <Link href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-ink underline underline-offset-4">
+        <Link
+          href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
+          className="font-medium text-ink underline underline-offset-4"
+        >
           Create an account
         </Link>
       </p>
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">
         <Field label="Email" error={form.formState.errors.email?.message}>
-          <Input type="email" autoComplete="email" inputMode="email" placeholder="you@school.edu.ng" {...form.register("email")} />
+          <Input
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@school.edu.ng"
+            {...form.register("email")}
+          />
         </Field>
         <Field
           label="Password"
           error={form.formState.errors.password?.message}
           aside={
-            <Link href="/forgot-password" className="text-small text-muted underline-offset-4 hover:text-ink hover:underline">
+            <Link
+              href="/forgot-password"
+              className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
+            >
               Forgot password?
             </Link>
           }

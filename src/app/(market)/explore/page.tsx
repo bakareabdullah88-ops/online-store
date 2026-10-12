@@ -7,7 +7,8 @@ import { ExploreSkeleton } from "@/components/market/explore/explore-skeleton";
 
 export const metadata: Metadata = {
   title: "Explore",
-  description: "Browse fashion, thrift, food, skincare, prints and tech from student brands on Nigerian campuses.",
+  description:
+    "Browse fashion, thrift, food, skincare, prints and tech from student brands on Nigerian campuses.",
   alternates: { canonical: "/explore" },
 };
 

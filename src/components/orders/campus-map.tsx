@@ -35,7 +35,11 @@ export function CampusMap({
       w: r.int(24, 64),
       h: r.int(18, 44),
     }));
-    const greens = Array.from({ length: 3 }, () => ({ cx: r.int(40, 320), cy: r.int(30, 180), r: r.int(18, 34) }));
+    const greens = Array.from({ length: 3 }, () => ({
+      cx: r.int(40, 320),
+      cy: r.int(30, 180),
+      r: r.int(18, 34),
+    }));
     const start = { x: r.int(40, 90), y: r.int(140, 180) };
     const end = { x: r.int(270, 330), y: r.int(30, 70) };
     const mid1 = { x: r.int(110, 170), y: start.y };
@@ -59,7 +63,12 @@ export function CampusMap({
 
   return (
     <figure className="relative overflow-hidden rounded-lg bg-[color-mix(in_oklab,var(--sand)_70%,var(--surface))]">
-      <svg viewBox="0 0 360 210" className="block h-auto w-full" role="img" aria-label={`Map from ${fromLabel} to ${toLabel}`}>
+      <svg
+        viewBox="0 0 360 210"
+        className="block h-auto w-full"
+        role="img"
+        aria-label={`Map from ${fromLabel} to ${toLabel}`}
+      >
         <defs>
           <pattern id="map-grid" width="18" height="18" patternUnits="userSpaceOnUse">
             <path d="M18 0H0V18" fill="none" stroke="var(--line)" strokeWidth="0.6" />
@@ -67,15 +76,45 @@ export function CampusMap({
         </defs>
         <rect width="360" height="210" fill="url(#map-grid)" />
         {layout.greens.map((g, i) => (
-          <circle key={i} cx={g.cx} cy={g.cy} r={g.r} fill="color-mix(in oklab, var(--success) 18%, transparent)" />
+          <circle
+            key={i}
+            cx={g.cx}
+            cy={g.cy}
+            r={g.r}
+            fill="color-mix(in oklab, var(--success) 18%, transparent)"
+          />
         ))}
         {/* roads */}
-        <path d="M0 105 H360 M180 0 V210 M0 40 C120 60 240 20 360 50" stroke="var(--surface)" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <path
+          d="M0 105 H360 M180 0 V210 M0 40 C120 60 240 20 360 50"
+          stroke="var(--surface)"
+          strokeWidth="9"
+          fill="none"
+          strokeLinecap="round"
+        />
         {layout.blocks.map((b, i) => (
-          <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="3" fill="var(--surface)" stroke="var(--line)" strokeWidth="0.8" />
+          <rect
+            key={i}
+            x={b.x}
+            y={b.y}
+            width={b.w}
+            height={b.h}
+            rx="3"
+            fill="var(--surface)"
+            stroke="var(--line)"
+            strokeWidth="0.8"
+          />
         ))}
         {/* route */}
-        <path d={layout.route} fill="none" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d={layout.route}
+          fill="none"
+          stroke="var(--ink)"
+          strokeOpacity="0.18"
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
         <motion.path
           ref={pathRef}
           d={layout.route}
@@ -96,17 +135,38 @@ export function CampusMap({
         {/* destination */}
         <g transform={`translate(${layout.end.x} ${layout.end.y})`}>
           {!reduce && mode === "delivery" && progress < 1 && (
-            <motion.circle r="10" fill="var(--accent)" initial={{ opacity: 0.4, scale: 1 }} animate={{ opacity: 0, scale: 2.4 }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }} />
+            <motion.circle
+              r="10"
+              fill="var(--accent)"
+              initial={{ opacity: 0.4, scale: 1 }}
+              animate={{ opacity: 0, scale: 2.4 }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+            />
           )}
-          <path d="M0 -16 C-8 -16 -11 -10 -11 -6 C-11 2 0 10 0 10 C0 10 11 2 11 -6 C11 -10 8 -16 0 -16 Z" fill="var(--accent)" transform="translate(0 -2)" />
+          <path
+            d="M0 -16 C-8 -16 -11 -10 -11 -6 C-11 2 0 10 0 10 C0 10 11 2 11 -6 C11 -10 8 -16 0 -16 Z"
+            fill="var(--accent)"
+            transform="translate(0 -2)"
+          />
           <circle r="4" cy="-8" fill="var(--on-accent)" />
         </g>
         {/* rider */}
         {mode === "delivery" && point && progress > 0 && progress < 1 && (
-          <motion.g initial={false} animate={{ x: point.x, y: point.y }} transition={reduce ? { duration: 0 } : spring.gentle}>
+          <motion.g
+            initial={false}
+            animate={{ x: point.x, y: point.y }}
+            transition={reduce ? { duration: 0 } : spring.gentle}
+          >
             <circle r="11" fill="var(--surface)" stroke="var(--ink)" strokeWidth="2" />
             <g transform="translate(-6 -6) scale(0.5)">
-              <path d="M5 18a3 3 0 1 0 0-.01M19 18a3 3 0 1 0 0-.01M9 6h4l3 6h3M12 12l-3 6h6" stroke="var(--ink)" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M5 18a3 3 0 1 0 0-.01M19 18a3 3 0 1 0 0-.01M9 6h4l3 6h3M12 12l-3 6h6"
+                stroke="var(--ink)"
+                strokeWidth="2.6"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </g>
           </motion.g>
         )}

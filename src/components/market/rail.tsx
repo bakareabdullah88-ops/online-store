@@ -5,14 +5,27 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { cn } from "@/lib/cn";
 
 /** Horizontal scroller with snap, edge fade and desktop arrow controls. */
-export function Rail({ children, label, className, itemClassName }: { children: ReactNode[]; label: string; className?: string; itemClassName?: string }) {
+export function Rail({
+  children,
+  label,
+  className,
+  itemClassName,
+}: {
+  children: ReactNode[];
+  label: string;
+  className?: string;
+  itemClassName?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: true, end: false });
 
   const update = useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    setEdges({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth > el.scrollWidth - 8 });
+    setEdges({
+      start: el.scrollLeft < 8,
+      end: el.scrollLeft + el.clientWidth > el.scrollWidth - 8,
+    });
   }, []);
 
   useEffect(() => {
@@ -26,7 +39,10 @@ export function Rail({ children, label, className, itemClassName }: { children: 
   const scroll = (dir: 1 | -1) => {
     const el = ref.current;
     if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    el.scrollBy({
+      left: dir * el.clientWidth * 0.8,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
   };
 
   return (
@@ -37,7 +53,7 @@ export function Rail({ children, label, className, itemClassName }: { children: 
         role="region"
         aria-label={label}
         tabIndex={0}
-        className="scrollbar-none -mx-(--gutter) flex snap-x snap-mandatory scroll-px-(--gutter) gap-4 overflow-x-auto px-(--gutter) pb-2 md:-mx-8 md:scroll-px-8 md:px-8 xl:-mx-12 xl:scroll-px-12 xl:px-12"
+        className="-mx-(--gutter) scrollbar-none flex snap-x snap-mandatory scroll-px-(--gutter) gap-4 overflow-x-auto px-(--gutter) pb-2 md:-mx-8 md:scroll-px-8 md:px-8 xl:-mx-12 xl:scroll-px-12 xl:px-12"
       >
         {children.map((c, i) => (
           <div key={i} className={cn("shrink-0 snap-start", itemClassName)}>

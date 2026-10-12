@@ -29,9 +29,9 @@ pnpm build && pnpm start
 
 The login page has one-tap buttons for both.
 
-| Who | Email | Password | What to try |
-| --- | --- | --- | --- |
-| Buyer | `ada@demo.kiosk` | `kiosk-demo-1` | Explore, add to bag, check out with `FREEDEL` or `KIOSK10`, then watch the order move live |
+| Who    | Email             | Password       | What to try                                                                                       |
+| ------ | ----------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| Buyer  | `ada@demo.kiosk`  | `kiosk-demo-1` | Explore, add to bag, check out with `FREEDEL` or `KIOSK10`, then watch the order move live        |
 | Seller | `tolu@demo.kiosk` | `kiosk-demo-1` | Owns **Àdìrẹ Lab**. Switch to Selling, accept orders on the board, edit products, check analytics |
 
 You can also sign up as yourself and open a shop from scratch via **Open your shop** (a
@@ -43,16 +43,16 @@ own shop receives are moved by you in Shop Studio.
 
 ## Scripts
 
-| Command | What it does |
-| --- | --- |
-| `pnpm dev` | Dev server (Turbopack) |
-| `pnpm build` / `pnpm start` | Production build and server |
-| `pnpm typecheck` | `next typegen` then `tsc --noEmit` |
-| `pnpm lint` | ESLint, zero warnings allowed |
-| `pnpm format` / `pnpm format:check` | Prettier (with Tailwind class sorting) |
-| `pnpm test` | Vitest unit tests (domain logic and the mock service layer on `fake-indexeddb`) |
-| `pnpm test:e2e` | Playwright on a Pixel 7 and a 1280px desktop. Builds nothing itself: run `pnpm build` first; it starts `pnpm start` for you |
-| `pnpm check` | typecheck + lint + unit tests |
+| Command                             | What it does                                                                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                          | Dev server (Turbopack)                                                                                                      |
+| `pnpm build` / `pnpm start`         | Production build and server                                                                                                 |
+| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`                                                                                          |
+| `pnpm lint`                         | ESLint, zero warnings allowed                                                                                               |
+| `pnpm format` / `pnpm format:check` | Prettier (with Tailwind class sorting)                                                                                      |
+| `pnpm test`                         | Vitest unit tests (domain logic and the mock service layer on `fake-indexeddb`)                                             |
+| `pnpm test:e2e`                     | Playwright on a Pixel 7 and a 1280px desktop. Builds nothing itself: run `pnpm build` first; it starts `pnpm start` for you |
+| `pnpm check`                        | typecheck + lint + unit tests                                                                                               |
 
 The e2e suite covers the buyer flow (browse → bag → checkout → live tracking), the seller flow
 (sign up → open a shop → publish a product; accept an order; switch modes) and a **page sweep**:
@@ -66,11 +66,11 @@ Point Playwright at an already running server with `PLAYWRIGHT_BASE_URL=http://l
 All variables are public (`NEXT_PUBLIC_*`); there are no server secrets. See
 [`.env.example`](.env.example). They're validated in [`src/env.ts`](src/env.ts).
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_DATA_SOURCE` | `mock` | `mock` (IndexedDB) or `remote` (stub for a real backend) |
-| `NEXT_PUBLIC_SITE_URL` | Vercel URL, else `http://localhost:$PORT` | Canonical URL for metadata, OG image and sitemap |
-| `NEXT_PUBLIC_MOCK_LATENCY` | `900` | Upper bound (ms) of simulated network latency in the mock. `0` turns it off |
+| Variable                   | Default                                   | Purpose                                                                     |
+| -------------------------- | ----------------------------------------- | --------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_DATA_SOURCE`  | `mock`                                    | `mock` (IndexedDB) or `remote` (stub for a real backend)                    |
+| `NEXT_PUBLIC_SITE_URL`     | Vercel URL, else `http://localhost:$PORT` | Canonical URL for metadata, OG image and sitemap                            |
+| `NEXT_PUBLIC_MOCK_LATENCY` | `900`                                     | Upper bound (ms) of simulated network latency in the mock. `0` turns it off |
 
 ## Project map
 

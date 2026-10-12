@@ -21,12 +21,31 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type NavItem = { href: string; label: string; icon: LucideIcon; match?: (path: string) => boolean };
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  match?: (path: string) => boolean;
+};
 
 export const marketTabs: NavItem[] = [
   { href: "/", label: "Home", icon: Home, match: (p) => p === "/" },
-  { href: "/explore", label: "Explore", icon: Search, match: (p) => p.startsWith("/explore") || p.startsWith("/search") || p.startsWith("/brands") || p.startsWith("/products") },
-  { href: "/bag", label: "Bag", icon: ShoppingBag, match: (p) => p.startsWith("/bag") || p.startsWith("/checkout") },
+  {
+    href: "/explore",
+    label: "Explore",
+    icon: Search,
+    match: (p) =>
+      p.startsWith("/explore") ||
+      p.startsWith("/search") ||
+      p.startsWith("/brands") ||
+      p.startsWith("/products"),
+  },
+  {
+    href: "/bag",
+    label: "Bag",
+    icon: ShoppingBag,
+    match: (p) => p.startsWith("/bag") || p.startsWith("/checkout"),
+  },
   { href: "/orders", label: "Orders", icon: Receipt, match: (p) => p.startsWith("/orders") },
 ];
 
@@ -37,8 +56,18 @@ export const accountNav: NavItem[] = [
   { href: "/account/following", label: "Following", icon: Store },
   { href: "/account/places", label: "Addresses & pickup", icon: MapPin },
   { href: "/account/wallet", label: "Wallet", icon: Wallet },
-  { href: "/messages", label: "Messages", icon: MessageCircle, match: (p) => p.startsWith("/messages") },
-  { href: "/notifications", label: "Notifications", icon: Bell, match: (p) => p.startsWith("/notifications") },
+  {
+    href: "/messages",
+    label: "Messages",
+    icon: MessageCircle,
+    match: (p) => p.startsWith("/messages"),
+  },
+  {
+    href: "/notifications",
+    label: "Notifications",
+    icon: Bell,
+    match: (p) => p.startsWith("/notifications"),
+  },
   { href: "/account/reviews", label: "My reviews", icon: Star },
   { href: "/account/settings", label: "Settings", icon: Settings },
 ];

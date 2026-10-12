@@ -26,10 +26,7 @@ export function withBrand(db: DbSnapshot, p: Product): ProductWithBrand {
 }
 
 function normalize(s: string) {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 /** Lightweight relevance: name > tags/category > brand > description. */
@@ -60,7 +57,9 @@ export function breakdown(reviews: Review[]): RatingBreakdown {
   const histogram: [number, number, number, number, number] = [0, 0, 0, 0, 0];
   for (const r of reviews) histogram[Math.min(5, Math.max(1, r.rating)) - 1]! += 1;
   const count = reviews.length;
-  const average = count ? Math.round((reviews.reduce((n, r) => n + r.rating, 0) / count) * 10) / 10 : 0;
+  const average = count
+    ? Math.round((reviews.reduce((n, r) => n + r.rating, 0) / count) * 10) / 10
+    : 0;
   return { average, count, histogram };
 }
 
@@ -73,7 +72,15 @@ function bumpMetric(db: DbSnapshot, brandId: string, field: "views" | "addToBag"
   const date = now.toISOString().slice(0, 10);
   let m = db.metrics.find((x) => x.brandId === brandId && x.date === date);
   if (!m) {
-    m = { brandId, date, views: 0, addToBag: 0, orders: 0, revenueKobo: 0, hourly: Array.from({ length: 24 }, () => 0) };
+    m = {
+      brandId,
+      date,
+      views: 0,
+      addToBag: 0,
+      orders: 0,
+      revenueKobo: 0,
+      hourly: Array.from({ length: 24 }, () => 0),
+    };
     db.metrics.push(m);
   }
   m[field] += 1;
@@ -101,7 +108,8 @@ export const mockCatalog: CatalogService = {
     }
     if (query.category) list = list.filter((p) => p.category === query.category);
     if (query.brandId) list = list.filter((p) => p.brandId === query.brandId);
-    if (query.campusId) list = list.filter((p) => brandsById.get(p.brandId)?.campusId === query.campusId);
+    if (query.campusId)
+      list = list.filter((p) => brandsById.get(p.brandId)?.campusId === query.campusId);
     if (query.zoneId) {
       list = list.filter((p) => {
         const b = brandsById.get(p.brandId);
@@ -110,11 +118,16 @@ export const mockCatalog: CatalogService = {
           .find((c) => c.id === b.campusId)
           ?.pickupPoints.filter((pp) => b.fulfilment.pickupPointIds.includes(pp.id))
           .map((pp) => pp.zoneId);
-        return b.fulfilment.zoneIds.includes(query.zoneId!) || (pickupZones ?? []).includes(query.zoneId!);
+        return (
+          b.fulfilment.zoneIds.includes(query.zoneId!) ||
+          (pickupZones ?? []).includes(query.zoneId!)
+        );
       });
     }
-    if (query.minPriceKobo !== undefined) list = list.filter((p) => p.priceKobo >= query.minPriceKobo!);
-    if (query.maxPriceKobo !== undefined) list = list.filter((p) => p.priceKobo <= query.maxPriceKobo!);
+    if (query.minPriceKobo !== undefined)
+      list = list.filter((p) => p.priceKobo >= query.minPriceKobo!);
+    if (query.maxPriceKobo !== undefined)
+      list = list.filter((p) => p.priceKobo <= query.maxPriceKobo!);
     if (query.minRating) list = list.filter((p) => p.rating >= query.minRating!);
     if (query.inStock) list = list.filter((p) => totalStock(p) > 0);
 
@@ -125,7 +138,8 @@ export const mockCatalog: CatalogService = {
     }
 
     const sort = query.sort ?? (query.q ? "relevance" : "popular");
-    const byPopular = (a: Product, b: Product) => b.salesCount + b.ratingCount * 8 - (a.salesCount + a.ratingCount * 8);
+    const byPopular = (a: Product, b: Product) =>
+      b.salesCount + b.ratingCount * 8 - (a.salesCount + a.ratingCount * 8);
     list = [...list].sort((a, b) => {
       switch (sort) {
         case "relevance":
@@ -155,7 +169,8 @@ export const mockCatalog: CatalogService = {
     if (!p) throw new ServiceError("NOT_FOUND", "We couldn't find that product.");
     if (p.status !== "published") {
       const user = await currentUser(db);
-      if (!user?.brandIds.includes(p.brandId)) throw new ServiceError("NOT_FOUND", "We couldn't find that product.");
+      if (!user?.brandIds.includes(p.brandId))
+        throw new ServiceError("NOT_FOUND", "We couldn't find that product.");
     }
     return withBrand(db, p);
   },
@@ -191,7 +206,11 @@ export const mockCatalog: CatalogService = {
     if (query.featured) {
       list = list
         .filter((b) => b.productCount > 0 && !b.vacation)
-        .sort((a, b) => Number(b.verified) - Number(a.verified) || b.followerCount * b.rating - a.followerCount * a.rating);
+        .sort(
+          (a, b) =>
+            Number(b.verified) - Number(a.verified) ||
+            b.followerCount * b.rating - a.followerCount * a.rating,
+        );
     } else {
       list.sort((a, b) => b.followerCount - a.followerCount);
     }

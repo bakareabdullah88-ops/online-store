@@ -180,7 +180,11 @@ export interface StudioService {
   getOverview(period: StudioPeriod): Promise<StudioOverview>;
   getAnalytics(period: StudioPeriod): Promise<StudioAnalytics>;
 
-  listProducts(query?: { q?: string; status?: "published" | "draft" | "all"; category?: CategoryId }): Promise<Product[]>;
+  listProducts(query?: {
+    q?: string;
+    status?: "published" | "draft" | "all";
+    category?: CategoryId;
+  }): Promise<Product[]>;
   getProduct(id: ID): Promise<Product>;
   createProduct(input: ProductInput): Promise<Product>;
   updateProduct(id: ID, input: ProductInput): Promise<Product>;

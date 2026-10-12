@@ -15,7 +15,12 @@ import { useMyBrand, useUpdateBrand, useUploadImage } from "@/queries/studio";
 import { errorMessage } from "@/services/errors";
 import type { Brand, CategoryId, ImageRef } from "@/services/types";
 import { toast } from "@/stores/toast";
-import { FulfilmentFields, fromFulfilment, toFulfilment, type FulfilmentDraft } from "./fulfilment-fields";
+import {
+  FulfilmentFields,
+  fromFulfilment,
+  toFulfilment,
+  type FulfilmentDraft,
+} from "./fulfilment-fields";
 import { StudioHeaderBlock } from "./studio-shell";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -38,7 +43,13 @@ export function ImagePicker({
   const upload = useUploadImage();
   const input = useRef<HTMLInputElement>(null);
   return (
-    <div className={cn("relative overflow-hidden bg-sand", variant === "logo" ? "size-24 rounded-full" : "aspect-[16/6] w-full rounded-lg", className)}>
+    <div
+      className={cn(
+        "relative overflow-hidden bg-sand",
+        variant === "logo" ? "size-24 rounded-full" : "aspect-[16/6] w-full rounded-lg",
+        className,
+      )}
+    >
       <AppImage image={image} alt="" variant={variant} name={name} />
       {upload.isPending && <Skeleton className="absolute inset-0" rounded="none" />}
       <button
@@ -62,14 +73,28 @@ export function ImagePicker({
         aria-hidden
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) upload.mutate(f, { onSuccess: (r) => onUploaded(r.id, r.ref), onError: (err) => toast.error(errorMessage(err)) });
+          if (f)
+            upload.mutate(f, {
+              onSuccess: (r) => onUploaded(r.id, r.ref),
+              onError: (err) => toast.error(errorMessage(err)),
+            });
         }}
       />
     </div>
   );
 }
 
-function Section({ id, title, description, children }: { id?: string; title: string; description?: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id?: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section id={id} className="scroll-mt-24 rounded-lg bg-surface p-5 hairline md:p-6">
       <h2 className="text-title font-semibold">{title}</h2>
@@ -134,11 +159,30 @@ function BrandForm({ brand }: { brand: Brand }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Section id="logo" title="Look" description="Your logo and cover appear on your shop page, in search and on every order.">
-        <ImagePicker image={cover.ref} name={name} variant="cover" label="Upload a cover image" onUploaded={(id, ref) => setCover({ id, ref })} />
+      <Section
+        id="logo"
+        title="Look"
+        description="Your logo and cover appear on your shop page, in search and on every order."
+      >
+        <ImagePicker
+          image={cover.ref}
+          name={name}
+          variant="cover"
+          label="Upload a cover image"
+          onUploaded={(id, ref) => setCover({ id, ref })}
+        />
         <div className="-mt-12 ml-5 flex items-end gap-4">
-          <ImagePicker image={logo.ref} name={name} variant="logo" label="Upload a logo" onUploaded={(id, ref) => setLogo({ id, ref })} className="ring-4 ring-surface" />
-          <p className="pb-2 text-small text-muted">Hover or focus an image to change it. Square logos work best.</p>
+          <ImagePicker
+            image={logo.ref}
+            name={name}
+            variant="logo"
+            label="Upload a logo"
+            onUploaded={(id, ref) => setLogo({ id, ref })}
+            className="ring-4 ring-surface"
+          />
+          <p className="pb-2 text-small text-muted">
+            Hover or focus an image to change it. Square logos work best.
+          </p>
         </div>
       </Section>
       <Section id="bio" title="Story">
@@ -148,13 +192,27 @@ function BrandForm({ brand }: { brand: Brand }) {
               <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
             </Field>
             <Field label="Category">
-              <Select label="Category" value={category} onValueChange={(v) => setCategory(v as CategoryId)} options={categories.map((c) => ({ value: c.id, label: c.name }))} />
+              <Select
+                label="Category"
+                value={category}
+                onValueChange={(v) => setCategory(v as CategoryId)}
+                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+              />
             </Field>
           </div>
-          <Field label="Tagline" error={errors.tagline} hint="One line. Shows on cards and in search.">
+          <Field
+            label="Tagline"
+            error={errors.tagline}
+            hint="One line. Shows on cards and in search."
+          >
             <Input value={tagline} onChange={(e) => setTagline(e.target.value)} maxLength={80} />
           </Field>
-          <Field label="Bio" optional error={errors.bio} hint={`${bio.length}/400 · Who are you, what do you make, why should students care?`}>
+          <Field
+            label="Bio"
+            optional
+            error={errors.bio}
+            hint={`${bio.length}/400 · Who are you, what do you make, why should students care?`}
+          >
             <Textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={400} />
           </Field>
         </div>
@@ -166,8 +224,15 @@ function BrandForm({ brand }: { brand: Brand }) {
               key={d}
               type="button"
               aria-pressed={days.includes(i)}
-              onClick={() => setDays(days.includes(i) ? days.filter((x) => x !== i) : [...days, i].sort())}
-              className={cn("h-10 w-12 rounded-md text-small font-medium transition-colors", days.includes(i) ? "bg-primary text-on-primary" : "bg-surface-2 text-ink-2 hairline hover:text-ink")}
+              onClick={() =>
+                setDays(days.includes(i) ? days.filter((x) => x !== i) : [...days, i].sort())
+              }
+              className={cn(
+                "h-10 w-12 rounded-md text-small font-medium transition-colors",
+                days.includes(i)
+                  ? "bg-primary text-on-primary"
+                  : "bg-surface-2 text-ink-2 hairline hover:text-ink",
+              )}
             >
               {d}
             </button>
@@ -184,10 +249,21 @@ function BrandForm({ brand }: { brand: Brand }) {
         {errors.hours && <p className="mt-2 text-small font-medium text-danger">{errors.hours}</p>}
       </Section>
       <Section title="Pickup & delivery">
-        <FulfilmentFields value={fulfilment} onChange={setFulfilment} campus={campus} errors={errors} />
+        <FulfilmentFields
+          value={fulfilment}
+          onChange={setFulfilment}
+          campus={campus}
+          errors={errors}
+        />
       </Section>
       <div className="sticky bottom-[calc(var(--tabbar-h)+12px)] z-(--z-sticky) flex justify-end lg:bottom-4">
-        <Button size="lg" className="shadow-lg" loading={update.isPending} success={saved} onClick={save}>
+        <Button
+          size="lg"
+          className="shadow-lg"
+          loading={update.isPending}
+          success={saved}
+          onClick={save}
+        >
           Save changes
         </Button>
       </div>
@@ -198,11 +274,26 @@ function BrandForm({ brand }: { brand: Brand }) {
 function VacationCard({ brand }: { brand: Brand }) {
   const update = useUpdateBrand();
   return (
-    <div className={cn("rounded-lg p-5 hairline transition-colors", brand.vacation ? "bg-warning-soft" : "bg-surface")}>
+    <div
+      className={cn(
+        "rounded-lg p-5 hairline transition-colors",
+        brand.vacation ? "bg-warning-soft" : "bg-surface",
+      )}
+    >
       <Switch
         checked={brand.vacation}
         onCheckedChange={(vacation) =>
-          update.mutate({ vacation }, { onSuccess: () => toast(vacation ? "Vacation mode on" : "You're open again", { description: vacation ? "Your shop stays visible but can't take orders." : "Buyers can order from you." }) })
+          update.mutate(
+            { vacation },
+            {
+              onSuccess: () =>
+                toast(vacation ? "Vacation mode on" : "You're open again", {
+                  description: vacation
+                    ? "Your shop stays visible but can't take orders."
+                    : "Buyers can order from you.",
+                }),
+            },
+          )
         }
         label="Vacation mode"
         description="Pause new orders (exams, holidays) without hiding your shop."
@@ -228,7 +319,11 @@ export function StudioBrandSettings() {
         title="Brand settings"
         description={`kiosk/${brand.handle}`}
         actions={
-          <ButtonLink href={`/brands/${brand.handle}`} variant="secondary" trailingIcon={<ExternalLink className="size-4" />}>
+          <ButtonLink
+            href={`/brands/${brand.handle}`}
+            variant="secondary"
+            trailingIcon={<ExternalLink className="size-4" />}
+          >
             View shop
           </ButtonLink>
         }

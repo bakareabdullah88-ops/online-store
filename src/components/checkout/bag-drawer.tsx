@@ -20,7 +20,9 @@ export function BagDrawer() {
     setOpen(false);
   }, [pathname, setOpen]);
 
-  const blocked = groups.some((g) => g.blockedReason || g.items.some((i) => i.unavailable || i.line.quantity > i.stock));
+  const blocked = groups.some(
+    (g) => g.blockedReason || g.items.some((i) => i.unavailable || i.line.quantity > i.stock),
+  );
 
   return (
     <ResponsiveSheet
@@ -36,7 +38,12 @@ export function BagDrawer() {
               <ButtonLink href="/bag" variant="secondary" onClick={close}>
                 View bag
               </ButtonLink>
-              <ButtonLink href="/checkout" onClick={close} aria-disabled={blocked || undefined} tabIndex={blocked ? -1 : undefined}>
+              <ButtonLink
+                href="/checkout"
+                onClick={close}
+                aria-disabled={blocked || undefined}
+                tabIndex={blocked ? -1 : undefined}
+              >
                 Checkout
               </ButtonLink>
             </div>

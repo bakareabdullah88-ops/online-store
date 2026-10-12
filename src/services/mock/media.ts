@@ -18,7 +18,8 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/a
 
 export const mockMedia: MediaService = {
   async putImage(file) {
-    if (!ACCEPTED.includes(file.type)) throw new ServiceError("VALIDATION", "Use a JPG, PNG, WebP or GIF image.");
+    if (!ACCEPTED.includes(file.type))
+      throw new ServiceError("VALIDATION", "Use a JPG, PNG, WebP or GIF image.");
     if (file.size > MAX_BYTES) throw new ServiceError("VALIDATION", "Images must be under 8MB.");
     await quick();
     const id = newId("img");

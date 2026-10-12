@@ -60,9 +60,19 @@ export function AppImage({
         {variant === "logo" ? (
           <BrandMark name={name ?? alt} palette={image.palette} className="size-full" />
         ) : variant === "cover" ? (
-          <CoverArt palette={image.palette} seed={image.seed} motif={image.motif} className="size-full" />
+          <CoverArt
+            palette={image.palette}
+            seed={image.seed}
+            motif={image.motif}
+            className="size-full"
+          />
         ) : (
-          <ProductArt motif={image.motif} palette={image.palette} seed={image.seed} className="size-full" />
+          <ProductArt
+            motif={image.motif}
+            palette={image.palette}
+            seed={image.seed}
+            className="size-full"
+          />
         )}
       </span>
     );
@@ -81,7 +91,9 @@ export function AppImage({
         sizes={sizes}
         priority={priority}
         className="object-cover"
-        {...(image.blurDataURL ? { placeholder: "blur" as const, blurDataURL: image.blurDataURL } : {})}
+        {...(image.blurDataURL
+          ? { placeholder: "blur" as const, blurDataURL: image.blurDataURL }
+          : {})}
       />
     </span>
   );
@@ -90,7 +102,14 @@ export function AppImage({
 function Fallback({ variant, name }: { variant: Variant; name: string }) {
   const palette = fallbackPalette(name);
   if (variant === "logo") return <BrandMark name={name} palette={palette} className="size-full" />;
-  return <ProductArt motif="monogram" palette={palette} seed={hashString(name)} className="size-full opacity-60" />;
+  return (
+    <ProductArt
+      motif="monogram"
+      palette={palette}
+      seed={hashString(name)}
+      className="size-full opacity-60"
+    />
+  );
 }
 
 function BlobImage({
@@ -111,7 +130,10 @@ function BlobImage({
   return (
     <span className={className}>
       <span
-        className={cn("absolute inset-0 transition-opacity duration-300", loaded ? "opacity-0" : "opacity-100")}
+        className={cn(
+          "absolute inset-0 transition-opacity duration-300",
+          loaded ? "opacity-0" : "opacity-100",
+        )}
         aria-hidden
       >
         {url === null ? (
@@ -128,7 +150,7 @@ function BlobImage({
           onLoad={() => setLoaded(true)}
           className={cn(
             "absolute inset-0 size-full object-cover transition-[opacity,filter,scale] duration-500 ease-out",
-            loaded ? "scale-100 opacity-100 blur-0" : "scale-[1.03] opacity-0 blur-md",
+            loaded ? "blur-0 scale-100 opacity-100" : "scale-[1.03] opacity-0 blur-md",
           )}
         />
       )}

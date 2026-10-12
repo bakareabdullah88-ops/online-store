@@ -45,16 +45,35 @@ function ReplyBox({ review }: { review: Review }) {
               e.preventDefault();
               reply.mutate(
                 { id: review.id, body: text },
-                { onSuccess: () => toast.success("Reply posted", { description: `${review.authorName} will be notified.` }), onError: (err) => toast.error(errorMessage(err)) },
+                {
+                  onSuccess: () =>
+                    toast.success("Reply posted", {
+                      description: `${review.authorName} will be notified.`,
+                    }),
+                  onError: (err) => toast.error(errorMessage(err)),
+                },
               );
             }}
           >
             <label htmlFor={`reply-${review.id}`} className="sr-only">
               Reply to {review.authorName}
             </label>
-            <Textarea id={`reply-${review.id}`} value={text} onChange={(e) => setText(e.target.value)} placeholder={`Thank ${review.authorName.split(" ")[0]}, or make it right…`} className="min-h-20" maxLength={500} autoFocus />
+            <Textarea
+              id={`reply-${review.id}`}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={`Thank ${review.authorName.split(" ")[0]}, or make it right…`}
+              className="min-h-20"
+              maxLength={500}
+              autoFocus
+            />
             <div className="mt-2 flex gap-2">
-              <Button type="submit" size="sm" loading={reply.isPending} disabled={text.trim().length < 2}>
+              <Button
+                type="submit"
+                size="sm"
+                loading={reply.isPending}
+                disabled={text.trim().length < 2}
+              >
                 Post reply
               </Button>
               <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>
@@ -79,24 +98,40 @@ export function StudioReviews() {
   const products = useStudioProducts({});
   const [filter, setFilter] = useState<"all" | "unreplied" | "low">("all");
   const now = useNow(60_000);
-  const list = (data ?? []).filter((r) => (filter === "unreplied" ? !r.reply : filter === "low" ? r.rating <= 3 : true));
+  const list = (data ?? []).filter((r) =>
+    filter === "unreplied" ? !r.reply : filter === "low" ? r.rating <= 3 : true,
+  );
   const breakdown: RatingBreakdown | null = data
     ? {
         count: data.length,
-        average: data.length ? Math.round((data.reduce((n, r) => n + r.rating, 0) / data.length) * 10) / 10 : 0,
-        histogram: [1, 2, 3, 4, 5].map((s) => data.filter((r) => r.rating === s).length) as RatingBreakdown["histogram"],
+        average: data.length
+          ? Math.round((data.reduce((n, r) => n + r.rating, 0) / data.length) * 10) / 10
+          : 0,
+        histogram: [1, 2, 3, 4, 5].map(
+          (s) => data.filter((r) => r.rating === s).length,
+        ) as RatingBreakdown["histogram"],
       }
     : null;
   return (
     <div>
-      <StudioHeaderBlock eyebrow="Reviews" title="Reviews" description="Replying publicly, especially to the tough ones, builds trust with every buyer who reads them." />
+      <StudioHeaderBlock
+        eyebrow="Reviews"
+        title="Reviews"
+        description="Replying publicly, especially to the tough ones, builds trust with every buyer who reads them."
+      />
       {isPending ? (
         <Skeleton className="h-80 w-full" rounded="lg" />
       ) : !data?.length ? (
-        <EmptyState illustration="reviews" title="No reviews yet" body="Buyers can review after their order is delivered." />
+        <EmptyState
+          illustration="reviews"
+          title="No reviews yet"
+          body="Buyers can review after their order is delivered."
+        />
       ) : (
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-[280px_1fr]">
-          <div className="rounded-lg bg-surface p-5 hairline xl:sticky xl:top-24 xl:self-start">{breakdown && <RatingSummary breakdown={breakdown} />}</div>
+          <div className="rounded-lg bg-surface p-5 hairline xl:sticky xl:top-24 xl:self-start">
+            {breakdown && <RatingSummary breakdown={breakdown} />}
+          </div>
           <div>
             <SegmentedControl
               size="sm"
@@ -111,7 +146,12 @@ export function StudioReviews() {
               ]}
             />
             {list.length === 0 ? (
-              <EmptyState compact illustration="reviews" title="Nothing here" body="You're all caught up." />
+              <EmptyState
+                compact
+                illustration="reviews"
+                title="Nothing here"
+                body="You're all caught up."
+              />
             ) : (
               <ul className="flex flex-col gap-3">
                 {list.map((r) => {
@@ -126,7 +166,8 @@ export function StudioReviews() {
                             <Stars value={r.rating} size={13} className="text-ink" />
                           </div>
                           <p className="text-small text-muted">
-                            {p?.name ?? "Product"} {r.variantLabel && `· ${r.variantLabel}`} {now && `· ${formatRelative(r.createdAt, now)}`}
+                            {p?.name ?? "Product"} {r.variantLabel && `· ${r.variantLabel}`}{" "}
+                            {now && `· ${formatRelative(r.createdAt, now)}`}
                           </p>
                         </div>
                       </div>

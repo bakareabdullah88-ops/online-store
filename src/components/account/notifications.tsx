@@ -14,7 +14,14 @@ import { useMarkRead, useNotifications } from "@/queries/inbox";
 import type { AppNotification } from "@/services/types";
 import { DashboardHeader } from "./dashboard-shell";
 
-const icons = { order: Package, message: MessageCircle, promo: Tag, review: Star, follow: Store, system: Info } as const;
+const icons = {
+  order: Package,
+  message: MessageCircle,
+  promo: Tag,
+  review: Star,
+  follow: Store,
+  system: Info,
+} as const;
 
 function dayKey(iso: string, now: number) {
   const d = new Date(iso);
@@ -31,7 +38,9 @@ export function NotificationsView() {
   const now = useNow(30_000);
   const unread = (data ?? []).filter((n) => !n.read).length;
   const groups = new Map<string, AppNotification[]>();
-  if (now) for (const n of data ?? []) groups.set(dayKey(n.createdAt, now), [...(groups.get(dayKey(n.createdAt, now)) ?? []), n]);
+  if (now)
+    for (const n of data ?? [])
+      groups.set(dayKey(n.createdAt, now), [...(groups.get(dayKey(n.createdAt, now)) ?? []), n]);
 
   return (
     <div className="max-w-3xl">
@@ -41,7 +50,12 @@ export function NotificationsView() {
         description={unread ? `${unread} unread` : "You're all caught up."}
         actions={
           unread > 0 && (
-            <Button variant="secondary" size="sm" leadingIcon={<CheckCheck className="size-4" />} onClick={() => mark.mutate("all")}>
+            <Button
+              variant="secondary"
+              size="sm"
+              leadingIcon={<CheckCheck className="size-4" />}
+              onClick={() => mark.mutate("all")}
+            >
               Mark all as read
             </Button>
           )
@@ -54,39 +68,74 @@ export function NotificationsView() {
           ))}
         </div>
       ) : !data?.length ? (
-        <EmptyState illustration="notifications" title="No notifications yet" body="Order updates, replies and drops from brands you follow land here." action={<ButtonLink href="/explore">Explore</ButtonLink>} />
+        <EmptyState
+          illustration="notifications"
+          title="No notifications yet"
+          body="Order updates, replies and drops from brands you follow land here."
+          action={<ButtonLink href="/explore">Explore</ButtonLink>}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {[...groups.entries()].map(([day, items]) => (
             <section key={day} aria-label={day}>
-              <h2 className="eyebrow mb-2 text-muted">{day}</h2>
+              <h2 className="mb-2 eyebrow text-muted">{day}</h2>
               <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface hairline">
                 <AnimatePresence initial={false}>
                   {items.map((n) => {
                     const Icon = icons[n.kind] ?? Bell;
                     const body = (
                       <>
-                        <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-full", n.read ? "bg-ink/[0.05] text-muted" : "bg-accent-soft text-accent-ink")}>
+                        <span
+                          className={cn(
+                            "flex size-10 shrink-0 items-center justify-center rounded-full",
+                            n.read ? "bg-ink/[0.05] text-muted" : "bg-accent-soft text-accent-ink",
+                          )}
+                        >
                           <Icon className="size-4.5" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className={cn("block text-small", n.read ? "text-ink-2" : "font-semibold text-ink")}>{n.title}</span>
+                          <span
+                            className={cn(
+                              "block text-small",
+                              n.read ? "text-ink-2" : "font-semibold text-ink",
+                            )}
+                          >
+                            {n.title}
+                          </span>
                           <span className="mt-0.5 block text-small text-muted">{n.body}</span>
                         </span>
                         <span className="flex shrink-0 flex-col items-end gap-2">
-                          <span className="text-[12px] text-muted">{formatRelative(n.createdAt, now)}</span>
-                          {!n.read && <span className="size-2 rounded-full bg-accent" aria-label="Unread" />}
+                          <span className="text-[12px] text-muted">
+                            {formatRelative(n.createdAt, now)}
+                          </span>
+                          {!n.read && (
+                            <span className="size-2 rounded-full bg-accent" aria-label="Unread" />
+                          )}
                         </span>
                       </>
                     );
                     return (
-                      <motion.li key={n.id} layout initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={spring.smooth}>
+                      <motion.li
+                        key={n.id}
+                        layout
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={spring.smooth}
+                      >
                         {n.href ? (
-                          <Link href={n.href} onClick={() => !n.read && mark.mutate(n.id)} className="flex items-start gap-4 px-4 py-4 transition-colors hover:bg-ink/[0.03] md:px-5">
+                          <Link
+                            href={n.href}
+                            onClick={() => !n.read && mark.mutate(n.id)}
+                            className="flex items-start gap-4 px-4 py-4 transition-colors hover:bg-ink/[0.03] md:px-5"
+                          >
                             {body}
                           </Link>
                         ) : (
-                          <button type="button" onClick={() => !n.read && mark.mutate(n.id)} className="flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5">
+                          <button
+                            type="button"
+                            onClick={() => !n.read && mark.mutate(n.id)}
+                            className="flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5"
+                          >
                             {body}
                           </button>
                         )}

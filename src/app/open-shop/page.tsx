@@ -17,7 +17,11 @@ export default function OpenShopPage() {
     <div data-mode="selling" className="min-h-dvh bg-canvas">
       <header className="flex h-16 items-center justify-between px-(--gutter) md:px-10">
         <Logo suffix="Open a shop" />
-        <Link href="/" className="flex size-10 items-center justify-center rounded-md text-muted hover:bg-ink/[0.06] hover:text-ink" aria-label="Exit setup">
+        <Link
+          href="/"
+          className="flex size-10 items-center justify-center rounded-md text-muted hover:bg-ink/[0.06] hover:text-ink"
+          aria-label="Exit setup"
+        >
           <X className="size-5" />
         </Link>
       </header>

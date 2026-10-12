@@ -236,7 +236,7 @@ export function RangeSlider({
       step={step}
       minStepsBetweenThumbs={1}
       aria-label={label}
-      className="relative flex h-10 w-full touch-none select-none items-center"
+      className="relative flex h-10 w-full touch-none items-center select-none"
     >
       <RSlider.Track className="relative h-1 grow overflow-hidden rounded-full bg-line-strong">
         <RSlider.Range className="absolute h-full bg-ink" />

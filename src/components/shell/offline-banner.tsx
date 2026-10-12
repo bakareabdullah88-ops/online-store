@@ -15,7 +15,11 @@ function subscribe(cb: () => void) {
 }
 
 export function useOnline() {
-  return useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
+  return useSyncExternalStore(
+    subscribe,
+    () => navigator.onLine,
+    () => true,
+  );
 }
 
 /** Your data lives on this device, so the app keeps working offline; we just say so. */

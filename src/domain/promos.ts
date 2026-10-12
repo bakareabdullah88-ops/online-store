@@ -16,7 +16,8 @@ export type PromoResult =
 export function evaluatePromo(promo: Promo | undefined, ctx: PromoContext): PromoResult {
   if (!promo) return { ok: false, reason: "That code doesn't exist" };
   if (!promo.active) return { ok: false, reason: "This code is no longer active" };
-  if (promo.expiresAt && Date.parse(promo.expiresAt) < ctx.now) return { ok: false, reason: "This code has expired" };
+  if (promo.expiresAt && Date.parse(promo.expiresAt) < ctx.now)
+    return { ok: false, reason: "This code has expired" };
   if (promo.usageLimit !== undefined && promo.usageCount >= promo.usageLimit)
     return { ok: false, reason: "This code has been fully redeemed" };
   if (promo.brandId !== null && promo.brandId !== ctx.brandId)
@@ -30,7 +31,12 @@ export function evaluatePromo(promo: Promo | undefined, ctx: PromoContext): Prom
     case "percent": {
       let discount = percentOf(ctx.subtotalKobo, promo.value);
       if (promo.maxDiscountKobo !== undefined) discount = Math.min(discount, promo.maxDiscountKobo);
-      return { ok: true, discountKobo: discount, freeDelivery: false, label: `${promo.value}% off` };
+      return {
+        ok: true,
+        discountKobo: discount,
+        freeDelivery: false,
+        label: `${promo.value}% off`,
+      };
     }
     case "fixed":
       return {

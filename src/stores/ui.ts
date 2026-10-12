@@ -29,12 +29,22 @@ export const usePrefs = create<Prefs>()(
         set((s) => {
           const t = q.trim();
           if (!t) return s;
-          return { recentSearches: [t, ...s.recentSearches.filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 6) };
+          return {
+            recentSearches: [
+              t,
+              ...s.recentSearches.filter((x) => x.toLowerCase() !== t.toLowerCase()),
+            ].slice(0, 6),
+          };
         }),
       clearRecentSearches: () => set({ recentSearches: [] }),
       set: (patch) => set(patch),
     }),
-    { name: "kiosk-prefs", version: 1, storage: createJSONStorage(() => localStorage), skipHydration: true },
+    {
+      name: "kiosk-prefs",
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
+    },
   ),
 );
 

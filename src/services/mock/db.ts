@@ -64,7 +64,10 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     sessionUserId = null;
     return seed;
   }
-  const values = await getMany(COLLECTIONS.map((c) => `col:${c}`), store());
+  const values = await getMany(
+    COLLECTIONS.map((c) => `col:${c}`),
+    store(),
+  );
   const db = Object.fromEntries(COLLECTIONS.map((c, i) => [c, values[i] ?? []])) as DbSnapshot;
   if (version < SCHEMA_VERSION) {
     migrate(db, version);
@@ -170,4 +173,3 @@ export function __resetMemory() {
   loading = null;
   sessionUserId = null;
 }
-

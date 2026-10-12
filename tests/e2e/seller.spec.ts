@@ -40,7 +40,9 @@ test("sign up, onboard, open a shop and publish a product", async ({ page }) => 
   await page.waitForURL(/\/studio\/products\/new/);
   await expect(page.locator("html")).toHaveAttribute("data-mode", "selling");
   await page.getByLabel("Name", { exact: true }).fill("Washed Denim Jacket");
-  await page.getByLabel("Description").fill("Mid-wash trucker jacket, gently worn, cleaned and steamed.");
+  await page
+    .getByLabel("Description")
+    .fill("Mid-wash trucker jacket, gently worn, cleaned and steamed.");
   await page.getByLabel("Price (₦)", { exact: true }).fill("12500");
   await page.getByRole("button", { name: "Publish" }).first().click();
   await page.waitForURL(/\/studio\/products$/);
@@ -62,7 +64,11 @@ test("demo seller accepts an order and switches back to buying", async ({ page, 
 
   // Mode switch with the curtain (header on desktop, account sheet on phones)
   if (isMobile) await page.getByRole("button", { name: "More" }).click();
-  await page.getByRole("radio", { name: /Buying/ }).filter({ visible: true }).first().click();
+  await page
+    .getByRole("radio", { name: /Buying/ })
+    .filter({ visible: true })
+    .first()
+    .click();
   await page.waitForURL((u) => !u.pathname.startsWith("/studio"));
   await expect(page.locator("html")).toHaveAttribute("data-mode", "buying");
   await expectNoAppErrors(page, errors);

@@ -35,8 +35,11 @@ export const useBag = create<BagState>()(
         return line;
       },
       restore: (line) =>
-        set((s) => (s.lines.some((l) => lineId(l) === lineId(line)) ? s : { lines: [...s.lines, line] })),
-      removeBrand: (brandId) => set((s) => ({ lines: s.lines.filter((l) => l.brandId !== brandId) })),
+        set((s) =>
+          s.lines.some((l) => lineId(l) === lineId(line)) ? s : { lines: [...s.lines, line] },
+        ),
+      removeBrand: (brandId) =>
+        set((s) => ({ lines: s.lines.filter((l) => l.brandId !== brandId) })),
       setPromo: (brandId, code) =>
         set((s) => {
           const next = { ...s.promoCodes };

@@ -16,7 +16,8 @@ export function useMyOrders() {
     queryFn: () => services.orders.listMyOrders(),
     enabled: isSignedIn,
     // Keep the list fresh while anything is moving.
-    refetchInterval: (q) => (q.state.data?.some((o) => o.autoProgress && isActive(o.status)) ? 4000 : false),
+    refetchInterval: (q) =>
+      q.state.data?.some((o) => o.autoProgress && isActive(o.status)) ? 4000 : false,
   });
 }
 
@@ -89,5 +90,9 @@ export function useReviewItem() {
 
 export function useMyReviews() {
   const { isSignedIn } = useSession();
-  return useQuery({ queryKey: qk.myReviews, queryFn: () => services.orders.myReviews(), enabled: isSignedIn });
+  return useQuery({
+    queryKey: qk.myReviews,
+    queryFn: () => services.orders.myReviews(),
+    enabled: isSignedIn,
+  });
 }

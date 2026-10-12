@@ -22,9 +22,12 @@ import { useMounted } from "@/lib/hooks";
  * matches the server-rendered skeletons. After that, the real result is
  * returned untouched (keeping TanStack's tracked-property optimisation).
  */
-export function useQuery<TQueryFnData = unknown, TError = DefaultError, TData = TQueryFnData, TQueryKey extends QueryKey = QueryKey>(
-  options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
-): UseQueryResult<TData, TError> {
+export function useQuery<
+  TQueryFnData = unknown,
+  TError = DefaultError,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+>(options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>): UseQueryResult<TData, TError> {
   const mounted = useMounted();
   const result = useTanstackQuery(options);
   if (mounted) return result;
@@ -49,7 +52,9 @@ export function useInfiniteQuery<
   TData = InfiniteData<TQueryFnData>,
   TQueryKey extends QueryKey = QueryKey,
   TPageParam = unknown,
->(options: UseInfiniteQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>): UseInfiniteQueryResult<TData, TError> {
+>(
+  options: UseInfiniteQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>,
+): UseInfiniteQueryResult<TData, TError> {
   const mounted = useMounted();
   const result = useTanstackInfiniteQuery(options);
   if (mounted) return result;

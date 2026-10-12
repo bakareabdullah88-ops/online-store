@@ -25,10 +25,19 @@ type Resolved = {
   }[];
 };
 
-function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number, { checkoutSchema }: Schemas): Resolved {
+function price(
+  db: DbSnapshot,
+  user: UserRecord,
+  raw: CheckoutInput,
+  now: number,
+  { checkoutSchema }: Schemas,
+): Resolved {
   const parsed = checkoutSchema.safeParse(raw);
   if (!parsed.success) {
-    throw new ServiceError("VALIDATION", parsed.error.issues[0]?.message ?? "Check your checkout details");
+    throw new ServiceError(
+      "VALIDATION",
+      parsed.error.issues[0]?.message ?? "Check your checkout details",
+    );
   }
   const input = parsed.data;
   const groups: Resolved["groups"] = [];
@@ -40,7 +49,11 @@ function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number
     for (const l of g.lines) {
       const product = db.products.find((p) => p.id === l.productId);
       if (!product) {
-        problems.push({ productId: l.productId, variantKey: l.variantKey, reason: "This item was removed by the brand." });
+        problems.push({
+          productId: l.productId,
+          variantKey: l.variantKey,
+          reason: "This item was removed by the brand.",
+        });
         continue;
       }
       const block = purchaseBlock(product, l.variantKey, {
@@ -68,7 +81,11 @@ function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number
       problems.push({ productId: "", variantKey: "", reason: `${brand.name} only offers pickup.` });
     }
     if (method === "pickup" && !brand.fulfilment.pickup) {
-      problems.push({ productId: "", variantKey: "", reason: `${brand.name} only offers delivery.` });
+      problems.push({
+        productId: "",
+        variantKey: "",
+        reason: `${brand.name} only offers delivery.`,
+      });
     }
 
     const subtotal = lines.reduce((n, l) => n + unitPrice(l.product, l.variantKey) * l.quantity, 0);
@@ -77,7 +94,9 @@ function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number
     let promo: GroupQuote["promo"] = null;
     if (g.promoCode) {
       const code = normalizeCode(g.promoCode);
-      const found = db.promos.find((p) => p.code === code && (p.brandId === null || p.brandId === brand.id));
+      const found = db.promos.find(
+        (p) => p.code === code && (p.brandId === null || p.brandId === brand.id),
+      );
       const res = evaluatePromo(found ?? db.promos.find((p) => p.code === code), {
         brandId: brand.id,
         subtotalKobo: subtotal,
@@ -98,7 +117,11 @@ function price(db: DbSnapshot, user: UserRecord, raw: CheckoutInput, now: number
       subtotalKobo: subtotal,
       deliveryFeeKobo: deliveryFee,
       discountKobo: discount,
-      totalKobo: groupTotal({ subtotalKobo: subtotal, deliveryFeeKobo: deliveryFee, discountKobo: discount }),
+      totalKobo: groupTotal({
+        subtotalKobo: subtotal,
+        deliveryFeeKobo: deliveryFee,
+        discountKobo: discount,
+      }),
       method,
       promo,
       problems,
@@ -147,14 +170,23 @@ export const mockOrders: OrderService = {
     if (problems.length) throw new ServiceError("CONFLICT", problems[0]!.reason);
     const invalidPromo = resolved.groups.find((g) => g.quote.promo?.status === "invalid");
     if (invalidPromo?.quote.promo?.status === "invalid") {
-      throw new ServiceError("VALIDATION", `${invalidPromo.quote.promo.code}: ${invalidPromo.quote.promo.reason}`);
+      throw new ServiceError(
+        "VALIDATION",
+        `${invalidPromo.quote.promo.code}: ${invalidPromo.quote.promo.reason}`,
+      );
     }
 
     const parsed = s.checkoutSchema.parse(input);
     const total = resolved.quote.totalKobo;
     if (parsed.paymentMethod === "wallet") {
-      const balance = db.wallet.filter((w) => w.userId === user.id).reduce((n, w) => n + w.amountKobo, 0);
-      if (balance < total) throw new ServiceError("CONFLICT", "Your demo wallet balance is too low. Top up or pick another method.");
+      const balance = db.wallet
+        .filter((w) => w.userId === user.id)
+        .reduce((n, w) => n + w.amountKobo, 0);
+      if (balance < total)
+        throw new ServiceError(
+          "CONFLICT",
+          "Your demo wallet balance is too low. Top up or pick another method.",
+        );
     }
 
     const checkoutId = newId("ck");
@@ -183,7 +215,9 @@ export const mockOrders: OrderService = {
           variantLabel: variantLabel(l.product.options, l.variantKey),
           unitPriceKobo: unitPrice(l.product, l.variantKey),
           quantity: l.quantity,
-          image: clone(l.product.images[0] ?? { kind: "art", motif: "monogram", palette: "sand", seed: 1 }),
+          image: clone(
+            l.product.images[0] ?? { kind: "art", motif: "monogram", palette: "sand", seed: 1 },
+          ),
         })),
         fulfilment: {
           method: f.method,
@@ -225,7 +259,15 @@ export const mockOrders: OrderService = {
       const date = placedAt.slice(0, 10);
       let m = db.metrics.find((x) => x.brandId === brand.id && x.date === date);
       if (!m) {
-        m = { brandId: brand.id, date, views: 0, addToBag: 0, orders: 0, revenueKobo: 0, hourly: Array.from({ length: 24 }, () => 0) };
+        m = {
+          brandId: brand.id,
+          date,
+          views: 0,
+          addToBag: 0,
+          orders: 0,
+          revenueKobo: 0,
+          hourly: Array.from({ length: 24 }, () => 0),
+        };
         db.metrics.push(m);
       }
       m.orders += 1;
@@ -256,7 +298,8 @@ export const mockOrders: OrderService = {
     pushNotification(db, {
       userId: user.id,
       kind: "order",
-      title: orders.length > 1 ? `${orders.length} orders placed` : `Order placed · ${orders[0]?.code}`,
+      title:
+        orders.length > 1 ? `${orders.length} orders placed` : `Order placed · ${orders[0]?.code}`,
       body: "We'll keep you posted as each brand updates your order.",
       href: orders.length > 1 ? "/orders" : `/orders/${orders[0]?.id}`,
     });
@@ -299,14 +342,20 @@ export const mockOrders: OrderService = {
     const order = db.orders[idx];
     if (!order) throw new ServiceError("NOT_FOUND", "We couldn't find that order.");
     if (!canBuyerCancel(order)) {
-      throw new ServiceError("CONFLICT", "This order has already been accepted, so it can't be cancelled here. Message the brand instead.");
+      throw new ServiceError(
+        "CONFLICT",
+        "This order has already been accepted, so it can't be cancelled here. Message the brand instead.",
+      );
     }
     const next: Order = {
       ...order,
       autoProgress: false,
       status: "cancelled",
       timeline: [...order.timeline, { status: "cancelled", at: new Date().toISOString() }],
-      payment: { ...order.payment, status: order.payment.status === "paid" ? "refunded" : order.payment.status },
+      payment: {
+        ...order.payment,
+        status: order.payment.status === "paid" ? "refunded" : order.payment.status,
+      },
     };
     db.orders[idx] = next;
     for (const it of next.items) {
@@ -315,7 +364,14 @@ export const mockOrders: OrderService = {
       if (v) v.stock += it.quantity;
     }
     if (order.payment.method === "wallet" && order.payment.status === "paid") {
-      db.wallet.push({ id: newId("w"), userId: user.id, kind: "refund", amountKobo: order.totalKobo, label: `Refund · ${order.brandName}`, at: new Date().toISOString() });
+      db.wallet.push({
+        id: newId("w"),
+        userId: user.id,
+        kind: "refund",
+        amountKobo: order.totalKobo,
+        label: `Refund · ${order.brandName}`,
+        at: new Date().toISOString(),
+      });
     }
     await commit("orders", "products", "wallet");
     return clone(next);
@@ -329,7 +385,8 @@ export const mockOrders: OrderService = {
     const user = await requireUser(db);
     const order = db.orders.find((o) => o.id === input.orderId && o.buyerId === user.id);
     if (!order) throw new ServiceError("NOT_FOUND", "We couldn't find that order.");
-    if (order.status !== "delivered") throw new ServiceError("CONFLICT", "You can review once your order is delivered.");
+    if (order.status !== "delivered")
+      throw new ServiceError("CONFLICT", "You can review once your order is delivered.");
     const item = order.items.find((i) => i.productId === input.productId);
     if (!item) throw new ServiceError("VALIDATION", "That item isn't in this order.");
     if (db.reviews.some((r) => r.orderId === order.id && r.productId === input.productId)) {
@@ -348,11 +405,20 @@ export const mockOrders: OrderService = {
       orderId: order.id,
     };
     db.reviews.push(review);
-    const reviewedAll = order.items.every((i) => db.reviews.some((r) => r.orderId === order.id && r.productId === i.productId));
+    const reviewedAll = order.items.every((i) =>
+      db.reviews.some((r) => r.orderId === order.id && r.productId === i.productId),
+    );
     order.reviewed = reviewedAll;
-    for (const target of [db.products.find((p) => p.id === input.productId), db.brands.find((b) => b.id === order.brandId)]) {
+    for (const target of [
+      db.products.find((p) => p.id === input.productId),
+      db.brands.find((b) => b.id === order.brandId),
+    ]) {
       if (!target) continue;
-      const rs = db.reviews.filter((r) => ("brandId" in target && "handle" in target ? r.brandId === target.id : r.productId === target.id));
+      const rs = db.reviews.filter((r) =>
+        "brandId" in target && "handle" in target
+          ? r.brandId === target.id
+          : r.productId === target.id,
+      );
       target.ratingCount = rs.length;
       target.rating = Math.round((rs.reduce((n, r) => n + r.rating, 0) / rs.length) * 10) / 10;
     }
@@ -374,7 +440,11 @@ export const mockOrders: OrderService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    return clone(db.reviews.filter((r) => r.userId === user.id).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
+    return clone(
+      db.reviews
+        .filter((r) => r.userId === user.id)
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    );
   },
 };
 

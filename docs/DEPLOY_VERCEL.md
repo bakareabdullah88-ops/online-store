@@ -29,11 +29,11 @@ pnpm test:e2e         # optional locally; needs the build above
 
 None are required. Optional, set under **Project → Settings → Environment Variables**:
 
-| Variable | When to set it |
-| --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | When you add a custom domain, e.g. `https://kiosk.ng`. Otherwise canonical URLs, the sitemap and OG images use `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically |
-| `NEXT_PUBLIC_MOCK_LATENCY` | Lower (or `0`) for snappier demos; default `900` ms upper bound shows off loading states |
-| `NEXT_PUBLIC_DATA_SOURCE` | Leave as `mock` until `src/services/remote` is implemented |
+| Variable                   | When to set it                                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`     | When you add a custom domain, e.g. `https://kiosk.ng`. Otherwise canonical URLs, the sitemap and OG images use `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically |
+| `NEXT_PUBLIC_MOCK_LATENCY` | Lower (or `0`) for snappier demos; default `900` ms upper bound shows off loading states                                                                                        |
+| `NEXT_PUBLIC_DATA_SOURCE`  | Leave as `mock` until `src/services/remote` is implemented                                                                                                                      |
 
 `NEXT_PUBLIC_*` values are inlined at build time, so **redeploy after changing them**.
 

@@ -4,7 +4,13 @@ import { cn } from "@/lib/cn";
  * Skeleton block with a subtle shimmer. Compose these to mirror the real layout
  * exactly; never use a generic stack of grey bars.
  */
-export function Skeleton({ className, rounded = "sm" }: { className?: string; rounded?: "sm" | "md" | "lg" | "full" | "none" }) {
+export function Skeleton({
+  className,
+  rounded = "sm",
+}: {
+  className?: string;
+  rounded?: "sm" | "md" | "lg" | "full" | "none";
+}) {
   return (
     <span
       aria-hidden
@@ -43,7 +49,15 @@ export function SkeletonText({
   );
 }
 
-export function LoadingRegion({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+export function LoadingRegion({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div role="status" aria-live="polite" aria-busy="true" className={className}>
       <span className="sr-only">{label}</span>

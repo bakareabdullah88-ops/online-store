@@ -38,12 +38,20 @@ export function ProductCard({
   const stock = stockState(totalStock(p));
   const image = (
     <div className="size-full transition-transform duration-500 ease-out group-hover:scale-[1.035]">
-      <AppImage image={p.images[0]} alt={p.name} priority={priority} sizes="(min-width: 1024px) 22vw, 46vw" />
+      <AppImage
+        image={p.images[0]}
+        alt={p.name}
+        priority={priority}
+        sizes="(min-width: 1024px) 22vw, 46vw"
+      />
     </div>
   );
   return (
     <article className={cn("group relative", className)}>
-      <Link href={`/products/${p.slug}`} className="block rounded-md focus-visible:outline-offset-4">
+      <Link
+        href={`/products/${p.slug}`}
+        className="block rounded-md focus-visible:outline-offset-4"
+      >
         <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-sand">
           {morph ? (
             <ViewTransition name={productTransitionName(p.id)} share="morph" default="none">
@@ -53,20 +61,53 @@ export function ProductCard({
             image
           )}
           <div className="pointer-events-none absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
-            {off && <span className="rounded-full bg-accent px-2 py-1 font-mono text-[10px] font-semibold text-on-accent">−{off}%</span>}
-            {stock === "sold_out" && <span className="rounded-full bg-primary px-2 py-1 font-mono text-[10px] font-semibold uppercase text-on-primary">Sold out</span>}
-            {stock === "low" && <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold uppercase text-ink">Few left</span>}
-            {p.brand.vacation && <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold uppercase text-ink">Shop on break</span>}
+            {off && (
+              <span className="rounded-full bg-accent px-2 py-1 font-mono text-[10px] font-semibold text-on-accent">
+                −{off}%
+              </span>
+            )}
+            {stock === "sold_out" && (
+              <span className="rounded-full bg-primary px-2 py-1 font-mono text-[10px] font-semibold text-on-primary uppercase">
+                Sold out
+              </span>
+            )}
+            {stock === "low" && (
+              <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold text-ink uppercase">
+                Few left
+              </span>
+            )}
+            {p.brand.vacation && (
+              <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold text-ink uppercase">
+                Shop on break
+              </span>
+            )}
           </div>
         </div>
         <div className={cn("mt-3 flex flex-col", size === "lg" ? "gap-1" : "gap-0.5")}>
-          {showBrand && <p className="eyebrow truncate text-muted">{p.brand.name}</p>}
-          <h3 className={cn("line-clamp-2 font-medium text-ink", size === "lg" ? "text-body-lg" : "text-small")}>{p.name}</h3>
+          {showBrand && <p className="truncate eyebrow text-muted">{p.brand.name}</p>}
+          <h3
+            className={cn(
+              "line-clamp-2 font-medium text-ink",
+              size === "lg" ? "text-body-lg" : "text-small",
+            )}
+          >
+            {p.name}
+          </h3>
           <div className="mt-0.5 flex items-center gap-2">
-            <span className={cn("font-mono font-medium tabular", off ? "text-accent-ink" : "text-ink", size === "lg" ? "text-body" : "text-small")}>
+            <span
+              className={cn(
+                "font-mono font-medium tabular",
+                off ? "text-accent-ink" : "text-ink",
+                size === "lg" ? "text-body" : "text-small",
+              )}
+            >
               {formatNaira(p.priceKobo)}
             </span>
-            {p.compareAtKobo && off && <s className="font-mono text-[12px] text-muted tabular">{formatNaira(p.compareAtKobo)}</s>}
+            {p.compareAtKobo && off && (
+              <s className="font-mono text-[12px] text-muted tabular">
+                {formatNaira(p.compareAtKobo)}
+              </s>
+            )}
             {p.ratingCount > 0 && (
               <span className="ml-auto inline-flex items-center gap-1 text-[12px] text-muted">
                 <Star className="size-3 fill-current text-ink" aria-hidden />
@@ -77,12 +118,23 @@ export function ProductCard({
           </div>
         </div>
       </Link>
-      <WishlistButton productId={p.id} productName={p.name} size="sm" className="absolute top-2 right-2" />
+      <WishlistButton
+        productId={p.id}
+        productName={p.name}
+        size="sm"
+        className="absolute top-2 right-2"
+      />
     </article>
   );
 }
 
-export function ProductCardSkeleton({ className, size = "md" }: { className?: string; size?: "md" | "lg" }) {
+export function ProductCardSkeleton({
+  className,
+  size = "md",
+}: {
+  className?: string;
+  size?: "md" | "lg";
+}) {
   return (
     <div className={className} aria-hidden>
       <Skeleton className="aspect-[4/5] w-full" rounded="md" />

@@ -12,7 +12,8 @@ export const mockSocial: SocialService = {
     const user = await requireUser(db);
     const brand = db.brands.find((b) => b.id === brandId);
     if (!brand) throw new ServiceError("NOT_FOUND", "Brand not found.");
-    if (user.brandIds.includes(brandId)) throw new ServiceError("FORBIDDEN", "You can't follow your own shop.");
+    if (user.brandIds.includes(brandId))
+      throw new ServiceError("FORBIDDEN", "You can't follow your own shop.");
     const following = user.followingBrandIds.includes(brandId);
     user.followingBrandIds = following
       ? user.followingBrandIds.filter((id) => id !== brandId)
@@ -26,7 +27,8 @@ export const mockSocial: SocialService = {
     await quick();
     const db = await getDb();
     const user = await requireUser(db);
-    if (!db.products.some((p) => p.id === productId)) throw new ServiceError("NOT_FOUND", "Product not found.");
+    if (!db.products.some((p) => p.id === productId))
+      throw new ServiceError("NOT_FOUND", "Product not found.");
     const saved = user.wishlistProductIds.includes(productId);
     user.wishlistProductIds = saved
       ? user.wishlistProductIds.filter((id) => id !== productId)

@@ -5,7 +5,15 @@ import { cn } from "@/lib/cn";
  * Page wrapper: route-level view transition (fade + rise) and the main landmark.
  * Each page renders exactly one of these.
  */
-export function Page({ children, className, id = "main" }: { children: ReactNode; className?: string; id?: string }) {
+export function Page({
+  children,
+  className,
+  id = "main",
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+}) {
   return (
     <ViewTransition enter="page-fade" exit="page-fade" default="none">
       <main id={id} tabIndex={-1} className={cn("outline-none", className)}>

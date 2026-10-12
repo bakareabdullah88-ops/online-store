@@ -7,7 +7,9 @@ import { useBagView } from "./use-bag-view";
 
 export function BagPage() {
   const { isEmpty, groups, count } = useBagView();
-  const blocked = groups.some((g) => g.blockedReason || g.items.some((i) => i.unavailable || i.line.quantity > i.stock));
+  const blocked = groups.some(
+    (g) => g.blockedReason || g.items.some((i) => i.unavailable || i.line.quantity > i.stock),
+  );
   return (
     <div className="container-page pt-6 md:pt-10">
       <header className="mb-8">
@@ -15,7 +17,8 @@ export function BagPage() {
         <h1 className="mt-2 font-display text-display-lg">Your bag</h1>
         {!isEmpty && (
           <p className="mt-2 text-body text-muted">
-            {count} item{count === 1 ? "" : "s"} from {groups.length} brand{groups.length === 1 ? "" : "s"}
+            {count} item{count === 1 ? "" : "s"} from {groups.length} brand
+            {groups.length === 1 ? "" : "s"}
           </p>
         )}
       </header>

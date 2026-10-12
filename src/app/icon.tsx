@@ -12,11 +12,9 @@ export function generateImageMetadata() {
 export default async function Icon({ id }: { id: Promise<string> }) {
   const size = Number(await id);
   return new ImageResponse(
-    (
-      <div style={{ width: "100%", height: "100%", display: "flex" }}>
-        <BrandMarkSvg size={size} />
-      </div>
-    ),
+    <div style={{ width: "100%", height: "100%", display: "flex" }}>
+      <BrandMarkSvg size={size} />
+    </div>,
     { width: size, height: size },
   );
 }

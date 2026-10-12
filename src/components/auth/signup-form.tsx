@@ -21,7 +21,11 @@ export function SignupForm() {
   const next = safeNext(params.get("next"));
   const router = useRouter();
   const signUp = useSignUp();
-  const form = useForm<Values>({ resolver: zodResolver(signUpSchema), defaultValues: { name: "", email: "", password: "" }, mode: "onTouched" });
+  const form = useForm<Values>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { name: "", email: "", password: "" },
+    mode: "onTouched",
+  });
   const password = useWatch({ control: form.control, name: "password" });
 
   const onSubmit = form.handleSubmit((v) =>
@@ -36,7 +40,10 @@ export function SignupForm() {
       <h1 className="font-display text-display-md">Join your campus market</h1>
       <p className="mt-2 text-body text-muted">
         Already have an account?{" "}
-        <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-medium text-ink underline underline-offset-4">
+        <Link
+          href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}
+          className="font-medium text-ink underline underline-offset-4"
+        >
           Log in
         </Link>
       </p>
@@ -44,10 +51,24 @@ export function SignupForm() {
         <Field label="Your name" error={form.formState.errors.name?.message}>
           <Input autoComplete="name" placeholder="Ada Okafor" {...form.register("name")} />
         </Field>
-        <Field label="Email" error={form.formState.errors.email?.message} hint="We'll never share it with sellers.">
-          <Input type="email" autoComplete="email" inputMode="email" placeholder="you@school.edu.ng" {...form.register("email")} />
+        <Field
+          label="Email"
+          error={form.formState.errors.email?.message}
+          hint="We'll never share it with sellers."
+        >
+          <Input
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@school.edu.ng"
+            {...form.register("email")}
+          />
         </Field>
-        <Field label="Password" error={form.formState.errors.password?.message} hint="8+ characters with letters and a number.">
+        <Field
+          label="Password"
+          error={form.formState.errors.password?.message}
+          hint="8+ characters with letters and a number."
+        >
           <PasswordInput autoComplete="new-password" {...form.register("password")} />
         </Field>
         <PasswordStrength value={password ?? ""} />
@@ -55,7 +76,8 @@ export function SignupForm() {
           Create account
         </Button>
         <p className="text-small text-muted">
-          Everyone starts as a buyer. You can open your own shop any time, no separate account needed.
+          Everyone starts as a buyer. You can open your own shop any time, no separate account
+          needed.
         </p>
       </form>
       <div className="mt-10">

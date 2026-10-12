@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Order } from "@/services/types";
-import { AUTO_SCHEDULE, advanceOrder, canTransition, deliveryProgress, nextSellerStatus, transition } from "./orders";
+import {
+  AUTO_SCHEDULE,
+  advanceOrder,
+  canTransition,
+  deliveryProgress,
+  nextSellerStatus,
+  transition,
+} from "./orders";
 
 const placedAt = Date.parse("2025-06-01T12:00:00Z");
 function order(over: Partial<Order> = {}): Order {
@@ -41,7 +48,14 @@ describe("order state machine", () => {
   });
   it("suggests the next happy-path step per method", () => {
     expect(nextSellerStatus(order({ status: "preparing" }))).toBe("out_for_delivery");
-    expect(nextSellerStatus(order({ status: "preparing", fulfilment: { method: "pickup", campusId: "c", zoneId: "z" } }))).toBe("ready");
+    expect(
+      nextSellerStatus(
+        order({
+          status: "preparing",
+          fulfilment: { method: "pickup", campusId: "c", zoneId: "z" },
+        }),
+      ),
+    ).toBe("ready");
     expect(nextSellerStatus(order({ status: "delivered" }))).toBeNull();
   });
   it("transition appends the timeline and throws on illegal moves", () => {
@@ -67,7 +81,10 @@ describe("order state machine", () => {
   it("reports rider progress while out for delivery", () => {
     const out = advanceOrder(order(), placedAt + (AUTO_SCHEDULE.dispatch + 1) * 1000).order;
     expect(out.status).toBe("out_for_delivery");
-    const p = deliveryProgress(out, placedAt + ((AUTO_SCHEDULE.dispatch + AUTO_SCHEDULE.delivered) / 2) * 1000);
+    const p = deliveryProgress(
+      out,
+      placedAt + ((AUTO_SCHEDULE.dispatch + AUTO_SCHEDULE.delivered) / 2) * 1000,
+    );
     expect(p).toBeGreaterThan(0.4);
     expect(p).toBeLessThan(0.6);
   });

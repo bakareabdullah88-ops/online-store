@@ -29,9 +29,13 @@ export const mockAuth: AuthService = {
     await latency();
     const db = await getDb();
     if (db.users.some((u) => u.email === input.email)) {
-      throw new ServiceError("CONFLICT", "An account with this email already exists. Try logging in.", {
-        email: "This email is already registered",
-      });
+      throw new ServiceError(
+        "CONFLICT",
+        "An account with this email already exists. Try logging in.",
+        {
+          email: "This email is already registered",
+        },
+      );
     }
     const salt = randomSalt();
     const user: UserRecord = {
@@ -45,7 +49,12 @@ export const mockAuth: AuthService = {
       followingBrandIds: [],
       wishlistProductIds: [],
       onboarded: false,
-      notificationPrefs: { orderUpdates: true, messages: true, promotions: false, newFromFollowed: true },
+      notificationPrefs: {
+        orderUpdates: true,
+        messages: true,
+        promotions: false,
+        newFromFollowed: true,
+      },
       createdAt: new Date().toISOString(),
       isDemo: false,
       passwordHash: await hashPassword(input.password, salt),
@@ -93,7 +102,8 @@ export const mockAuth: AuthService = {
     const db = await getDb();
     const id = kind === "buyer" ? DEMO.buyer.id : DEMO.seller.id;
     const user = db.users.find((u) => u.id === id);
-    if (!user) throw new ServiceError("NOT_FOUND", "Demo data is missing. Reset demo data in settings.");
+    if (!user)
+      throw new ServiceError("NOT_FOUND", "Demo data is missing. Reset demo data in settings.");
     await setSessionUserId(user.id);
     return publicUser(user);
   },
@@ -121,7 +131,9 @@ export const mockAuth: AuthService = {
     const db = await getDb();
     const user = await requireUser(db);
     if (!db.campuses.some((c) => c.id === input.campusId)) {
-      throw new ServiceError("VALIDATION", "Pick a campus from the list", { campusId: "Pick a campus" });
+      throw new ServiceError("VALIDATION", "Pick a campus from the list", {
+        campusId: "Pick a campus",
+      });
     }
     user.name = input.name;
     user.campusId = input.campusId;

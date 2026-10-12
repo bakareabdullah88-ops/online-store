@@ -4,7 +4,13 @@ import { useEffect } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export default function RouteError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function RouteError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
     // BACKEND-SEAM: report to an error tracker (Sentry, etc.).
     console.error(error);

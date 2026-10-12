@@ -29,7 +29,10 @@ const sellerTransitions: Record<OrderStatus, OrderStatus[]> = {
 };
 
 /** Can a seller move an order from → to? Respects the fulfilment method. */
-export function canTransition(order: Pick<Order, "status" | "fulfilment">, to: OrderStatus): boolean {
+export function canTransition(
+  order: Pick<Order, "status" | "fulfilment">,
+  to: OrderStatus,
+): boolean {
   if (!sellerTransitions[order.status].includes(to)) return false;
   if (to === "ready" && order.fulfilment.method !== "pickup") return false;
   if (to === "out_for_delivery" && order.fulfilment.method !== "delivery") return false;
@@ -68,7 +71,9 @@ export function statusLabel(status: OrderStatus, method: FulfilmentMethod = "del
   }
 }
 
-export function statusTone(status: OrderStatus): "neutral" | "accent" | "success" | "warning" | "danger" | "info" {
+export function statusTone(
+  status: OrderStatus,
+): "neutral" | "accent" | "success" | "warning" | "danger" | "info" {
   switch (status) {
     case "placed":
       return "warning";
@@ -180,7 +185,8 @@ export function etaSeconds(order: Order, now: number): number | null {
   if (isTerminal(order.status) || !order.autoProgress) return null;
   if (order.fulfilment.method === "pickup" && order.status === "ready") return null;
   const placed = Date.parse(order.placedAt);
-  const target = order.fulfilment.method === "pickup" ? AUTO_SCHEDULE.dispatch : AUTO_SCHEDULE.delivered;
+  const target =
+    order.fulfilment.method === "pickup" ? AUTO_SCHEDULE.dispatch : AUTO_SCHEDULE.delivered;
   return Math.max(0, Math.round((placed + target * 1000 - now) / 1000));
 }
 
@@ -197,7 +203,10 @@ export function transition(order: Order, to: OrderStatus, now: number): Order {
       to === "delivered" && order.payment.method === "pay_on_pickup"
         ? { ...order.payment, status: "paid" }
         : to === "declined" || to === "cancelled"
-          ? { ...order.payment, status: order.payment.status === "paid" ? "refunded" : order.payment.status }
+          ? {
+              ...order.payment,
+              status: order.payment.status === "paid" ? "refunded" : order.payment.status,
+            }
           : order.payment,
   };
 }

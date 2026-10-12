@@ -11,13 +11,13 @@ export function createRng(seed: number) {
   return {
     next,
     int: (min: number, max: number) => Math.floor(next() * (max - min + 1)) + min,
-    pick: <T,>(arr: readonly T[]): T => {
+    pick: <T>(arr: readonly T[]): T => {
       const v = arr[Math.floor(next() * arr.length)];
       if (v === undefined) throw new Error("pick from empty array");
       return v;
     },
     chance: (p: number) => next() < p,
-    shuffle: <T,>(arr: readonly T[]): T[] => {
+    shuffle: <T>(arr: readonly T[]): T[] => {
       const out = [...arr];
       for (let i = out.length - 1; i > 0; i--) {
         const j = Math.floor(next() * (i + 1));

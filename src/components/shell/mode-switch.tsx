@@ -14,7 +14,15 @@ import { useCurtain } from "./mode-curtain";
  * Buying / Selling switch. Users without a shop are sent to the
  * open-shop flow when they pick Selling.
  */
-export function ModeSwitch({ className, size = "md", onSwitch }: { className?: string; size?: "sm" | "md"; onSwitch?: () => void }) {
+export function ModeSwitch({
+  className,
+  size = "md",
+  onSwitch,
+}: {
+  className?: string;
+  size?: "sm" | "md";
+  onSwitch?: () => void;
+}) {
   const mode = useMode();
   const { user } = useSession();
   const router = useRouter();
@@ -42,7 +50,10 @@ export function ModeSwitch({ className, size = "md", onSwitch }: { className?: s
     <div
       role="radiogroup"
       aria-label="Mode"
-      className={cn("relative inline-flex items-center rounded-full bg-ink/[0.06] p-1 dark:bg-ink/[0.1]", className)}
+      className={cn(
+        "relative inline-flex items-center rounded-full bg-ink/[0.06] p-1 dark:bg-ink/[0.1]",
+        className,
+      )}
     >
       {options.map((o) => {
         const active = o.value === mode;

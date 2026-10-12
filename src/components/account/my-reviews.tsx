@@ -18,7 +18,11 @@ export function MyReviewsView() {
   const mounted = useMounted();
   return (
     <div>
-      <DashboardHeader eyebrow="Reviews" title="Reviews you've written" description="Thanks for helping other students choose well." />
+      <DashboardHeader
+        eyebrow="Reviews"
+        title="Reviews you've written"
+        description="Thanks for helping other students choose well."
+      />
       {isPending ? (
         <div className="flex flex-col gap-3">
           {[0, 1].map((i) => (
@@ -26,7 +30,12 @@ export function MyReviewsView() {
           ))}
         </div>
       ) : !data?.length ? (
-        <EmptyState illustration="reviews" title="No reviews yet" body="After an order is delivered, you can rate it from your orders." action={<ButtonLink href="/orders">Your orders</ButtonLink>} />
+        <EmptyState
+          illustration="reviews"
+          title="No reviews yet"
+          body="After an order is delivered, you can rate it from your orders."
+          action={<ButtonLink href="/orders">Your orders</ButtonLink>}
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {data.map((r) => {
@@ -36,7 +45,10 @@ export function MyReviewsView() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     {p ? (
-                      <Link href={`/products/${p.slug}`} className="text-body font-semibold hover:underline">
+                      <Link
+                        href={`/products/${p.slug}`}
+                        className="text-body font-semibold hover:underline"
+                      >
                         {p.name}
                       </Link>
                     ) : (

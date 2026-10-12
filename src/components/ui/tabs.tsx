@@ -163,14 +163,16 @@ export function SegmentedControl<T extends string>({
               if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
               e.preventDefault();
               const i = options.findIndex((x) => x.value === value);
-              const next = options[(i + (e.key === "ArrowRight" ? 1 : -1) + options.length) % options.length];
+              const next =
+                options[(i + (e.key === "ArrowRight" ? 1 : -1) + options.length) % options.length];
               if (next) onChange(next.value);
-              const btns = e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button");
+              const btns =
+                e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button");
               const idx = next ? options.indexOf(next) : -1;
               btns?.[idx]?.focus();
             }}
             className={cn(
-              "relative inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm font-medium transition-colors duration-150",
+              "relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-sm font-medium whitespace-nowrap transition-colors duration-150",
               size === "sm" ? "h-8 px-2.5 text-small" : "h-9 px-3.5 text-small",
               active ? "text-ink" : "text-muted hover:text-ink",
             )}

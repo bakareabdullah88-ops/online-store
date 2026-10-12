@@ -4,28 +4,28 @@ Every dependency, architectural choice and deviation from the brief, with the re
 
 ## 1. Stack
 
-| Concern | Choice | Why |
-| --- | --- | --- |
-| Framework | **Next.js 16.4** (App Router, Turbopack) | Current stable. Static shells, route-level code splitting, Metadata API and `opengraph-image` out of the box; deploys to Vercel with zero config. |
-| Rendering | `cacheComponents` + `partialPrefetching` (framework defaults for new apps) | Static App Shells are prerendered and prefetched, so navigations feel instant. All data is client-side (IndexedDB), so data UI lives below `<Suspense>`/query boundaries. Back/forward keeps page state via React `<Activity>`, which restores Explore filters and scroll position for free. |
-| Language | TypeScript 5.9, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes: false` | Brief requirement. TS 7 (native) was skipped because Next's type plugin targets 5.x. |
-| Styling | **Tailwind CSS v4** with tokens declared in CSS (`@theme inline`) | Tokens live once, as CSS variables, and Tailwind utilities read them. Theme and mode switches are a variable swap with no class churn. |
-| Headless primitives | **`radix-ui`** (unified package) | Accessible dialogs, popovers, tooltips, tabs, selects, sliders, dropdowns, switches. Unstyled, so every pixel is ours. |
-| Motion | **`motion`** (v14, `motion/react`) | Springs, `layoutId` shared layouts, `AnimatePresence`, gestures (swipe to remove, drag), `useReducedMotion`. |
-| Route transitions | **React `<ViewTransition>`** (React 19.3, built into the App Router) | See §4. Motion handles in-page and component motion; the platform handles cross-route morphs. |
-| Server state | **TanStack Query v5** | Caching, optimistic updates, invalidation, loading and error states over the async service layer. |
-| Client state | **Zustand v5** (`persist` to `localStorage`) | Bag, mode memory, UI prefs (recent searches, explore view). No server data is ever copied into Zustand. |
-| Forms | **React Hook Form + Zod v4** (`@hookform/resolvers`) | Typed schemas shared between form validation and the service layer's input validation. |
-| Command palette | **cmdk** | Accessible combobox semantics and fuzzy filtering; we style it fully. |
-| Mobile sheets | **vaul** | Native-feeling drag-to-dismiss bottom sheets with snap points, built on Radix Dialog (focus trap and restore). |
-| Drag and drop | **@dnd-kit** (`core`, `sortable`, `utilities`) | Kanban columns and image reordering; keyboard sensors for accessibility. |
-| Theming | **Own 80-line provider** (`components/providers/theme.tsx`) instead of `next-themes` | `next-themes` renders its boot `<script>` from a client component, which React 19.2+ warns about in the console ("Encountered a script tag…"), and the brief forbids console warnings. Ours inlines the boot script in the server layout (no flash, also sets `data-mode` before paint) and exposes the same `light / dark / system` API via `useSyncExternalStore`. |
-| Persistence | **idb-keyval** | A tiny (≈600B) promise wrapper over IndexedDB. Dexie's query engine isn't needed at this data size. Two stores: `kiosk-db/kv` for collections and `kiosk-media/blobs` for uploaded images. |
-| Icons | **lucide-react** | One consistent 1.5px-stroke set, tree-shaken per icon. |
-| Class merging | `clsx` + `tailwind-merge` | Variant APIs on primitives without class conflicts. |
-| Unit tests | **Vitest 5** + jsdom + `fake-indexeddb` (native `tsconfigPaths`) | Fast, ESM-native, runs the real service layer against an in-memory IndexedDB. |
-| E2E | **Playwright 1.56** | Pinned to match the pre-installed Chromium build in the dev container. |
-| Lint/format | ESLint 9 (flat, `eslint-config-next`), Prettier + `prettier-plugin-tailwindcss` | Standard Next tooling; class sorting keeps diffs readable. |
+| Concern             | Choice                                                                                      | Why                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework           | **Next.js 16.4** (App Router, Turbopack)                                                    | Current stable. Static shells, route-level code splitting, Metadata API and `opengraph-image` out of the box; deploys to Vercel with zero config.                                                                                                                                                                                                                    |
+| Rendering           | `cacheComponents` + `partialPrefetching` (framework defaults for new apps)                  | Static App Shells are prerendered and prefetched, so navigations feel instant. All data is client-side (IndexedDB), so data UI lives below `<Suspense>`/query boundaries. Back/forward keeps page state via React `<Activity>`, which restores Explore filters and scroll position for free.                                                                         |
+| Language            | TypeScript 5.9, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes: false` | Brief requirement. TS 7 (native) was skipped because Next's type plugin targets 5.x.                                                                                                                                                                                                                                                                                 |
+| Styling             | **Tailwind CSS v4** with tokens declared in CSS (`@theme inline`)                           | Tokens live once, as CSS variables, and Tailwind utilities read them. Theme and mode switches are a variable swap with no class churn.                                                                                                                                                                                                                               |
+| Headless primitives | **`radix-ui`** (unified package)                                                            | Accessible dialogs, popovers, tooltips, tabs, selects, sliders, dropdowns, switches. Unstyled, so every pixel is ours.                                                                                                                                                                                                                                               |
+| Motion              | **`motion`** (v14, `motion/react`)                                                          | Springs, `layoutId` shared layouts, `AnimatePresence`, gestures (swipe to remove, drag), `useReducedMotion`.                                                                                                                                                                                                                                                         |
+| Route transitions   | **React `<ViewTransition>`** (React 19.3, built into the App Router)                        | See §4. Motion handles in-page and component motion; the platform handles cross-route morphs.                                                                                                                                                                                                                                                                        |
+| Server state        | **TanStack Query v5**                                                                       | Caching, optimistic updates, invalidation, loading and error states over the async service layer.                                                                                                                                                                                                                                                                    |
+| Client state        | **Zustand v5** (`persist` to `localStorage`)                                                | Bag, mode memory, UI prefs (recent searches, explore view). No server data is ever copied into Zustand.                                                                                                                                                                                                                                                              |
+| Forms               | **React Hook Form + Zod v4** (`@hookform/resolvers`)                                        | Typed schemas shared between form validation and the service layer's input validation.                                                                                                                                                                                                                                                                               |
+| Command palette     | **cmdk**                                                                                    | Accessible combobox semantics and fuzzy filtering; we style it fully.                                                                                                                                                                                                                                                                                                |
+| Mobile sheets       | **vaul**                                                                                    | Native-feeling drag-to-dismiss bottom sheets with snap points, built on Radix Dialog (focus trap and restore).                                                                                                                                                                                                                                                       |
+| Drag and drop       | **@dnd-kit** (`core`, `sortable`, `utilities`)                                              | Kanban columns and image reordering; keyboard sensors for accessibility.                                                                                                                                                                                                                                                                                             |
+| Theming             | **Own 80-line provider** (`components/providers/theme.tsx`) instead of `next-themes`        | `next-themes` renders its boot `<script>` from a client component, which React 19.2+ warns about in the console ("Encountered a script tag…"), and the brief forbids console warnings. Ours inlines the boot script in the server layout (no flash, also sets `data-mode` before paint) and exposes the same `light / dark / system` API via `useSyncExternalStore`. |
+| Persistence         | **idb-keyval**                                                                              | A tiny (≈600B) promise wrapper over IndexedDB. Dexie's query engine isn't needed at this data size. Two stores: `kiosk-db/kv` for collections and `kiosk-media/blobs` for uploaded images.                                                                                                                                                                           |
+| Icons               | **lucide-react**                                                                            | One consistent 1.5px-stroke set, tree-shaken per icon.                                                                                                                                                                                                                                                                                                               |
+| Class merging       | `clsx` + `tailwind-merge`                                                                   | Variant APIs on primitives without class conflicts.                                                                                                                                                                                                                                                                                                                  |
+| Unit tests          | **Vitest 5** + jsdom + `fake-indexeddb` (native `tsconfigPaths`)                            | Fast, ESM-native, runs the real service layer against an in-memory IndexedDB.                                                                                                                                                                                                                                                                                        |
+| E2E                 | **Playwright 1.56**                                                                         | Pinned to match the pre-installed Chromium build in the dev container.                                                                                                                                                                                                                                                                                               |
+| Lint/format         | ESLint 9 (flat, `eslint-config-next`), Prettier + `prettier-plugin-tailwindcss`             | Standard Next tooling; class sorting keeps diffs readable.                                                                                                                                                                                                                                                                                                           |
 
 **Not added:** a UI kit (shadcn, MUI, Chakra), a date library (`Intl` covers it), a chart
 library (charts are hand-built SVG, so they match the system exactly and cost ~3KB), or
@@ -73,6 +73,7 @@ src/
 ```
 
 **Rules:**
+
 1. UI imports from `@/queries/*` (and `@/domain/*` for pure helpers), never from
    `@/services/mock/*` or seed data.
 2. Services are async, validate input with Zod, and throw typed `ServiceError`s
@@ -81,6 +82,7 @@ src/
 4. `// BACKEND-SEAM:` marks every place a real backend plugs in.
 
 ### Account model
+
 - One `User`. `user.brandIds` is an array (one brand in v1, many later).
 - **Mode is derived from the route**: `/studio/**` is Selling, everything else is Buying. The
   switch navigates and remembers the last path on each side (Zustand). This removes a whole
@@ -98,7 +100,7 @@ src/
   controls, mode switch pill, bottom tab bar), `AnimatePresence` for lists, sheets and
   toasts, `drag` for swipe-to-remove, and `useSpring` for number tickers.
 - **Route-level transitions and cross-route shared elements** use React's `<ViewTransition>`.
-  *Deviation from the brief:* the brief asks for Motion `layoutId` for card→page morphs. In
+  _Deviation from the brief:_ the brief asks for Motion `layoutId` for card→page morphs. In
   the App Router the previous page is detached (hidden by Activity) when the new one commits,
   so Motion cannot measure both ends reliably. That is the classic "AnimatePresence + App
   Router" problem, which needs a frozen-router hack built on private Next internals. React's `<ViewTransition name>`
@@ -127,6 +129,7 @@ src/
   random salt). The session id is stored in IndexedDB. Labelled as demo everywhere.
 
 ### Entities
+
 `Campus` (zones, pickup points) · `User` · `Session` · `Brand` · `Product` (options,
 variants with stock) · `Review` (+ seller reply) · `Order` (items, fulfilment, payment,
 timeline) · `Promo` (platform or brand scoped) · `Notification` · `Thread` (messages) ·
@@ -135,24 +138,25 @@ orders / revenue).
 
 ## 6. Routes
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Landing |
-| `/login`, `/signup`, `/forgot-password`, `/welcome` | Auth + onboarding |
-| `/explore` | Browse with filters (URL-persisted) |
-| `/search?q=` | Search results |
-| `/brands/[handle]` | Brand page |
-| `/products/[slug]` | Product page |
-| `/bag`, `/checkout`, `/checkout/success` | Bag and checkout |
-| `/orders`, `/orders/[id]` | Orders + live tracking |
-| `/wishlist`, `/notifications`, `/messages` | Shared buyer surfaces |
-| `/account/**` | Buyer dashboard (overview, orders, saved, following, places, wallet, messages, reviews, settings) |
-| `/open-shop` | Shop onboarding wizard |
-| `/studio/**` | Shop Studio (overview, products, orders, customers, reviews, promotions, analytics, brand, payouts) |
-| `/design-system` | Living style guide |
-| `/offline` | Offline fallback |
+| Route                                               | Purpose                                                                                             |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `/`                                                 | Landing                                                                                             |
+| `/login`, `/signup`, `/forgot-password`, `/welcome` | Auth + onboarding                                                                                   |
+| `/explore`                                          | Browse with filters (URL-persisted)                                                                 |
+| `/search?q=`                                        | Search results                                                                                      |
+| `/brands/[handle]`                                  | Brand page                                                                                          |
+| `/products/[slug]`                                  | Product page                                                                                        |
+| `/bag`, `/checkout`, `/checkout/success`            | Bag and checkout                                                                                    |
+| `/orders`, `/orders/[id]`                           | Orders + live tracking                                                                              |
+| `/wishlist`, `/notifications`, `/messages`          | Shared buyer surfaces                                                                               |
+| `/account/**`                                       | Buyer dashboard (overview, orders, saved, following, places, wallet, messages, reviews, settings)   |
+| `/open-shop`                                        | Shop onboarding wizard                                                                              |
+| `/studio/**`                                        | Shop Studio (overview, products, orders, customers, reviews, promotions, analytics, brand, payouts) |
+| `/design-system`                                    | Living style guide                                                                                  |
+| `/offline`                                          | Offline fallback                                                                                    |
 
 ## 7. Deviations and judgement calls
+
 - **Reference images missing** at bootstrap. See `DESIGN_ANALYSIS.md`.
 - **`<ViewTransition>` instead of `layoutId` for cross-route morphs.** See §4.
 - **Mode derived from the route** instead of free-floating state. See §3.
@@ -163,6 +167,7 @@ orders / revenue).
 ## 8. Polish-pass decisions (phases 8–9)
 
 ### Hydration and URL hooks
+
 - **Query results are masked until mount.** `src/queries/use-query.ts` wraps TanStack's
   `useQuery`/`useInfiniteQuery` and reports `pending` until the component has mounted.
   IndexedDB can answer before a late `<Suspense>` boundary hydrates, which otherwise rendered
@@ -176,6 +181,7 @@ orders / revenue).
   filter chips in the HTML instead of waiting for hydration. Measured LCP element on both pages.
 
 ### Bundle and main-thread budget
+
 - **The data implementation loads on first use.** `services/index.ts` exports lazy proxies that
   `import()` the mock (or remote) implementation, so seed generation, IndexedDB code and the
   repositories are not in any page's initial bundle.
@@ -194,6 +200,7 @@ orders / revenue).
 - Product art's dotted backdrop is one SVG `<pattern>` instead of 72 circles per card.
 
 ### Accessibility
+
 - **Decorative images are hidden, not unnamed.** `AppImage` with `alt=""` renders
   `aria-hidden` instead of `role="img"` with an empty label.
 - **Wide tables scroll inside `TableScroll`**: a named, focusable `role="region"` (keyboard
@@ -208,11 +215,13 @@ orders / revenue).
   mode on phone and desktop, and fails on horizontal overflow or console errors.
 
 ### Open-shop success screen
+
 `useUi.shopJustOpened` is set when the wizard succeeds. The `/open-shop` gate redirects users
 who already have a shop to Studio, and without the flag it fired the moment the new shop
 existed and skipped the celebration. The flag resets when the wizard unmounts.
 
 ### PWA and offline
+
 - `public/sw.js` is hand-written (about 60 lines) rather than a plugin: no build step, no
   framework coupling. Navigations are network-first with a cached copy as fallback, then
   `/offline`. Hashed `/_next/static` assets are cache-first. Data never goes through the service
@@ -224,12 +233,13 @@ existed and skipped the celebration. The flag resets when the wizard unmounts.
   matches the site.
 
 ### Measured results (local production build, Lighthouse 13 mobile, simulated throttling)
-| Page | Performance | Accessibility | Best practices | SEO |
-| --- | --- | --- | --- | --- |
-| `/` | 84–93 | 100 | 100 | 100 |
-| `/explore` | 83–88 | 100 | 100 | 100* |
-| `/brands/[handle]` | 72–76 | 98–100 | 100 | 100 |
-| `/products/[slug]` | 70–73 | — | — | — |
+
+| Page               | Performance | Accessibility | Best practices | SEO  |
+| ------------------ | ----------- | ------------- | -------------- | ---- |
+| `/`                | 84–93       | 100           | 100            | 100  |
+| `/explore`         | 83–88       | 100           | 100            | 100* |
+| `/brands/[handle]` | 72–76       | 98–100        | 100            | 100  |
+| `/products/[slug]` | 70–73       | —             | —              | —    |
 
 Scores vary ±5 run to run in the dev container. Total blocking time is 130–400ms. *SEO shows 92
 locally only because the canonical URL points at `localhost:3000`; it resolves to the real domain
@@ -240,4 +250,3 @@ render content that only exists in the visitor's IndexedDB, behind the deliberat
 latency, so their LCP is client-rendered by design. A real backend would let these pages
 server-render (the service seam is ready for it), which is the fix. Beyond that, the next
 step would be `LazyMotion` with `m.*` components (~20KB off the shared bundle).
-

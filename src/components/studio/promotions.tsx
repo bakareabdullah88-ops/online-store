@@ -21,14 +21,41 @@ import type { Promo, PromoKind } from "@/services/types";
 import { toast } from "@/stores/toast";
 import { StudioHeaderBlock } from "./studio-shell";
 
-type Draft = { id?: string; code: string; kind: PromoKind; value: string; min: string; max: string; limit: string; expires: string; description: string; active: boolean };
+type Draft = {
+  id?: string;
+  code: string;
+  kind: PromoKind;
+  value: string;
+  min: string;
+  max: string;
+  limit: string;
+  expires: string;
+  description: string;
+  active: boolean;
+};
 
-const blank: Draft = { code: "", kind: "percent", value: "10", min: "", max: "", limit: "", expires: "", description: "", active: true };
+const blank: Draft = {
+  code: "",
+  kind: "percent",
+  value: "10",
+  min: "",
+  max: "",
+  limit: "",
+  expires: "",
+  description: "",
+  active: true,
+};
 
 function describe(p: Pick<Promo, "kind" | "value" | "minSubtotalKobo" | "maxDiscountKobo">) {
-  const base = p.kind === "percent" ? `${p.value}% off` : p.kind === "fixed" ? `${formatNaira(p.value)} off` : "Free delivery";
+  const base =
+    p.kind === "percent"
+      ? `${p.value}% off`
+      : p.kind === "fixed"
+        ? `${formatNaira(p.value)} off`
+        : "Free delivery";
   const min = p.minSubtotalKobo ? ` orders over ${formatNaira(p.minSubtotalKobo)}` : " any order";
-  const cap = p.kind === "percent" && p.maxDiscountKobo ? ` (max ${formatNaira(p.maxDiscountKobo)})` : "";
+  const cap =
+    p.kind === "percent" && p.maxDiscountKobo ? ` (max ${formatNaira(p.maxDiscountKobo)})` : "";
   return `${base}${cap} on${min}`;
 }
 
@@ -37,7 +64,12 @@ function PromoForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const save = useSavePromo();
   const submit = () => {
-    const value = d.kind === "percent" ? Number(d.value) : d.kind === "fixed" ? (parseNairaInput(d.value) ?? 0) : 0;
+    const value =
+      d.kind === "percent"
+        ? Number(d.value)
+        : d.kind === "fixed"
+          ? (parseNairaInput(d.value) ?? 0)
+          : 0;
     const input: PromoInput = {
       code: d.code,
       kind: d.kind,
@@ -61,7 +93,9 @@ function PromoForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
       { ...(d.id ? { id: d.id } : {}), input },
       {
         onSuccess: () => {
-          toast.success(d.id ? "Promo updated" : `${input.code.toUpperCase()} is live`, { description: "Buyers can use it at checkout right now." });
+          toast.success(d.id ? "Promo updated" : `${input.code.toUpperCase()} is live`, {
+            description: "Buyers can use it at checkout right now.",
+          });
           onDone();
         },
         onError: (e) => {
@@ -81,46 +115,106 @@ function PromoForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
         submit();
       }}
     >
-      <Field label="Code" error={errors.code} hint={d.id ? "Codes can't be changed after creation." : "Letters and numbers, e.g. HALLWEEK"}>
-        <Input value={d.code} onChange={(e) => setD({ ...d, code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })} readOnly={!!d.id} className="font-mono uppercase" maxLength={16} />
+      <Field
+        label="Code"
+        error={errors.code}
+        hint={
+          d.id ? "Codes can't be changed after creation." : "Letters and numbers, e.g. HALLWEEK"
+        }
+      >
+        <Input
+          value={d.code}
+          onChange={(e) =>
+            setD({ ...d, code: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })
+          }
+          readOnly={!!d.id}
+          className="font-mono uppercase"
+          maxLength={16}
+        />
       </Field>
       <RadioCards
         label="Discount type"
         value={d.kind}
-        onChange={(kind) => setD({ ...d, kind, value: kind === "percent" ? "10" : kind === "fixed" ? "500" : "0" })}
+        onChange={(kind) =>
+          setD({ ...d, kind, value: kind === "percent" ? "10" : kind === "fixed" ? "500" : "0" })
+        }
         options={[
           { value: "percent", title: "Percentage", description: "e.g. 15% off" },
           { value: "fixed", title: "Fixed amount", description: "e.g. ₦500 off" },
-          { value: "free_delivery", title: "Free delivery", description: "Waives your delivery fee" },
+          {
+            value: "free_delivery",
+            title: "Free delivery",
+            description: "Waives your delivery fee",
+          },
         ]}
       />
       {d.kind !== "free_delivery" && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label={d.kind === "percent" ? "Percent off" : "Amount off (₦)"} error={errors.value}>
-            <Input value={d.value} onChange={(e) => setD({ ...d, value: e.target.value })} inputMode="numeric" className="font-mono" />
+          <Field
+            label={d.kind === "percent" ? "Percent off" : "Amount off (₦)"}
+            error={errors.value}
+          >
+            <Input
+              value={d.value}
+              onChange={(e) => setD({ ...d, value: e.target.value })}
+              inputMode="numeric"
+              className="font-mono"
+            />
           </Field>
           {d.kind === "percent" && (
             <Field label="Max discount (₦)" optional>
-              <Input value={d.max} onChange={(e) => setD({ ...d, max: e.target.value })} inputMode="numeric" className="font-mono" placeholder="2,000" />
+              <Input
+                value={d.max}
+                onChange={(e) => setD({ ...d, max: e.target.value })}
+                inputMode="numeric"
+                className="font-mono"
+                placeholder="2,000"
+              />
             </Field>
           )}
         </div>
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Minimum order (₦)" optional>
-          <Input value={d.min} onChange={(e) => setD({ ...d, min: e.target.value })} inputMode="numeric" className="font-mono" placeholder="5,000" />
+          <Input
+            value={d.min}
+            onChange={(e) => setD({ ...d, min: e.target.value })}
+            inputMode="numeric"
+            className="font-mono"
+            placeholder="5,000"
+          />
         </Field>
         <Field label="Usage limit" optional error={errors.usageLimit}>
-          <Input value={d.limit} onChange={(e) => setD({ ...d, limit: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className="font-mono" placeholder="100" />
+          <Input
+            value={d.limit}
+            onChange={(e) => setD({ ...d, limit: e.target.value.replace(/\D/g, "") })}
+            inputMode="numeric"
+            className="font-mono"
+            placeholder="100"
+          />
         </Field>
       </div>
       <Field label="Expires" optional>
-        <Input type="date" value={d.expires} onChange={(e) => setD({ ...d, expires: e.target.value })} />
+        <Input
+          type="date"
+          value={d.expires}
+          onChange={(e) => setD({ ...d, expires: e.target.value })}
+        />
       </Field>
       <Field label="Note for buyers" optional>
-        <Input value={d.description} onChange={(e) => setD({ ...d, description: e.target.value })} maxLength={80} placeholder="Hall week special" />
+        <Input
+          value={d.description}
+          onChange={(e) => setD({ ...d, description: e.target.value })}
+          maxLength={80}
+          placeholder="Hall week special"
+        />
       </Field>
-      <Switch checked={d.active} onCheckedChange={(active) => setD({ ...d, active })} label="Active" description="Inactive codes are rejected at checkout." />
+      <Switch
+        checked={d.active}
+        onCheckedChange={(active) => setD({ ...d, active })}
+        label="Active"
+        description="Inactive codes are rejected at checkout."
+      />
       <Button type="submit" size="lg" loading={save.isPending}>
         {d.id ? "Save promo" : "Create promo"}
       </Button>
@@ -155,18 +249,33 @@ export function StudioPromotions() {
           ))}
         </div>
       ) : !data?.length ? (
-        <EmptyState illustration="promos" title="No promo codes yet" body="A small discount is a great way to get your first orders or reward regulars." action={<Button onClick={() => setEditing(blank)}>Create a code</Button>} />
+        <EmptyState
+          illustration="promos"
+          title="No promo codes yet"
+          body="A small discount is a great way to get your first orders or reward regulars."
+          action={<Button onClick={() => setEditing(blank)}>Create a code</Button>}
+        />
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => (
-              <motion.li key={p.id} layout exit={{ opacity: 0, scale: 0.95 }} transition={spring.smooth} className="relative overflow-hidden rounded-lg bg-surface hairline">
+              <motion.li
+                key={p.id}
+                layout
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={spring.smooth}
+                className="relative overflow-hidden rounded-lg bg-surface hairline"
+              >
                 <div className="flex items-start justify-between gap-3 border-b border-dashed border-line-strong p-5">
                   <div>
                     <button
                       type="button"
                       className="group inline-flex items-center gap-2 font-mono text-title-lg font-semibold tracking-wider"
-                      onClick={() => void navigator.clipboard?.writeText(p.code).then(() => toast.success(`${p.code} copied`))}
+                      onClick={() =>
+                        void navigator.clipboard
+                          ?.writeText(p.code)
+                          .then(() => toast.success(`${p.code} copied`))
+                      }
                       aria-label={`Copy code ${p.code}`}
                     >
                       {p.code}
@@ -174,20 +283,50 @@ export function StudioPromotions() {
                     </button>
                     <p className="mt-1 text-small text-muted">{p.description || describe(p)}</p>
                   </div>
-                  <Switch hideLabel label={`${p.code} active`} checked={p.active} onCheckedChange={(active) => save.mutate({ id: p.id, input: { active } }, { onSuccess: () => toast(active ? `${p.code} is active` : `${p.code} paused`) })} />
+                  <Switch
+                    hideLabel
+                    label={`${p.code} active`}
+                    checked={p.active}
+                    onCheckedChange={(active) =>
+                      save.mutate(
+                        { id: p.id, input: { active } },
+                        {
+                          onSuccess: () =>
+                            toast(active ? `${p.code} is active` : `${p.code} paused`),
+                        },
+                      )
+                    }
+                  />
                 </div>
                 <div className="p-5">
                   <p className="text-small">{describe(p)}</p>
                   <div className="mt-3 flex items-center gap-3">
-                    {p.usageLimit ? <ProgressBar value={p.usageCount} max={p.usageLimit} label={`${p.code} usage`} className="flex-1" /> : <span className="flex-1" />}
+                    {p.usageLimit ? (
+                      <ProgressBar
+                        value={p.usageCount}
+                        max={p.usageLimit}
+                        label={`${p.code} usage`}
+                        className="flex-1"
+                      />
+                    ) : (
+                      <span className="flex-1" />
+                    )}
                     <span className="font-mono text-small text-muted tabular">
                       {p.usageCount}
                       {p.usageLimit ? `/${p.usageLimit}` : ""} used
                     </span>
                   </div>
                   <div className="mt-4 flex items-center gap-2">
-                    {p.active ? <Pill tone="success" dot>Active</Pill> : <Pill>Paused</Pill>}
-                    {p.expiresAt && mounted && <span className="text-small text-muted">Ends {formatDate(p.expiresAt)}</span>}
+                    {p.active ? (
+                      <Pill tone="success" dot>
+                        Active
+                      </Pill>
+                    ) : (
+                      <Pill>Paused</Pill>
+                    )}
+                    {p.expiresAt && mounted && (
+                      <span className="text-small text-muted">Ends {formatDate(p.expiresAt)}</span>
+                    )}
                     <span className="ml-auto flex gap-1">
                       <Button
                         size="icon-sm"
@@ -210,7 +349,12 @@ export function StudioPromotions() {
                       >
                         <Pencil className="size-4" />
                       </Button>
-                      <Button size="icon-sm" variant="ghost" aria-label={`Delete ${p.code}`} onClick={() => setConfirm(p)}>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        aria-label={`Delete ${p.code}`}
+                        onClick={() => setConfirm(p)}
+                      >
                         <Trash2 className="size-4" />
                       </Button>
                     </span>
@@ -221,8 +365,14 @@ export function StudioPromotions() {
           </AnimatePresence>
         </ul>
       )}
-      <ResponsiveSheet open={!!editing} onOpenChange={(v) => !v && setEditing(null)} title={editing?.id ? `Edit ${editing.code}` : "New promo code"}>
-        {editing && <PromoForm key={editing.id ?? "new"} draft={editing} onDone={() => setEditing(null)} />}
+      <ResponsiveSheet
+        open={!!editing}
+        onOpenChange={(v) => !v && setEditing(null)}
+        title={editing?.id ? `Edit ${editing.code}` : "New promo code"}
+      >
+        {editing && (
+          <PromoForm key={editing.id ?? "new"} draft={editing} onDone={() => setEditing(null)} />
+        )}
       </ResponsiveSheet>
       <Dialog
         open={!!confirm}
@@ -234,13 +384,27 @@ export function StudioPromotions() {
             <Button variant="secondary" onClick={() => setConfirm(null)}>
               Keep
             </Button>
-            <Button variant="danger" loading={remove.isPending} onClick={() => confirm && remove.mutate(confirm.id, { onSuccess: () => { setConfirm(null); toast("Promo deleted"); } })}>
+            <Button
+              variant="danger"
+              loading={remove.isPending}
+              onClick={() =>
+                confirm &&
+                remove.mutate(confirm.id, {
+                  onSuccess: () => {
+                    setConfirm(null);
+                    toast("Promo deleted");
+                  },
+                })
+              }
+            >
               Delete
             </Button>
           </>
         }
       >
-        <p className="text-body text-muted">Pausing keeps its history. Delete only if you won&apos;t use it again.</p>
+        <p className="text-body text-muted">
+          Pausing keeps its history. Delete only if you won&apos;t use it again.
+        </p>
       </Dialog>
     </div>
   );

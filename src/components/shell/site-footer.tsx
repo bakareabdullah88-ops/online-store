@@ -7,7 +7,12 @@ export function SiteFooter() {
   const cols = [
     {
       title: "Shop",
-      links: [{ href: "/explore", label: "Explore everything" }, ...categories.slice(0, 5).map((c) => ({ href: `/explore?category=${c.id}`, label: c.name }))],
+      links: [
+        { href: "/explore", label: "Explore everything" },
+        ...categories
+          .slice(0, 5)
+          .map((c) => ({ href: `/explore?category=${c.id}`, label: c.name })),
+      ],
     },
     {
       title: "Sell",
@@ -43,7 +48,10 @@ export function SiteFooter() {
               <ul className="mt-4 flex flex-col gap-2.5">
                 {c.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-small text-ink-2 underline-offset-4 hover:text-ink hover:underline">
+                    <Link
+                      href={l.href}
+                      className="text-small text-ink-2 underline-offset-4 hover:text-ink hover:underline"
+                    >
                       {l.label}
                     </Link>
                   </li>
@@ -56,9 +64,12 @@ export function SiteFooter() {
       <div className="border-t border-line">
         <div className="container-page flex flex-col gap-2 py-6 text-small text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {brand.name}. A demo marketplace: payments, wallet and accounts are simulated and nothing is charged.
+            © {brand.name}. A demo marketplace: payments, wallet and accounts are simulated and
+            nothing is charged.
           </p>
-          <p className="font-mono text-label uppercase tracking-wider">Made for Nigerian campuses</p>
+          <p className="font-mono text-label tracking-wider uppercase">
+            Made for Nigerian campuses
+          </p>
         </div>
       </div>
     </footer>

@@ -57,9 +57,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         )}
         {...props}
       />
-      {trailing && (
-        <span className="absolute inset-y-0 right-1 flex items-center">{trailing}</span>
-      )}
+      {trailing && <span className="absolute inset-y-0 right-1 flex items-center">{trailing}</span>}
     </div>
   );
 });
@@ -71,7 +69,11 @@ export const Textarea = forwardRef<
   return (
     <textarea
       ref={ref}
-      className={cn(fieldControl, "min-h-28 resize-y px-3.5 py-3 text-body leading-relaxed", className)}
+      className={cn(
+        fieldControl,
+        "min-h-28 resize-y px-3.5 py-3 text-body leading-relaxed",
+        className,
+      )}
       {...props}
     />
   );

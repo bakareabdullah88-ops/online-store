@@ -33,7 +33,11 @@ function spendByMonth(orders: Order[], now: number) {
   const d = new Date(now);
   for (let i = 5; i >= 0; i--) {
     const m = new Date(d.getFullYear(), d.getMonth() - i, 1);
-    months.push({ key: `${m.getFullYear()}-${m.getMonth()}`, label: m.toLocaleString("en-NG", { month: "short" }), value: 0 });
+    months.push({
+      key: `${m.getFullYear()}-${m.getMonth()}`,
+      label: m.toLocaleString("en-NG", { month: "short" }),
+      value: 0,
+    });
   }
   for (const o of orders) {
     if (o.status === "cancelled" || o.status === "declined") continue;
@@ -66,7 +70,9 @@ export function AccountOverview() {
           {now ? greeting(new Date(now).getHours()) : "Hello"}, {user?.name.split(" ")[0]}
         </h1>
         <p className="mt-2 text-body text-muted">
-          {active.length ? `${active.length} order${active.length > 1 ? "s" : ""} on the way.` : "Nothing on the way right now."}
+          {active.length
+            ? `${active.length} order${active.length > 1 ? "s" : ""} on the way.`
+            : "Nothing on the way right now."}
         </p>
       </header>
 
@@ -78,7 +84,11 @@ export function AccountOverview() {
           .map((n) => {
             const Icon = n.icon;
             return (
-              <Link key={n.href} href={n.href} className="flex flex-col items-start gap-3 rounded-md bg-surface p-3 text-small font-medium hairline">
+              <Link
+                key={n.href}
+                href={n.href}
+                className="flex flex-col items-start gap-3 rounded-md bg-surface p-3 text-small font-medium hairline"
+              >
                 <Icon className="size-5 text-muted" />
                 {n.label}
               </Link>
@@ -91,23 +101,48 @@ export function AccountOverview() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-small text-muted">Spent in the last 6 months</p>
-              <p className="mt-1 font-display text-display-sm">{orders.isPending ? "…" : formatNaira(spent)}</p>
+              <p className="mt-1 font-display text-display-sm">
+                {orders.isPending ? "…" : formatNaira(spent)}
+              </p>
             </div>
-            <ButtonLink href="/orders" variant="ghost" size="sm" trailingIcon={<ArrowRight className="size-4" />}>
+            <ButtonLink
+              href="/orders"
+              variant="ghost"
+              size="sm"
+              trailingIcon={<ArrowRight className="size-4" />}
+            >
               History
             </ButtonLink>
           </div>
-          {orders.isPending || !now ? <Skeleton className="mt-6 h-36 w-full" /> : <BarChart className="mt-6" data={months.map((m) => ({ label: m.label, value: m.value }))} format={formatNairaCompact} height={140} label="Monthly spend" />}
+          {orders.isPending || !now ? (
+            <Skeleton className="mt-6 h-36 w-full" />
+          ) : (
+            <BarChart
+              className="mt-6"
+              data={months.map((m) => ({ label: m.label, value: m.value }))}
+              format={formatNairaCompact}
+              height={140}
+              label="Monthly spend"
+            />
+          )}
         </div>
-        <Link href="/account/wallet" className="group flex flex-col justify-between rounded-lg bg-primary p-5 text-on-primary">
+        <Link
+          href="/account/wallet"
+          className="group flex flex-col justify-between rounded-lg bg-primary p-5 text-on-primary"
+        >
           <div className="flex items-center justify-between">
             <p className="text-small opacity-70">Wallet</p>
-            <span className="rounded-full bg-on-primary/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">Demo</span>
+            <span className="rounded-full bg-on-primary/15 px-2 py-0.5 font-mono text-[10px] tracking-wider uppercase">
+              Demo
+            </span>
           </div>
           <div>
-            <p className="font-display text-display-md">{wallet.data ? formatNaira(wallet.data.balanceKobo) : "…"}</p>
+            <p className="font-display text-display-md">
+              {wallet.data ? formatNaira(wallet.data.balanceKobo) : "…"}
+            </p>
             <p className="mt-2 flex items-center gap-1 text-small opacity-70">
-              Top up or view activity <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              Top up or view activity{" "}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </p>
           </div>
         </Link>
@@ -119,7 +154,10 @@ export function AccountOverview() {
             On the way
           </h2>
           {active.length > 0 && (
-            <Link href="/orders" className="text-small font-medium underline-offset-4 hover:underline">
+            <Link
+              href="/orders"
+              className="text-small font-medium underline-offset-4 hover:underline"
+            >
               All orders
             </Link>
           )}
@@ -128,7 +166,13 @@ export function AccountOverview() {
           <Skeleton className="h-40 w-full" rounded="lg" />
         ) : active.length === 0 ? (
           <div className="rounded-lg bg-surface hairline">
-            <EmptyState compact illustration="orders" title="No active orders" body="Fancy something from your campus today?" action={<ButtonLink href="/explore">Explore</ButtonLink>} />
+            <EmptyState
+              compact
+              illustration="orders"
+              title="No active orders"
+              body="Fancy something from your campus today?"
+              action={<ButtonLink href="/explore">Explore</ButtonLink>}
+            />
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -151,12 +195,20 @@ export function AccountOverview() {
                   <AppImage image={o.items[0]?.image} alt="" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-small font-medium">{o.items.map((i) => i.name).join(", ")}</p>
+                  <p className="truncate text-small font-medium">
+                    {o.items.map((i) => i.name).join(", ")}
+                  </p>
                   <p className="truncate text-small text-muted">
                     {o.brandName} · {now ? formatDate(o.placedAt) : ""}
                   </p>
                 </div>
-                <Button size="sm" variant="secondary" aria-label={`Reorder from ${o.brandName}`} onClick={() => void reorder(o)} leadingIcon={<RotateCcw className="size-4" />}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  aria-label={`Reorder from ${o.brandName}`}
+                  onClick={() => void reorder(o)}
+                  leadingIcon={<RotateCcw className="size-4" />}
+                >
                   <span className="max-sm:sr-only">Reorder</span>
                 </Button>
               </li>
@@ -173,11 +225,21 @@ export function AccountOverview() {
         </div>
         {wishlist.data?.length === 0 ? (
           <div className="rounded-lg bg-surface hairline">
-            <EmptyState compact illustration="wishlist" title="Nothing saved yet" body="Tap the heart on anything you like." />
+            <EmptyState
+              compact
+              illustration="wishlist"
+              title="Nothing saved yet"
+              body="Tap the heart on anything you like."
+            />
           </div>
         ) : (
-          <Rail label="Saved for later" itemClassName="w-[42vw] sm:w-[28vw] md:w-[20vw] lg:w-[15vw] max-w-56">
-            {wishlist.isPending ? Array.from({ length: 4 }, (_, i) => <ProductCardSkeleton key={i} />) : (wishlist.data ?? []).map((p) => <ProductCard key={p.id} product={p} />)}
+          <Rail
+            label="Saved for later"
+            itemClassName="w-[42vw] sm:w-[28vw] md:w-[20vw] lg:w-[15vw] max-w-56"
+          >
+            {wishlist.isPending
+              ? Array.from({ length: 4 }, (_, i) => <ProductCardSkeleton key={i} />)
+              : (wishlist.data ?? []).map((p) => <ProductCard key={p.id} product={p} />)}
           </Rail>
         )}
       </section>

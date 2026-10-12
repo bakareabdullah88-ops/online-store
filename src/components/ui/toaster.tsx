@@ -51,7 +51,9 @@ function ToastItem({ toast, index }: { toast: Toast; index: number }) {
       className="pointer-events-auto flex w-full touch-pan-y items-start gap-3 rounded-md bg-primary py-3 pr-2 pl-4 text-on-primary shadow-lg"
     >
       {icons[toast.tone] && (
-        <span className="mt-0.5 shrink-0 rounded-full bg-on-primary [&>svg]:block">{icons[toast.tone]}</span>
+        <span className="mt-0.5 shrink-0 rounded-full bg-on-primary [&>svg]:block">
+          {icons[toast.tone]}
+        </span>
       )}
       <div className="min-w-0 flex-1 py-0.5">
         <p className="text-small font-medium">{toast.title}</p>
@@ -64,7 +66,7 @@ function ToastItem({ toast, index }: { toast: Toast; index: number }) {
             toast.action?.onClick();
             dismiss(toast.id);
           }}
-          className="h-8 shrink-0 rounded-sm px-2.5 font-mono text-label font-semibold uppercase tracking-wider text-on-primary underline-offset-4 hover:underline"
+          className="h-8 shrink-0 rounded-sm px-2.5 font-mono text-label font-semibold tracking-wider text-on-primary uppercase underline-offset-4 hover:underline"
         >
           {toast.action.label}
         </button>
@@ -91,7 +93,11 @@ export function Toaster() {
         "bottom-[calc(var(--tabbar-h)+12px+env(safe-area-inset-bottom))] md:bottom-6 md:justify-end md:px-6",
       )}
     >
-      <ol aria-live="polite" aria-relevant="additions text" className="flex w-full max-w-sm flex-col-reverse gap-2">
+      <ol
+        aria-live="polite"
+        aria-relevant="additions text"
+        className="flex w-full max-w-sm flex-col-reverse gap-2"
+      >
         <AnimatePresence initial={false}>
           {toasts.map((t, i) => (
             <ToastItem key={t.id} toast={t} index={i} />

@@ -1,5 +1,10 @@
 import { newId } from "@/lib/ids";
-import type { MessageService, NotificationService, PlacesService, WalletService } from "../contracts";
+import type {
+  MessageService,
+  NotificationService,
+  PlacesService,
+  WalletService,
+} from "../contracts";
 import { ServiceError } from "../errors";
 import { schemas } from "./schemas";
 import type { Thread } from "../types";
@@ -66,7 +71,8 @@ export const mockMessages: MessageService = {
     const db = await getDb();
     const user = await requireUser(db);
     const t = db.threads.find((x) => x.id === id);
-    if (!t || !canSee(t, user.id, user.brandIds, as)) throw new ServiceError("NOT_FOUND", "Conversation not found.");
+    if (!t || !canSee(t, user.id, user.brandIds, as))
+      throw new ServiceError("NOT_FOUND", "Conversation not found.");
     if (as === "buyer") t.unreadForBuyer = 0;
     else t.unreadForBrand = 0;
     await commit("threads");
@@ -77,7 +83,8 @@ export const mockMessages: MessageService = {
     await quick();
     const db = await getDb();
     const user = await requireUser(db);
-    if (user.brandIds.includes(brandId)) throw new ServiceError("FORBIDDEN", "You can't message your own shop.");
+    if (user.brandIds.includes(brandId))
+      throw new ServiceError("FORBIDDEN", "You can't message your own shop.");
     const brand = db.brands.find((b) => b.id === brandId);
     if (!brand) throw new ServiceError("NOT_FOUND", "Brand not found.");
     let t = db.threads.find((x) => x.buyerId === user.id && x.brandId === brandId);
@@ -109,7 +116,8 @@ export const mockMessages: MessageService = {
     const db = await getDb();
     const user = await requireUser(db);
     const t = db.threads.find((x) => x.id === threadId);
-    if (!t || !canSee(t, user.id, user.brandIds, as)) throw new ServiceError("NOT_FOUND", "Conversation not found.");
+    if (!t || !canSee(t, user.id, user.brandIds, as))
+      throw new ServiceError("NOT_FOUND", "Conversation not found.");
     const at = new Date().toISOString();
     t.messages.push({ id: newId("m"), from: as, body: text, at });
     t.updatedAt = at;
@@ -121,14 +129,31 @@ export const mockMessages: MessageService = {
     // BACKEND-SEAM: realtime messaging (websocket / push) replaces the canned replies below.
     if (as === "buyer" && owner && !owner.passwordHash) {
       const reply = autoReplies[t.messages.length % autoReplies.length]!;
-      t.messages.push({ id: newId("m"), from: "brand", body: reply, at: new Date(Date.now() + 1500).toISOString() });
+      t.messages.push({
+        id: newId("m"),
+        from: "brand",
+        body: reply,
+        at: new Date(Date.now() + 1500).toISOString(),
+      });
       t.updatedAt = new Date(Date.now() + 1500).toISOString();
     }
     if (as === "buyer" && owner?.passwordHash) {
-      pushNotification(db, { userId: owner.id, kind: "message", title: `Message from ${t.buyerName}`, body: text.slice(0, 90), href: "/studio/messages" });
+      pushNotification(db, {
+        userId: owner.id,
+        kind: "message",
+        title: `Message from ${t.buyerName}`,
+        body: text.slice(0, 90),
+        href: "/studio/messages",
+      });
     }
     if (as === "brand") {
-      pushNotification(db, { userId: t.buyerId, kind: "message", title: `${t.brandName} replied`, body: text.slice(0, 90), href: `/messages?thread=${t.id}` });
+      pushNotification(db, {
+        userId: t.buyerId,
+        kind: "message",
+        title: `${t.brandName} replied`,
+        body: text.slice(0, 90),
+        href: `/messages?thread=${t.id}`,
+      });
     }
     await commit("threads", "notifications");
     return clone(t);
@@ -143,7 +168,10 @@ export const mockWallet: WalletService = {
     const transactions = db.wallet
       .filter((w) => w.userId === user.id)
       .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-    return { balanceKobo: transactions.reduce((n, w) => n + w.amountKobo, 0), transactions: clone(transactions) };
+    return {
+      balanceKobo: transactions.reduce((n, w) => n + w.amountKobo, 0),
+      transactions: clone(transactions),
+    };
   },
   async topUp(amountKobo) {
     const { topUpSchema } = await schemas();
@@ -152,9 +180,20 @@ export const mockWallet: WalletService = {
     const db = await getDb();
     const user = await requireUser(db);
     // BACKEND-SEAM: payment gateway top-up. DEMO: no money moves.
-    db.wallet.push({ id: newId("w"), userId: user.id, kind: "topup", amountKobo, label: "Top-up (demo)", at: new Date().toISOString() });
+    db.wallet.push({
+      id: newId("w"),
+      userId: user.id,
+      kind: "topup",
+      amountKobo,
+      label: "Top-up (demo)",
+      at: new Date().toISOString(),
+    });
     await commit("wallet");
-    return { balanceKobo: db.wallet.filter((w) => w.userId === user.id).reduce((n, w) => n + w.amountKobo, 0) };
+    return {
+      balanceKobo: db.wallet
+        .filter((w) => w.userId === user.id)
+        .reduce((n, w) => n + w.amountKobo, 0),
+    };
   },
 };
 
@@ -172,11 +211,14 @@ export const mockPlaces: PlacesService = {
     const db = await getDb();
     const user = await requireUser(db);
     const campus = db.campuses.find((c) => c.id === input.campusId);
-    if (!campus?.zones.some((z) => z.id === input.zoneId)) throw new ServiceError("VALIDATION", "Choose a zone on that campus.");
+    if (!campus?.zones.some((z) => z.id === input.zoneId))
+      throw new ServiceError("VALIDATION", "Choose a zone on that campus.");
     const mine = db.places.filter((p) => p.userId === user.id);
     const isDefault = input.isDefault || mine.length === 0;
     if (isDefault) for (const p of mine) p.isDefault = false;
-    let place = input.id ? db.places.find((p) => p.id === input.id && p.userId === user.id) : undefined;
+    let place = input.id
+      ? db.places.find((p) => p.id === input.id && p.userId === user.id)
+      : undefined;
     if (place) {
       Object.assign(place, { ...input, isDefault });
       if (!input.pickupPointId) delete place.pickupPointId;

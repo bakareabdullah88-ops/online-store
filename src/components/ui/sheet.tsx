@@ -44,14 +44,21 @@ function Header({
     <RDialog.Title className="font-display text-display-sm text-ink">{title}</RDialog.Title>
   );
   return (
-    <div className={cn("flex items-start justify-between gap-4", hideTitle && "absolute right-3 top-3")}>
+    <div
+      className={cn(
+        "flex items-start justify-between gap-4",
+        hideTitle && "absolute top-3 right-3",
+      )}
+    >
       <div className={cn("min-w-0", hideTitle && "sr-only")}>
         {hideTitle ? <VisuallyHidden.Root>{titleEl}</VisuallyHidden.Root> : titleEl}
         {description && (
-          <RDialog.Description className="mt-1.5 text-body text-muted">{description}</RDialog.Description>
+          <RDialog.Description className="mt-1.5 text-body text-muted">
+            {description}
+          </RDialog.Description>
         )}
       </div>
-      <CloseButton className="-mr-2 -mt-1 shrink-0" />
+      <CloseButton className="-mt-1 -mr-2 shrink-0" />
     </div>
   );
 }
@@ -170,7 +177,9 @@ export function SidePanel({
                   <Header title={title} description={description} hideTitle={hideTitle} />
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">{children}</div>
-                {footer && <div className="border-t border-line px-6 py-4 safe-bottom">{footer}</div>}
+                {footer && (
+                  <div className="border-t border-line px-6 py-4 safe-bottom">{footer}</div>
+                )}
               </motion.div>
             </RDialog.Content>
           </RDialog.Portal>
@@ -202,12 +211,22 @@ export function BottomSheet({
             className,
           )}
         >
-          <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line-strong" aria-hidden />
-          <div className={cn("flex items-start justify-between gap-4 px-5 pt-3 pb-3", hideTitle && "sr-only")}>
+          <div
+            className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-line-strong"
+            aria-hidden
+          />
+          <div
+            className={cn(
+              "flex items-start justify-between gap-4 px-5 pt-3 pb-3",
+              hideTitle && "sr-only",
+            )}
+          >
             <div className="min-w-0">
               <Drawer.Title className="font-display text-display-sm text-ink">{title}</Drawer.Title>
               {description && (
-                <Drawer.Description className="mt-1 text-body text-muted">{description}</Drawer.Description>
+                <Drawer.Description className="mt-1 text-body text-muted">
+                  {description}
+                </Drawer.Description>
               )}
             </div>
             <Drawer.Close
@@ -219,7 +238,9 @@ export function BottomSheet({
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
           {footer && (
-            <div className="border-t border-line px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">{footer}</div>
+            <div className="border-t border-line px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+              {footer}
+            </div>
           )}
         </Drawer.Content>
       </Drawer.Portal>
