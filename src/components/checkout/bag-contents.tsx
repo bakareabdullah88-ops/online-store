@@ -84,7 +84,7 @@ function LineItem({ item, index, onNavigate }: { item: BagItemView; index: numbe
               {item.label && <p className="eyebrow mt-1 text-muted">{item.label}</p>}
             </div>
             <span className="shrink-0 font-mono text-small font-medium tabular">
-              {p ? <NumberTicker value={item.totalKobo} format={(n) => formatNaira(n)} /> : null}
+              {p ? <NumberTicker value={item.totalKobo} format={(n) => formatNaira(n)} step={100} /> : null}
             </span>
           </div>
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
@@ -227,7 +227,7 @@ export function BagSummary({ className }: { className?: string }) {
           Subtotal · {count} item{count === 1 ? "" : "s"}
         </span>
         <span className="font-display text-display-sm">
-          <NumberTicker value={subtotalKobo} format={(n) => formatNaira(n)} />
+          <NumberTicker value={subtotalKobo} format={(n) => formatNaira(n)} step={100} />
         </span>
       </div>
       <p className="text-small text-muted">Delivery and promo codes are applied at checkout.</p>

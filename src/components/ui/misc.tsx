@@ -296,27 +296,35 @@ export function Price({
 
 /* ----------------------------- Number ticker ------------------------------ */
 
-/** Animates between numeric values (totals, KPIs). Renders formatted text. */
+/**
+ * Animates between numeric values (totals, KPIs). While moving it shows values
+ * rounded to `step` (e.g. 100 kobo = whole naira); at rest it shows the exact value.
+ */
 export function NumberTicker({
   value,
   format,
   className,
+  step = 1,
 }: {
   value: number;
   format: (n: number) => string;
   className?: string;
+  step?: number;
 }) {
   const reduce = useReducedMotion();
   const mv = useMotionValue(value);
-  const text = useTransform(mv, (v) => format(Math.round(v)));
+  const target = useRef(value);
+  const text = useTransform(mv, (v) => (Math.abs(v - target.current) < step ? format(target.current) : format(Math.round(v / step) * step)));
   const first = useRef(true);
   useEffect(() => {
-    if (first.current || reduce) {
+    target.current = value;
+    // No count-up on first paint or from an empty state; just show the number.
+    if (first.current || reduce || mv.get() === 0) {
       first.current = false;
       mv.set(value);
       return;
     }
-    const controls = animate(mv, value, { type: "spring", stiffness: 140, damping: 24, mass: 0.8 });
+    const controls = animate(mv, value, { type: "spring", stiffness: 220, damping: 30, mass: 0.8 });
     return () => controls.stop();
   }, [value, mv, reduce]);
   return (

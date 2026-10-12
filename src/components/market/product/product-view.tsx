@@ -166,7 +166,7 @@ export function ProductView() {
         </ol>
       </nav>
       <div className="grid gap-8 md:grid-cols-12 md:gap-10 xl:gap-16">
-        <div className="md:col-span-7">
+        <div className="min-w-0 md:col-span-7">
           <div className="md:sticky md:top-24">
             <Gallery images={p.images} name={p.name} productId={p.id} heroRef={heroRef} />
           </div>

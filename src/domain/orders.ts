@@ -171,12 +171,17 @@ export function deliveryProgress(order: Order, now: number): number {
   return Math.max(0, Math.min(0.97, elapsed / total));
 }
 
-/** Estimated time remaining in seconds, or null when terminal. */
+/**
+ * Seconds until the next milestone the buyer cares about: delivery for
+ * delivery orders, "ready to collect" for pickup orders. Null when there is
+ * no estimate (terminal, already ready, or a manually-updated order).
+ */
 export function etaSeconds(order: Order, now: number): number | null {
-  if (isTerminal(order.status)) return null;
-  if (!order.autoProgress) return null;
+  if (isTerminal(order.status) || !order.autoProgress) return null;
+  if (order.fulfilment.method === "pickup" && order.status === "ready") return null;
   const placed = Date.parse(order.placedAt);
-  return Math.max(0, Math.round((placed + AUTO_SCHEDULE.delivered * 1000 - now) / 1000));
+  const target = order.fulfilment.method === "pickup" ? AUTO_SCHEDULE.dispatch : AUTO_SCHEDULE.delivered;
+  return Math.max(0, Math.round((placed + target * 1000 - now) / 1000));
 }
 
 /** Apply a seller transition, appending to the timeline. Throws on an illegal move. */
