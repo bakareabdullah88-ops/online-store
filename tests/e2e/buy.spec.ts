@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { demoLogin, expectNoAppErrors, trackErrors } from "./helpers";
 
-test("browse, add to bag, check out and track an order", async ({ page, isMobile }) => {
+test("browse, add to bag, check out and track an order", async ({ page }) => {
   const errors = trackErrors(page);
   await demoLogin(page, "buyer", "/explore");
 
@@ -26,8 +26,10 @@ test("browse, add to bag, check out and track an order", async ({ page, isMobile
   // Success + live tracking
   await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("link", { name: "Track your order" }).click();
-  await expect(page.getByRole("heading", { level: 1, name: /Placed|Confirmed/ })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: "Confirmed" })).toBeVisible({ timeout: 20_000 });
-  expect(isMobile !== undefined).toBe(true);
+  const status = page.getByRole("heading", { level: 1, name: /Placed|Confirmed|Preparing|Out for delivery|Delivered/ });
+  await expect(status).toBeVisible();
+  // The order moves on its own (seeded brand): it must leave "Placed".
+  await expect(page.getByRole("heading", { level: 1, name: /Confirmed|Preparing|Out for delivery|Delivered/ })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("list", { name: "Order progress" })).toBeVisible();
   await expectNoAppErrors(page, errors);
 });

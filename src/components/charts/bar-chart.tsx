@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
-import { useId, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useId, useRef, useState } from "react";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 
@@ -29,15 +30,22 @@ export function BarChart({
   compact?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.3 });
+  const wide = useMediaQuery("(min-width: 768px)");
   const max = Math.max(1, ...data.map((d) => d.value));
   const [active, setActive] = useState<number | null>(null);
   const focus = active ?? highlight ?? data.length - 1;
+  // On phones the tooltip appears on touch/focus only, so it never covers headings.
+  const showTip = active !== null || wide;
   const id = useId();
-  const showEvery = data.length > 16 ? Math.ceil(data.length / 8) : 1;
+  const showEvery = data.length > 12 ? Math.ceil(data.length / 8) : 1;
+  // Gaps shrink as bars multiply so bars stay readable.
+  const gap = `${Math.max(0.6, Math.min(3, 36 / data.length))}%`;
 
   return (
-    <figure className={cn("relative", className)}>
-      <div className="relative flex items-stretch gap-[3%]" style={{ height }} onMouseLeave={() => setActive(null)} role="list" aria-label={label}>
+    <figure ref={ref} className={cn("relative", className)}>
+      <div className="relative flex items-stretch" style={{ height, gap }} onMouseLeave={() => setActive(null)} role="list" aria-label={label}>
         {/* grid lines */}
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
@@ -54,6 +62,7 @@ export function BarChart({
               tabIndex={0}
               aria-label={`${d.label}: ${format(d.value)}`}
               onMouseEnter={() => setActive(i)}
+              onTouchStart={() => setActive(i)}
               onFocus={() => setActive(i)}
               onBlur={() => setActive(null)}
               className="group relative flex flex-1 cursor-default items-end outline-none"
@@ -61,12 +70,11 @@ export function BarChart({
               <motion.div
                 className={cn("w-full rounded-t-[3px] transition-colors duration-200", on ? "bg-accent" : "bg-ink/[0.1] group-hover:bg-ink/[0.18] dark:bg-ink/[0.14]")}
                 initial={reduce ? false : { scaleY: 0 }}
-                whileInView={{ scaleY: 1 }}
-                viewport={{ once: true }}
+                animate={inView || reduce ? { scaleY: 1 } : { scaleY: 0 }}
                 transition={{ ...spring.gentle, delay: reduce ? 0 : Math.min(i * 0.02, 0.4) }}
                 style={{ height: `${Math.max(h, d.value > 0 ? 2 : 0.5)}%`, transformOrigin: "bottom" }}
               />
-              {on && !compact && (
+              {on && !compact && showTip && inView && (
                 <motion.div
                   layoutId={`${id}-tip`}
                   transition={spring.snappy}
@@ -82,9 +90,9 @@ export function BarChart({
         })}
       </div>
       {!compact && (
-        <div className="mt-2 flex gap-[3%]" aria-hidden>
+        <div className="mt-2 flex" style={{ gap }} aria-hidden>
           {data.map((d, i) => (
-            <span key={i} className={cn("flex-1 truncate text-center font-mono text-[10px] text-muted", i % showEvery !== 0 && "invisible")}>
+            <span key={i} className={cn("flex-1 overflow-visible text-center font-mono text-[10px] whitespace-nowrap text-muted", i % showEvery !== 0 && "invisible")}>
               {d.label}
             </span>
           ))}

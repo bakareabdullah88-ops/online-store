@@ -525,3 +525,20 @@
     }
   }
 }
+
+/* Print: only the order receipt when printing from Shop Studio */
+@media print {
+  body:has(#receipt) * {
+    visibility: hidden;
+  }
+  body:has(#receipt) #receipt,
+  body:has(#receipt) #receipt * {
+    visibility: visible;
+  }
+  body:has(#receipt) #receipt {
+    position: fixed;
+    inset: 0;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+}

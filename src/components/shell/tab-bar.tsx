@@ -33,7 +33,7 @@ function TabLink({ item, active, layoutId, badge }: { item: NavItem; active: boo
   );
 }
 
-const HIDE_ON = ["/products/", "/checkout", "/open-shop", "/studio/products/new", "/studio/products/edit"];
+const HIDE_ON = ["/products/", "/checkout", "/open-shop", "/studio/products/"];
 
 /** Bottom tab bar on phones. Market and Studio variants. */
 export function TabBar({ variant = "market" }: { variant?: "market" | "studio" }) {

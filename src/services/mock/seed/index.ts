@@ -374,7 +374,7 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
     const pickupPoint = campus.pickupPoints.find((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? campus.pickupPoints[0];
     return {
       id: args.id,
-      code: `${appBrand.orderPrefix}-${args.id.slice(-4).toUpperCase()}`,
+      code: `${appBrand.orderPrefix}-${Array.from({ length: 4 }, () => "ABCDEFGHJKMNPQRSTVWXYZ23456789"[rng.int(0, 29)]).join("")}`,
       checkoutId: `ck_${args.id}`,
       buyerId: u.id,
       buyerName: u.name,

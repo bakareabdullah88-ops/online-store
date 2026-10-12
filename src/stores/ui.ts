@@ -45,6 +45,8 @@ type Ui = {
   accountOpen: boolean;
   /** Increments to trigger the bag-icon bump after a fly-to-bag. */
   bagPulse: number;
+  /** Set while the open-shop success screen is showing (suppresses the "already has a shop" redirect). */
+  shopJustOpened: boolean;
   setBagOpen: (v: boolean) => void;
   setCommandOpen: (v: boolean) => void;
   setAccountOpen: (v: boolean) => void;
@@ -56,6 +58,7 @@ export const useUi = create<Ui>((set) => ({
   commandOpen: false,
   accountOpen: false,
   bagPulse: 0,
+  shopJustOpened: false,
   setBagOpen: (bagOpen) => set({ bagOpen }),
   setCommandOpen: (commandOpen) => set({ commandOpen }),
   setAccountOpen: (accountOpen) => set({ accountOpen }),

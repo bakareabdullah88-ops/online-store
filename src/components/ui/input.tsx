@@ -169,7 +169,7 @@ export function Field({ label, hint, error, optional, className, children, aside
       <div className="flex items-baseline justify-between gap-3">
         <label htmlFor={id} className="text-small font-medium text-ink">
           {label}
-          {optional && <span className="ml-1.5 font-normal text-muted">Optional</span>}
+          {optional && <span className="ml-1.5 font-normal text-muted"> (optional)</span>}
         </label>
         {aside}
       </div>

@@ -170,7 +170,7 @@ export function SegmentedControl<T extends string>({
               btns?.[idx]?.focus();
             }}
             className={cn(
-              "relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-sm font-medium transition-colors duration-150",
+              "relative inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-sm font-medium transition-colors duration-150",
               size === "sm" ? "h-8 px-2.5 text-small" : "h-9 px-3.5 text-small",
               active ? "text-ink" : "text-muted hover:text-ink",
             )}

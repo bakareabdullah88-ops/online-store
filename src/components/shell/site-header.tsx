@@ -64,7 +64,7 @@ export function BagButton({ className }: { className?: string }) {
   );
 }
 
-function AccountMenu() {
+export function AccountMenu() {
   const { user } = useSession();
   const signOut = useSignOut();
   const router = useRouter();
