@@ -192,7 +192,7 @@ const drawings: Record<IllustrationName, ReactNode> = {
         x="80"
         y="88"
         textAnchor="middle"
-        fontFamily="var(--font-instrument-serif)"
+        fontFamily="var(--font-display-face)"
         fontSize="30"
         fill="var(--ink)"
       >

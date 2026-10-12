@@ -106,6 +106,16 @@ Implement them in `src/services/remote/` against the endpoints in
 for `BACKEND-SEAM` to find every place that changes meaning with a real server (sessions,
 uploads, payments, realtime).
 
+## Changing fonts
+
+All fonts live in one file, [`src/config/fonts.ts`](src/config/fonts.ts): the headline font, the
+text font, the label font, and whether emphasised words in headlines are upright or italic.
+
+The easiest way to choose is the font lab at **`/design-system` → Try a font**. Pick a headline
+and a text font, preview them on a sample hero (or on the whole page), then press **Copy** and
+paste the result into `src/config/fonts.ts`. Any family on [Google Fonts](https://fonts.google.com)
+works; it is self-hosted at build time, so visitors never load anything from Google.
+
 ## Using real photos
 
 Seed products use generated SVG art, so nothing is hotlinked. To use real photos:
@@ -122,3 +132,19 @@ Sellers can also upload their own images in Shop Studio; those are stored as blo
 
 See [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md). In short: import the repo in Vercel, keep the
 defaults, deploy. No environment variables are required.
+
+## Making changes later
+
+Once the repo is connected to Vercel, **every push to GitHub redeploys the site automatically**.
+Pushes to the production branch (this repo's default branch) update the live site; pushes to any
+other branch get their own preview URL first. Ways to make a change:
+
+- **Ask Claude Code** (claude.ai/code or the app) in a session on this repo: describe the change,
+  it edits, tests and pushes, and Vercel deploys.
+- **Edit on GitHub**: open a file, click the pencil, commit. Good for copy and config tweaks
+  (brand name in `src/config/brand.ts`, fonts in `src/config/fonts.ts`).
+- **Locally**: `pnpm dev`, edit, run `pnpm check`, commit and push.
+
+To regenerate the full screenshot set after a change, start the app (`pnpm build && pnpm start
+--port 3100`) and run `node scripts/gallery.mjs phone` and `node scripts/gallery.mjs desktop`.
+Images land in `screenshots/gallery/`.

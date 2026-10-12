@@ -207,9 +207,10 @@
   --color-overlay: var(--overlay);
   --color-skeleton: var(--skeleton);
 
-  --font-display: var(--font-instrument-serif), "Times New Roman", serif;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+  /* Faces come from src/config/fonts.ts */
+  --font-display: var(--font-display-face), "Times New Roman", serif;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, "SFMono-Regular", monospace;
 
   /* Type scale */
   --text-display-xl: clamp(3.25rem, 1.9rem + 6.4vw, 7.5rem);
@@ -291,6 +292,11 @@
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Emphasis style is chosen in src/config/fonts.ts (`emphasis`). */
+  html[data-emphasis="upright"] em {
+    font-style: normal;
   }
 
   ::selection {

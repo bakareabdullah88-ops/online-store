@@ -51,6 +51,8 @@ import { spring, type SpringName } from "@/design/motion";
 import { artPalettes, type ArtPalette } from "@/design/tokens";
 import { formatNaira } from "@/domain/money";
 import { brand } from "@/config/brand";
+import { fontNames } from "@/config/fonts";
+import { FontLab } from "./font-lab";
 import { toast } from "@/stores/toast";
 import type { ArtMotif } from "@/services/types";
 import { cn } from "@/lib/cn";
@@ -269,6 +271,7 @@ export function DesignSystemView() {
   const nav = [
     ["color", "Colour"],
     ["type", "Type"],
+    ["fonts", "Try a font"],
     ["space", "Space & elevation"],
     ["motion", "Motion"],
     ["buttons", "Buttons"],
@@ -371,9 +374,13 @@ export function DesignSystemView() {
             ))}
           </div>
           <p className="mt-6 text-small text-muted">
-            Instrument Serif (display) · Geist (UI) · Geist Mono (labels & figures:{" "}
-            <span className="font-mono text-ink tabular">{formatNaira(1_250_000)}</span>)
+            {fontNames.display} (display) · {fontNames.body} (UI) · {fontNames.mono} (labels &
+            figures: <span className="font-mono text-ink tabular">{formatNaira(1_250_000)}</span>)
           </p>
+        </Section>
+
+        <Section id="fonts" kicker="02 · Fonts" title="Try a font">
+          <FontLab />
         </Section>
 
         <Section id="space" kicker="03" title="Space & elevation">

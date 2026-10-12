@@ -437,7 +437,7 @@ export const BrandMark = memo(function BrandMark({
         dominantBaseline="central"
         fill={bg}
         style={{
-          font: `400 ${letters.length > 1 ? 44 : 56}px var(--font-instrument-serif), serif`,
+          font: `400 ${letters.length > 1 ? 44 : 56}px var(--font-display-face), serif`,
           letterSpacing: "-1px",
         }}
       >

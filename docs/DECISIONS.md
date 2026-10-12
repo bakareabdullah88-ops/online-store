@@ -44,6 +44,12 @@ lodash.
 - **Geist Mono** for eyebrows, labels, prices in tables, order codes and status pills. Gives
   the "receipt / label maker" texture that suits a campus marketplace.
 
+**Changing fonts.** All three faces are set in `src/config/fonts.ts` (with `fontNames` for the share
+image and an `emphasis` switch). Emphasised words in headlines default to **upright** in the
+accent colour: the italic accents read as too slanted at display sizes. `/design-system` has a font
+lab that previews a shortlist live (those candidates load on that page only, never preloaded) and
+generates the exact config to paste.
+
 ## 3. Architecture
 
 ```

@@ -1,16 +1,17 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@/config/brand";
+import { emphasis, fontNames } from "@/config/fonts";
 
 export const alt = `${brand.name}: buy from student brands on your campus`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** Loads Instrument Serif (regular + italic); falls back to the default face if offline at build. */
-async function loadFont(italic: boolean): Promise<ArrayBuffer | null> {
+/** Loads the display font from Google Fonts; falls back to the default face if offline at build. */
+async function loadFont(family: string, italic: boolean): Promise<ArrayBuffer | null> {
   "use cache";
   try {
-    const family = italic ? "Instrument+Serif:ital@1" : "Instrument+Serif";
-    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}`)).text();
+    const query = family.replace(/ /g, "+") + (italic ? ":ital@1" : "");
+    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${query}`)).text();
     const src = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/)?.[1];
     if (!src) return null;
     return await (await fetch(src)).arrayBuffer();
@@ -20,8 +21,12 @@ async function loadFont(italic: boolean): Promise<ArrayBuffer | null> {
 }
 
 export default async function OpengraphImage() {
-  const [regular, italic] = await Promise.all([loadFont(false), loadFont(true)]);
-  const serif = regular ? "Instrument Serif" : "serif";
+  const family = fontNames.display;
+  const [regular, italic] = await Promise.all([
+    loadFont(family, false),
+    emphasis === "italic" ? loadFont(family, true) : Promise.resolve(null),
+  ]);
+  const serif = regular ? family : "serif";
   return new ImageResponse(
     <div
       style={{
@@ -98,7 +103,11 @@ export default async function OpengraphImage() {
           }}
         >
           <span>Buy from the brands</span>
-          <span style={{ color: "#bf3e18", fontStyle: "italic" }}>in your hostel.</span>
+          <span
+            style={{ color: "#bf3e18", fontStyle: emphasis === "italic" ? "italic" : "normal" }}
+          >
+            in your hostel.
+          </span>
         </div>
         <div style={{ fontFamily: serif, fontSize: 30, color: "#5f574d" }}>
           Thrift · food · skincare · prints · tech, from students on your campus
@@ -111,7 +120,7 @@ export default async function OpengraphImage() {
         ...(regular
           ? [
               {
-                name: "Instrument Serif",
+                name: family,
                 data: regular,
                 style: "normal" as const,
                 weight: 400 as const,
@@ -121,7 +130,7 @@ export default async function OpengraphImage() {
         ...(italic
           ? [
               {
-                name: "Instrument Serif",
+                name: family,
                 data: italic,
                 style: "italic" as const,
                 weight: 400 as const,
