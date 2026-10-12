@@ -244,7 +244,7 @@ export default function LandingPage() {
                             style={{ height: `${h}%`, background: i === 5 ? "var(--studio)" : "color-mix(in oklab, var(--primary) 12%, transparent)" }}
                           />
                         </div>
-                        <span className="font-mono text-[10px] opacity-50">{["M", "T", "W", "T", "F", "S", "S"][i]}</span>
+                        <span className="font-mono text-[10px] opacity-70">{["M", "T", "W", "T", "F", "S", "S"][i]}</span>
                       </div>
                     ))}
                   </div>
@@ -255,7 +255,7 @@ export default function LandingPage() {
                       ["Rating", "4.8"],
                     ].map(([k, v]) => (
                       <div key={k}>
-                        <p className="opacity-50">{k}</p>
+                        <p className="opacity-70">{k}</p>
                         <p className="font-mono font-medium">{v}</p>
                       </div>
                     ))}

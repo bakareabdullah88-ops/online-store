@@ -528,7 +528,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
             <div className="rounded-lg bg-surface p-5 hairline">
               <p className="eyebrow mb-4 text-muted">Live preview</p>
               {preview ? (
-                <div className="pointer-events-none mx-auto max-w-56" aria-hidden>
+                <div className="pointer-events-none mx-auto max-w-56" aria-hidden inert>
                   <ProductCard product={preview} />
                 </div>
               ) : (

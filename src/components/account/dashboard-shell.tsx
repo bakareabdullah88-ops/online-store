@@ -62,10 +62,10 @@ function Sidebar() {
         <Suspense fallback={<Skeleton className="h-96 w-full" />}>
           <SidebarNav />
         </Suspense>
-        <Link href={hasShop ? "/studio" : "/open-shop"} className="group rounded-lg bg-primary p-4 text-on-primary">
+        <Link href={hasShop ? "/studio" : "/open-shop"} className="group flex flex-col rounded-lg bg-primary p-4 text-on-primary">
           <Store className="size-5" />
           <p className="mt-3 text-small font-semibold">{hasShop ? "Go to Shop Studio" : "Sell on campus"}</p>
-          <p className="mt-1 text-small opacity-70">{hasShop ? "Orders, products and payouts." : "Open a shop in five minutes. It's free."}</p>
+          <p className="mt-1 text-small text-on-primary/80">{hasShop ? "Orders, products and payouts." : "Open a shop in five minutes. It's free."}</p>
           <ArrowUpRight className="mt-3 size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       </div>

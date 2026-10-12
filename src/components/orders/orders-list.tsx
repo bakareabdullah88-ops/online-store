@@ -8,7 +8,7 @@ import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { spring, stagger } from "@/design/motion";
 import { etaSeconds, isActive } from "@/domain/orders";
 import { formatNaira } from "@/domain/money";
@@ -27,10 +27,13 @@ export function formatEta(seconds: number) {
 }
 
 export function etaLine(order: Order, eta: number | null) {
-  if (order.fulfilment.method === "pickup" && order.status === "ready") return "Ready to collect now";
+  if (order.fulfilment.method === "pickup" && order.status === "ready")
+    return "Ready to collect now";
   if (!order.autoProgress) return "The brand updates this order as it moves.";
   if (eta === null) return "\u00a0";
-  return order.fulfilment.method === "pickup" ? `Ready to collect in ${formatEta(eta)}` : `Arriving in ${formatEta(eta)}`;
+  return order.fulfilment.method === "pickup"
+    ? `Ready to collect in ${formatEta(eta)}`
+    : `Arriving in ${formatEta(eta)}`;
 }
 
 export function OrderCard({ order, index = 0 }: { order: Order; index?: number }) {
@@ -50,7 +53,11 @@ export function OrderCard({ order, index = 0 }: { order: Order; index?: number }
       transition={{ ...spring.smooth, delay: stagger(index) }}
       className="relative rounded-lg bg-surface hairline transition-shadow hover:shadow-md"
     >
-      <Link href={`/orders/${order.id}`} className="block p-4 md:p-5" aria-label={`Order ${order.code} from ${order.brandName}`}>
+      <Link
+        href={`/orders/${order.id}`}
+        className="block p-4 md:p-5"
+        aria-label={`Order ${order.code} from ${order.brandName}`}
+      >
         <div className="flex items-start gap-3">
           <span className="size-10 shrink-0 overflow-hidden rounded-full">
             <AppImage image={order.brandLogo} alt="" variant="logo" name={order.brandName} />
@@ -61,14 +68,24 @@ export function OrderCard({ order, index = 0 }: { order: Order; index?: number }
               <StatusPill status={order.status} method={order.fulfilment.method} />
             </div>
             <p className="mt-1 flex items-center gap-1.5 text-small text-muted">
-              {order.fulfilment.method === "delivery" ? <Bike className="size-3.5" /> : <MapPin className="size-3.5" />}
+              {order.fulfilment.method === "delivery" ? (
+                <Bike className="size-3.5" />
+              ) : (
+                <MapPin className="size-3.5" />
+              )}
               <span className="font-mono">{order.code}</span>
               <span aria-hidden>·</span>
-              {now ? (active ? formatRelative(order.placedAt, now) : formatDate(order.placedAt, { year: true })) : " "}
+              {now
+                ? active
+                  ? formatRelative(order.placedAt, now)
+                  : formatDate(order.placedAt, { year: true })
+                : " "}
             </p>
           </div>
           <div className="text-right">
-            <p className="font-mono text-small font-medium tabular">{formatNaira(order.totalKobo)}</p>
+            <p className="font-mono text-small font-medium tabular">
+              {formatNaira(order.totalKobo)}
+            </p>
             <p className="text-small text-muted">
               {units} item{units === 1 ? "" : "s"}
             </p>
@@ -80,30 +97,42 @@ export function OrderCard({ order, index = 0 }: { order: Order; index?: number }
               <AppImage image={it.image} alt="" />
             </span>
           ))}
-          {order.items.length > 4 && <span className="font-mono text-small text-muted">+{order.items.length - 4}</span>}
+          {order.items.length > 4 && (
+            <span className="font-mono text-small text-muted">+{order.items.length - 4}</span>
+          )}
         </div>
         {active && (
           <div className="mt-4">
             <OrderProgress order={order} />
-            <p className="mt-2 text-small text-muted">
-              {etaLine(order, eta)}
-            </p>
+            <p className="mt-2 text-small text-muted">{etaLine(order, eta)}</p>
           </div>
         )}
       </Link>
       {order.status === "delivered" && (
         <div className="flex flex-wrap gap-2 border-t border-line px-4 py-3 md:px-5">
-          <Button size="sm" variant="secondary" leadingIcon={<RotateCcw className="size-4" />} onClick={() => void reorder(order)}>
+          <Button
+            size="sm"
+            variant="secondary"
+            leadingIcon={<RotateCcw className="size-4" />}
+            onClick={() => void reorder(order)}
+          >
             Reorder
           </Button>
           {!order.reviewed && (
-            <Button size="sm" variant="ghost" leadingIcon={<Star className="size-4" />} onClick={() => setReviewOpen(true)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              leadingIcon={<Star className="size-4" />}
+              onClick={() => setReviewOpen(true)}
+            >
               Rate &amp; review
             </Button>
           )}
         </div>
       )}
-      {order.status === "delivered" && <ReviewDialog order={order} open={reviewOpen} onOpenChange={setReviewOpen} />}
+      {order.status === "delivered" && (
+        <ReviewDialog order={order} open={reviewOpen} onOpenChange={setReviewOpen} />
+      )}
     </motion.li>
   );
 }
@@ -138,7 +167,8 @@ export function OrdersList({ embedded = false }: { embedded?: boolean }) {
   const activeOrders = (data ?? []).filter((o) => isActive(o.status));
   const past = (data ?? []).filter((o) => !isActive(o.status));
   const shown = tab === "active" ? activeOrders : past;
-  const effectiveTab = !isPending && activeOrders.length === 0 && tab === "active" && past.length > 0 ? "past" : tab;
+  const effectiveTab =
+    !isPending && activeOrders.length === 0 && tab === "active" && past.length > 0 ? "past" : tab;
   const list = effectiveTab === tab ? shown : past;
 
   return (
@@ -149,7 +179,11 @@ export function OrdersList({ embedded = false }: { embedded?: boolean }) {
           <h1 className="mt-2 font-display text-display-lg">Your orders</h1>
         </header>
       )}
-      <Tabs value={effectiveTab} onValueChange={(v) => setTab(v as "active" | "past")} variant="pill" className="mb-6">
+      <Tabs
+        value={effectiveTab}
+        onValueChange={(v) => setTab(v as "active" | "past")}
+        variant="pill"
+      >
         <TabsList label="Order status">
           <TabsTrigger value="active" count={activeOrders.length}>
             Active
@@ -158,27 +192,34 @@ export function OrdersList({ embedded = false }: { embedded?: boolean }) {
             Past
           </TabsTrigger>
         </TabsList>
+        <TabsContent value={effectiveTab} className="mt-6">
+          {isError ? (
+            <EmptyState
+              compact
+              illustration="error"
+              title="Couldn't load your orders"
+              action={<Button onClick={() => void refetch()}>Try again</Button>}
+            />
+          ) : isPending ? (
+            <OrdersSkeleton />
+          ) : list.length === 0 ? (
+            <EmptyState
+              illustration="orders"
+              title={effectiveTab === "active" ? "No orders on the way" : "No past orders yet"}
+              body="When you order from a campus brand, you'll track it here, live."
+              action={<ButtonLink href="/explore">Find something</ButtonLink>}
+            />
+          ) : (
+            <ul className="flex flex-col gap-3">
+              <AnimatePresence initial={false}>
+                {list.map((o, i) => (
+                  <OrderCard key={o.id} order={o} index={i} />
+                ))}
+              </AnimatePresence>
+            </ul>
+          )}
+        </TabsContent>
       </Tabs>
-      {isError ? (
-        <EmptyState compact illustration="error" title="Couldn't load your orders" action={<Button onClick={() => void refetch()}>Try again</Button>} />
-      ) : isPending ? (
-        <OrdersSkeleton />
-      ) : list.length === 0 ? (
-        <EmptyState
-          illustration="orders"
-          title={effectiveTab === "active" ? "No orders on the way" : "No past orders yet"}
-          body="When you order from a campus brand, you'll track it here, live."
-          action={<ButtonLink href="/explore">Find something</ButtonLink>}
-        />
-      ) : (
-        <ul className="flex flex-col gap-3">
-          <AnimatePresence initial={false}>
-            {list.map((o, i) => (
-              <OrderCard key={o.id} order={o} index={i} />
-            ))}
-          </AnimatePresence>
-        </ul>
-      )}
     </div>
   );
 }

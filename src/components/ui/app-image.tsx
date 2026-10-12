@@ -43,10 +43,12 @@ export function AppImage({
   priority,
 }: AppImageProps) {
   const box = cn("relative block size-full overflow-hidden bg-sand", className);
+  // Empty alt means decorative: hide it rather than announce an unnamed image.
+  const a11y = alt ? { role: "img" as const, "aria-label": alt } : { "aria-hidden": true as const };
 
   if (!image) {
     return (
-      <span className={box} role="img" aria-label={alt}>
+      <span className={box} {...a11y}>
         <Fallback variant={variant} name={name ?? alt} />
       </span>
     );
@@ -54,7 +56,7 @@ export function AppImage({
 
   if (image.kind === "art") {
     return (
-      <span className={box} role="img" aria-label={alt}>
+      <span className={box} {...a11y}>
         {variant === "logo" ? (
           <BrandMark name={name ?? alt} palette={image.palette} className="size-full" />
         ) : variant === "cover" ? (

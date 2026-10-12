@@ -24,6 +24,10 @@ export function AppSync() {
   useEffect(() => {
     void useBag.persist.rehydrate();
     void usePrefs.persist.rehydrate();
+    // Offline shell (production only, so dev never serves stale chunks).
+    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);
+    }
   }, []);
 
   useEffect(() => {

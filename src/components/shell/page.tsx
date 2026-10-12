@@ -19,7 +19,7 @@ export function SkipLink() {
   return (
     <a
       href="#main"
-      className="fixed top-2 left-2 z-(--z-skip) -translate-y-20 rounded-md bg-primary px-4 py-2.5 text-small font-medium text-on-primary shadow-lg transition-transform focus:translate-y-0"
+      className="fixed top-2 left-2 z-(--z-skip) -translate-y-32 rounded-md bg-primary px-4 py-2.5 text-small font-medium text-on-primary opacity-0 shadow-lg transition-[translate,opacity] focus:translate-y-0 focus:opacity-100"
     >
       Skip to content
     </a>
