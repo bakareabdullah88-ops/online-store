@@ -35,7 +35,7 @@ export function OrderDetailSkeleton() {
     <div className="max-w-5xl" aria-hidden>
       <Skeleton className="h-4 w-24" />
       <Skeleton className="mt-4 h-12 w-72" />
-      <div className="mt-8 grid gap-6 lg:grid-cols-12">
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <Skeleton className="h-80 w-full lg:col-span-7" rounded="lg" />
         <Skeleton className="h-80 w-full lg:col-span-5" rounded="lg" />
       </div>
@@ -123,7 +123,7 @@ export function OrderDetail() {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-12">
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-7">
           {order.fulfilment.method === "delivery" ? (
             <CampusMap campusKey={order.fulfilment.campusId} progress={progress} mode="delivery" fromLabel={order.brandName} toLabel={`${zone?.name ?? "You"}${order.fulfilment.addressLine ? ` · ${order.fulfilment.addressLine}` : ""}`} />

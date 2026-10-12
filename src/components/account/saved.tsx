@@ -50,7 +50,7 @@ export function FollowingView() {
     <div>
       <DashboardHeader eyebrow="Following" title="Brands you follow" description="New drops from these brands show up in your notifications." />
       {isPending ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[0, 1, 2, 3].map((i) => (
             <BrandCardSkeleton key={i} />
           ))}
@@ -58,7 +58,7 @@ export function FollowingView() {
       ) : brands.length === 0 ? (
         <EmptyState illustration="following" title="Not following anyone yet" body="Follow brands to hear about new drops first." action={<ButtonLink href="/explore">Discover brands</ButtonLink>} />
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <AnimatePresence initial={false}>
             {brands.map((b) => (
               <motion.li key={b.id} layout exit={{ opacity: 0, scale: 0.95 }} transition={spring.smooth} className="flex flex-col gap-2">

@@ -167,7 +167,7 @@ function GroupSection({
 
         <AnimatePresence mode="wait" initial={false}>
           {state.method === "delivery" ? (
-            <motion.div key="delivery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={spring.snappy} className="grid gap-4 sm:grid-cols-2">
+            <motion.div key="delivery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={spring.snappy} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Deliver to" error={errors.zoneId}>
                 <Select label="Delivery zone" value={state.zoneId || undefined} onValueChange={(v) => onChange({ zoneId: v })} placeholder="Choose a zone" options={zones.map((z) => ({ value: z.id, label: z.name }))} />
               </Field>
@@ -405,7 +405,7 @@ export function CheckoutView() {
         </p>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="flex min-w-0 flex-col gap-5 lg:col-span-7">
           <section aria-labelledby="contact" className="rounded-lg bg-surface p-4 hairline md:p-5">
             <div className="mb-4 flex items-center gap-3">
@@ -414,7 +414,7 @@ export function CheckoutView() {
                 Contact
               </h2>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Name">
                 <Input value={user?.name ?? ""} readOnly className="bg-surface-2" />
               </Field>

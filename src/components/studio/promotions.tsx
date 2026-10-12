@@ -95,7 +95,7 @@ function PromoForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
         ]}
       />
       {d.kind !== "free_delivery" && (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={d.kind === "percent" ? "Percent off" : "Amount off (₦)"} error={errors.value}>
             <Input value={d.value} onChange={(e) => setD({ ...d, value: e.target.value })} inputMode="numeric" className="font-mono" />
           </Field>
@@ -106,7 +106,7 @@ function PromoForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
           )}
         </div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Minimum order (₦)" optional>
           <Input value={d.min} onChange={(e) => setD({ ...d, min: e.target.value })} inputMode="numeric" className="font-mono" placeholder="5,000" />
         </Field>
@@ -149,7 +149,7 @@ export function StudioPromotions() {
         }
       />
       {isPending ? (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {[0, 1].map((i) => (
             <Skeleton key={i} className="h-44" rounded="lg" />
           ))}
@@ -157,7 +157,7 @@ export function StudioPromotions() {
       ) : !data?.length ? (
         <EmptyState illustration="promos" title="No promo codes yet" body="A small discount is a great way to get your first orders or reward regulars." action={<Button onClick={() => setEditing(blank)}>Create a code</Button>} />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => (
               <motion.li key={p.id} layout exit={{ opacity: 0, scale: 0.95 }} transition={spring.smooth} className="relative overflow-hidden rounded-lg bg-surface hairline">

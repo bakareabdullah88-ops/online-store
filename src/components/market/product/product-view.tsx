@@ -56,7 +56,7 @@ function ProductRail({ title, items, isPending }: { title: string; items: Produc
 export function ProductSkeleton() {
   return (
     <div className="container-page pt-4 md:pt-8" aria-hidden>
-      <div className="grid gap-8 md:grid-cols-12 md:gap-12">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-12">
         <div className="md:col-span-7">
           <Skeleton className="aspect-[4/5] w-full max-md:-mx-(--gutter) max-md:w-[calc(100%+2*var(--gutter))]" rounded="lg" />
         </div>
@@ -165,7 +165,7 @@ export function ProductView() {
           <li><Link href={`/brands/${p.brand.handle}`} className="hover:text-ink">{p.brand.name}</Link></li>
         </ol>
       </nav>
-      <div className="grid gap-8 md:grid-cols-12 md:gap-10 xl:gap-16">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-12 md:gap-10 xl:gap-16">
         <div className="min-w-0 md:col-span-7">
           <div className="md:sticky md:top-24">
             <Gallery images={p.images} name={p.name} productId={p.id} heroRef={heroRef} />

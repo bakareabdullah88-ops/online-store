@@ -19,7 +19,7 @@ export function BagPage() {
           </p>
         )}
       </header>
-      <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="min-w-0 lg:col-span-7">
           <BagContents />
         </div>

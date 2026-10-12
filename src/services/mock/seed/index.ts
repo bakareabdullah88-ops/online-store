@@ -449,13 +449,13 @@ export async function generateSeed(now: number = Date.now()): Promise<DbSnapshot
     const weekday = new Date(day).getDay();
     const base = weekday === 5 || weekday === 6 ? 1.6 : 1;
     const trend = 0.6 + (90 - d) / 90;
-    const n = Math.max(0, Math.round(rng.next() * 1.4 * base * trend));
+    // Today's orders come from the kanban block below so today doesn't spike.
+    const n = d === 0 ? 0 : Math.max(0, Math.round(rng.next() * 2.6 * base * trend));
     for (let k = 0; k < n; k++) {
       const u = rng.pick(customers);
       const placedAt = day - rng.int(1, 13) * 3_600_000 - rng.int(0, 59) * 60_000;
       let status: OrderStatus = "delivered";
-      if (d === 0) status = rng.pick(["placed", "placed", "confirmed", "preparing", "ready"] as const);
-      else if (d === 1) status = rng.pick(["delivered", "ready", "out_for_delivery", "preparing"] as const);
+      if (d === 1) status = rng.pick(["delivered", "ready", "out_for_delivery", "preparing"] as const);
       else if (rng.chance(0.04)) status = "declined";
       else if (rng.chance(0.03)) status = "cancelled";
       const methodGuess: "pickup" | "delivery" = status === "ready" ? "pickup" : status === "out_for_delivery" ? "delivery" : rng.chance(0.55) ? "delivery" : "pickup";

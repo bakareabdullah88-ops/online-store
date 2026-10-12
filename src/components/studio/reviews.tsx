@@ -95,7 +95,7 @@ export function StudioReviews() {
       ) : !data?.length ? (
         <EmptyState illustration="reviews" title="No reviews yet" body="Buyers can review after their order is delivered." />
       ) : (
-        <div className="grid gap-8 xl:grid-cols-[280px_1fr]">
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[280px_1fr]">
           <div className="rounded-lg bg-surface p-5 hairline xl:sticky xl:top-24 xl:self-start">{breakdown && <RatingSummary breakdown={breakdown} />}</div>
           <div>
             <SegmentedControl

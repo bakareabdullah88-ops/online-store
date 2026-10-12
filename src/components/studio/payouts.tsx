@@ -66,14 +66,14 @@ export function StudioPayouts() {
     <div>
       <StudioHeaderBlock eyebrow="Payouts" title="Payouts" description="Earnings from delivered orders, minus the 5% Kiosk fee. Everything here is simulated." />
       {isPending || !data ? (
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-36" rounded="lg" />
           ))}
         </div>
       ) : (
         <>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="flex flex-col rounded-lg bg-primary p-5 text-on-primary">
               <div className="flex items-center justify-between">
                 <p className="text-small opacity-70">Available to pay out</p>

@@ -21,7 +21,7 @@ export function FeaturedBrands() {
   }
   const [lead, ...rest] = data ?? [];
   return (
-    <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-12" aria-busy={isPending}>
+    <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12" aria-busy={isPending}>
       {isPending || !lead ? (
         <>
           <BrandCardSkeleton variant="lead" className="lg:col-span-6 lg:row-span-2" />

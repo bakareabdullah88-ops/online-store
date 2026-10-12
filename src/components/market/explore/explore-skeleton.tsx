@@ -11,7 +11,7 @@ export function ExploreSkeleton() {
           <Skeleton key={i} className="h-10 w-24 shrink-0" rounded="full" />
         ))}
       </div>
-      <div className="mt-10 grid gap-10 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
         <div className="hidden flex-col gap-6 lg:flex">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />

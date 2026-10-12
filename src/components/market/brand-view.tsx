@@ -119,7 +119,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
   const points = campus?.pickupPoints.filter((p) => brand.fulfilment.pickupPointIds.includes(p.id)) ?? [];
   const zones = campus?.zones.filter((z) => brand.fulfilment.zoneIds.includes(z.id)) ?? [];
   return (
-    <div className="grid gap-10 md:grid-cols-12">
+    <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
       <div className="md:col-span-7">
         <p className="eyebrow text-muted">The story</p>
         <p className="mt-3 font-display text-display-sm text-balance text-ink">{brand.tagline}</p>

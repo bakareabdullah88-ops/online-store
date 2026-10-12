@@ -24,7 +24,7 @@ import { DashboardHeader } from "./dashboard-shell";
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="grid gap-6 border-t border-line py-8 md:grid-cols-[240px_1fr]">
+    <section className="grid grid-cols-1 gap-6 border-t border-line py-8 md:grid-cols-[240px_1fr]">
       <div>
         <h2 className="text-title font-semibold">{title}</h2>
         {description && <p className="mt-1 text-small text-muted">{description}</p>}

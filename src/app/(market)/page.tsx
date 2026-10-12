@@ -144,7 +144,7 @@ export default function LandingPage() {
 
       {/* -------------------------- How it works ------------------------- */}
       <section aria-labelledby="how" className="container-page mt-24 md:mt-32">
-        <div className="grid gap-10 md:grid-cols-12">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <p className="eyebrow text-muted">How it works</p>
             <h2 id="how" className="mt-3 font-display text-display-md text-balance">

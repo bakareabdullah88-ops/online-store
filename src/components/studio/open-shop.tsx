@@ -204,7 +204,7 @@ export function OpenShopWizard() {
   const campusName = campus?.shortName ?? "Campus";
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
       <div className="min-w-0">
         <div className="flex items-center gap-4">
           <ProgressBar value={step + 1} max={steps.length} label="Shop setup progress" className="flex-1" />

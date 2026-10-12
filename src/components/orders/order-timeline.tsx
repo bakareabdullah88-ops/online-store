@@ -50,7 +50,7 @@ export function OrderTimeline({ order }: { order: Order }) {
                 transition={spring.bouncy}
                 className={cn(
                   "relative flex size-8 items-center justify-center rounded-full",
-                  failedStep ? "bg-danger text-white" : reached ? "bg-accent text-on-accent" : "bg-surface text-faint shadow-[inset_0_0_0_1.5px_var(--line-strong)]",
+                  failedStep ? "bg-danger text-white" : reached ? "bg-accent text-on-accent" : "bg-surface text-muted shadow-[inset_0_0_0_1.5px_var(--line-strong)]",
                 )}
               >
                 {failedStep ? <X className="size-4" strokeWidth={2.5} /> : done ? <Check className="size-4" strokeWidth={2.5} /> : <span className="font-mono text-[11px] font-semibold">{i + 1}</span>}

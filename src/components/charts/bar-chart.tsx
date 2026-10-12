@@ -45,9 +45,18 @@ export function BarChart({
 
   return (
     <figure ref={ref} className={cn("relative", className)}>
-      <div className="relative flex items-stretch" style={{ height, gap }} onMouseLeave={() => setActive(null)} role="list" aria-label={label}>
+      <div
+        className="relative flex items-stretch"
+        style={{ height, gap }}
+        onMouseLeave={() => setActive(null)}
+        role="list"
+        aria-label={label}
+      >
         {/* grid lines */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden>
+        <div
+          className="pointer-events-none absolute inset-0 flex flex-col justify-between"
+          aria-hidden
+        >
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className="h-px w-full bg-line" style={{ opacity: i === 3 ? 1 : 0.6 }} />
           ))}
@@ -68,20 +77,36 @@ export function BarChart({
               className="group relative flex flex-1 cursor-default items-end outline-none"
             >
               <motion.div
-                className={cn("w-full rounded-t-[3px] transition-colors duration-200", on ? "bg-accent" : "bg-ink/[0.1] group-hover:bg-ink/[0.18] dark:bg-ink/[0.14]")}
+                className={cn(
+                  "w-full rounded-t-[3px] transition-colors duration-200",
+                  on ? "bg-accent" : "bg-ink/[0.1] group-hover:bg-ink/[0.18] dark:bg-ink/[0.14]",
+                )}
                 initial={reduce ? false : { scaleY: 0 }}
                 animate={inView || reduce ? { scaleY: 1 } : { scaleY: 0 }}
                 transition={{ ...spring.gentle, delay: reduce ? 0 : Math.min(i * 0.02, 0.4) }}
-                style={{ height: `${Math.max(h, d.value > 0 ? 2 : 0.5)}%`, transformOrigin: "bottom" }}
+                style={{
+                  height: `${Math.max(h, d.value > 0 ? 2 : 0.5)}%`,
+                  transformOrigin: "bottom",
+                }}
               />
               {on && !compact && showTip && inView && (
                 <motion.div
                   layoutId={`${id}-tip`}
                   transition={spring.snappy}
-                  className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-sm bg-primary px-2.5 py-1.5 text-center whitespace-nowrap text-on-primary shadow-md"
-                  style={{ bottom: `calc(${Math.max(h, 2)}% + 8px)` }}
+                  className={cn(
+                    "pointer-events-none absolute z-10 rounded-sm bg-primary px-2.5 py-1.5 text-center whitespace-nowrap text-on-primary shadow-md",
+                    // Edge bars put the tip beside the bar, pointing inwards, so it never pokes past the chart.
+                    i < data.length * 0.2
+                      ? "left-full ml-1.5"
+                      : i >= data.length * 0.8
+                        ? "right-full mr-1.5"
+                        : "left-1/2 -translate-x-1/2",
+                  )}
+                  style={{ bottom: `calc(${Math.min(Math.max(h, 2), 72)}% + 8px)` }}
                 >
-                  <span className="block font-mono text-small font-medium tabular">{format(d.value)}</span>
+                  <span className="block font-mono text-small font-medium tabular">
+                    {format(d.value)}
+                  </span>
                   <span className="block text-[11px] opacity-70">{d.sublabel ?? d.label}</span>
                 </motion.div>
               )}
@@ -92,7 +117,13 @@ export function BarChart({
       {!compact && (
         <div className="mt-2 flex" style={{ gap }} aria-hidden>
           {data.map((d, i) => (
-            <span key={i} className={cn("flex-1 overflow-visible text-center font-mono text-[10px] whitespace-nowrap text-muted", i % showEvery !== 0 && "invisible")}>
+            <span
+              key={i}
+              className={cn(
+                "flex min-w-0 flex-1 basis-0 justify-center font-mono text-[10px] whitespace-nowrap text-muted",
+                i % showEvery !== 0 && "invisible",
+              )}
+            >
               {d.label}
             </span>
           ))}
@@ -103,17 +134,32 @@ export function BarChart({
 }
 
 /** Tiny line sparkline for KPI tiles. */
-export function Sparkline({ values, className, positive = true }: { values: number[]; className?: string; positive?: boolean }) {
+export function Sparkline({
+  values,
+  className,
+  positive = true,
+}: {
+  values: number[];
+  className?: string;
+  positive?: boolean;
+}) {
   const reduce = useReducedMotion();
   if (values.length < 2) return null;
   const max = Math.max(...values);
   const min = Math.min(...values);
   const span = max - min || 1;
-  const pts = values.map((v, i) => [(i / (values.length - 1)) * 100, 28 - ((v - min) / span) * 24 - 2] as const);
+  const pts = values.map(
+    (v, i) => [(i / (values.length - 1)) * 100, 28 - ((v - min) / span) * 24 - 2] as const,
+  );
   const d = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
   const last = pts[pts.length - 1]!;
   return (
-    <svg viewBox="0 0 100 30" preserveAspectRatio="none" className={cn("h-8 w-full overflow-visible", className)} aria-hidden>
+    <svg
+      viewBox="0 0 100 30"
+      preserveAspectRatio="none"
+      className={cn("h-8 w-full overflow-visible", className)}
+      aria-hidden
+    >
       <motion.path
         d={d}
         fill="none"
@@ -127,7 +173,13 @@ export function Sparkline({ values, className, positive = true }: { values: numb
         viewport={{ once: true }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       />
-      <circle cx={last[0]} cy={last[1]} r="2.2" fill={positive ? "var(--accent)" : "var(--muted)"} vectorEffect="non-scaling-stroke" />
+      <circle
+        cx={last[0]}
+        cy={last[1]}
+        r="2.2"
+        fill={positive ? "var(--accent)" : "var(--muted)"}
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   );
 }

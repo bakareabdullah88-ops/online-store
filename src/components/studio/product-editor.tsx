@@ -1,7 +1,21 @@
 "use client";
 
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -24,9 +38,17 @@ import { cn } from "@/lib/cn";
 import { useMyBrand, useSaveProduct, useStudioProduct, useUploadImage } from "@/queries/studio";
 import { productInputSchema } from "@/services/inputs";
 import { errorMessage } from "@/services/errors";
-import type { CategoryId, ImageRef, Product, ProductOption, ProductWithBrand, Variant } from "@/services/types";
+import type {
+  CategoryId,
+  ImageRef,
+  Product,
+  ProductOption,
+  ProductWithBrand,
+  Variant,
+} from "@/services/types";
 import { toast } from "@/stores/toast";
 import { StudioHeaderBlock } from "./studio-shell";
+import { TableScroll } from "@/components/ui/table-scroll";
 
 type Draft = {
   name: string;
@@ -76,21 +98,42 @@ function toDraft(p: Product | undefined, fallbackCategory: CategoryId): Draft {
 }
 
 function syncVariants(options: ProductOption[], previous: Variant[]): Variant[] {
-  return allVariantKeys(options).map((key) => previous.find((v) => v.key === key) ?? { key, stock: 10, priceDeltaKobo: 0 });
+  return allVariantKeys(options).map(
+    (key) => previous.find((v) => v.key === key) ?? { key, stock: 10, priceDeltaKobo: 0 },
+  );
 }
 
 /* ------------------------------- Images --------------------------------- */
 
-function SortableImage({ id, img, index, onRemove }: { id: string; img: ImageRef; index: number; onRemove: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+function SortableImage({
+  id,
+  img,
+  index,
+  onRemove,
+}: {
+  id: string;
+  img: ImageRef;
+  index: number;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn("group relative aspect-[4/5] overflow-hidden rounded-md bg-sand", isDragging && "z-10 shadow-lg ring-2 ring-accent")}
+      className={cn(
+        "group relative aspect-[4/5] overflow-hidden rounded-md bg-sand",
+        isDragging && "z-10 shadow-lg ring-2 ring-accent",
+      )}
     >
       <AppImage image={img} alt={`Product image ${index + 1}`} />
-      {index === 0 && <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 font-mono text-[10px] uppercase text-on-primary">Cover</span>}
+      {index === 0 && (
+        <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 font-mono text-[10px] text-on-primary uppercase">
+          Cover
+        </span>
+      )}
       <button
         type="button"
         {...attributes}
@@ -100,18 +143,32 @@ function SortableImage({ id, img, index, onRemove }: { id: string; img: ImageRef
       >
         <GripVertical className="size-4" />
       </button>
-      <button type="button" onClick={onRemove} className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-sm bg-surface/90 text-ink shadow-xs hover:text-danger" aria-label={`Remove image ${index + 1}`}>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-sm bg-surface/90 text-ink shadow-xs hover:text-danger"
+        aria-label={`Remove image ${index + 1}`}
+      >
         <X className="size-4" />
       </button>
     </li>
   );
 }
 
-function ImagesField({ images, onChange }: { images: Draft["images"]; onChange: (v: Draft["images"]) => void }) {
+function ImagesField({
+  images,
+  onChange,
+}: {
+  images: Draft["images"];
+  onChange: (v: Draft["images"]) => void;
+}) {
   const upload = useUploadImage();
   const input = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const addFiles = async (files: FileList | File[]) => {
     const list = Array.from(files).slice(0, 8 - images.length);
@@ -141,7 +198,13 @@ function ImagesField({ images, onChange }: { images: Draft["images"]; onChange: 
         <SortableContext items={images.map((i) => i.key)} strategy={rectSortingStrategy}>
           <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {images.map((img, i) => (
-              <SortableImage key={img.key} id={img.key} img={img.ref} index={i} onRemove={() => onChange(images.filter((x) => x.key !== img.key))} />
+              <SortableImage
+                key={img.key}
+                id={img.key}
+                img={img.ref}
+                index={i}
+                onRemove={() => onChange(images.filter((x) => x.key !== img.key))}
+              />
             ))}
             {images.length < 8 && (
               <li>
@@ -160,22 +223,41 @@ function ImagesField({ images, onChange }: { images: Draft["images"]; onChange: 
                   }}
                   className={cn(
                     "flex aspect-[4/5] w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed text-small text-muted transition-colors",
-                    dragOver ? "border-accent bg-accent-soft text-accent-ink" : "border-line-strong hover:border-ink hover:text-ink",
+                    dragOver
+                      ? "border-accent bg-accent-soft text-accent-ink"
+                      : "border-line-strong hover:border-ink hover:text-ink",
                   )}
                 >
-                  {upload.isPending ? <Skeleton className="size-8" rounded="full" /> : <ImagePlus className="size-6" />}
-                  <span className="px-2 text-center">{upload.isPending ? "Adding…" : "Drop or tap to add"}</span>
+                  {upload.isPending ? (
+                    <Skeleton className="size-8" rounded="full" />
+                  ) : (
+                    <ImagePlus className="size-6" />
+                  )}
+                  <span className="px-2 text-center">
+                    {upload.isPending ? "Adding…" : "Drop or tap to add"}
+                  </span>
                 </button>
               </li>
             )}
           </ul>
         </SortableContext>
       </DndContext>
-      <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple className="sr-only" aria-label="Add product images" onChange={(e) => e.target.files && void addFiles(e.target.files)} />
-      <p className="mt-2 text-small text-muted">Up to 8 images · drag to reorder · the first is the cover. No photo yet? We&apos;ll use generated art.</p>
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        multiple
+        className="sr-only"
+        aria-label="Add product images"
+        onChange={(e) => e.target.files && void addFiles(e.target.files)}
+      />
+      <p className="mt-2 text-small text-muted">
+        Up to 8 images · drag to reorder · the first is the cover. No photo yet? We&apos;ll use
+        generated art.
+      </p>
       {images[0] && (
         <div className="mt-5">
-          <p className="eyebrow mb-2 text-muted">Crop preview</p>
+          <p className="mb-2 eyebrow text-muted">Crop preview</p>
           <div className="flex items-end gap-4">
             <figure>
               <div className="aspect-[4/5] w-24 overflow-hidden rounded-md ring-1 ring-line">
@@ -204,7 +286,19 @@ function ImagesField({ images, onChange }: { images: Draft["images"]; onChange: 
 
 /* ------------------------------ Tag input ------------------------------- */
 
-function TagInput({ values, onChange, placeholder, label, max = 12 }: { values: string[]; onChange: (v: string[]) => void; placeholder: string; label: string; max?: number }) {
+function TagInput({
+  values,
+  onChange,
+  placeholder,
+  label,
+  max = 12,
+}: {
+  values: string[];
+  onChange: (v: string[]) => void;
+  placeholder: string;
+  label: string;
+  max?: number;
+}) {
   const [text, setText] = useState("");
   const add = () => {
     const parts = text
@@ -212,7 +306,8 @@ function TagInput({ values, onChange, placeholder, label, max = 12 }: { values: 
       .map((t) => t.trim())
       .filter(Boolean);
     const next = [...values];
-    for (const p of parts) if (!next.some((v) => v.toLowerCase() === p.toLowerCase()) && next.length < max) next.push(p);
+    for (const p of parts)
+      if (!next.some((v) => v.toLowerCase() === p.toLowerCase()) && next.length < max) next.push(p);
     onChange(next);
     setText("");
   };
@@ -220,9 +315,22 @@ function TagInput({ values, onChange, placeholder, label, max = 12 }: { values: 
     <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-md bg-surface px-2 py-1.5 shadow-[inset_0_0_0_1px_var(--line-strong)] focus-within:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)]">
       <AnimatePresence initial={false}>
         {values.map((v) => (
-          <motion.span key={v} layout initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} transition={spring.snappy} className="inline-flex h-7 items-center gap-1 rounded-full bg-ink/[0.07] pr-1 pl-2.5 text-small">
+          <motion.span
+            key={v}
+            layout
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={spring.snappy}
+            className="inline-flex h-7 items-center gap-1 rounded-full bg-ink/[0.07] pr-1 pl-2.5 text-small"
+          >
             {v}
-            <button type="button" onClick={() => onChange(values.filter((x) => x !== v))} className="flex size-5 items-center justify-center rounded-full hover:bg-ink/10" aria-label={`Remove ${v}`}>
+            <button
+              type="button"
+              onClick={() => onChange(values.filter((x) => x !== v))}
+              className="flex size-5 items-center justify-center rounded-full hover:bg-ink/10"
+              aria-label={`Remove ${v}`}
+            >
               <X className="size-3" />
             </button>
           </motion.span>
@@ -248,15 +356,31 @@ function TagInput({ values, onChange, placeholder, label, max = 12 }: { values: 
 
 /* ------------------------------ Options --------------------------------- */
 
-function OptionsField({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: Draft) => Draft) => void }) {
-  const setOptions = (options: ProductOption[]) => setDraft((d) => ({ ...d, options, variants: syncVariants(options, d.variants) }));
+function OptionsField({
+  draft,
+  setDraft,
+}: {
+  draft: Draft;
+  setDraft: (fn: (d: Draft) => Draft) => void;
+}) {
+  const setOptions = (options: ProductOption[]) =>
+    setDraft((d) => ({ ...d, options, variants: syncVariants(options, d.variants) }));
   return (
     <div className="flex flex-col gap-4">
       {draft.options.map((o, oi) => (
         <div key={o.id} className="rounded-md bg-surface-2 p-4 hairline">
           <div className="flex items-start gap-3">
             <Field label="Option name" className="w-40 shrink-0">
-              <Input value={o.name} onChange={(e) => setOptions(draft.options.map((x, i) => (i === oi ? { ...x, name: e.target.value } : x)))} placeholder="Size" maxLength={20} />
+              <Input
+                value={o.name}
+                onChange={(e) =>
+                  setOptions(
+                    draft.options.map((x, i) => (i === oi ? { ...x, name: e.target.value } : x)),
+                  )
+                }
+                placeholder="Size"
+                maxLength={20}
+              />
             </Field>
             <Field label="Values" className="min-w-0 flex-1" hint="Press Enter after each value">
               <TagInput
@@ -264,18 +388,47 @@ function OptionsField({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: Dr
                 values={o.values.map((v) => v.label)}
                 placeholder="S, M, L"
                 onChange={(labels) =>
-                  setOptions(draft.options.map((x, i) => (i === oi ? { ...x, values: labels.map((l) => x.values.find((v) => v.label === l) ?? { id: uid("val"), label: l }) } : x)))
+                  setOptions(
+                    draft.options.map((x, i) =>
+                      i === oi
+                        ? {
+                            ...x,
+                            values: labels.map(
+                              (l) =>
+                                x.values.find((v) => v.label === l) ?? { id: uid("val"), label: l },
+                            ),
+                          }
+                        : x,
+                    ),
+                  )
                 }
               />
             </Field>
-            <Button variant="ghost" size="icon-sm" className="mt-7" aria-label={`Remove option ${o.name}`} onClick={() => setOptions(draft.options.filter((_, i) => i !== oi))}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="mt-7"
+              aria-label={`Remove option ${o.name}`}
+              onClick={() => setOptions(draft.options.filter((_, i) => i !== oi))}
+            >
               <Trash2 className="size-4" />
             </Button>
           </div>
         </div>
       ))}
       {draft.options.length < 3 && (
-        <Button variant="secondary" size="sm" className="self-start" leadingIcon={<Plus className="size-4" />} onClick={() => setOptions([...draft.options, { id: uid("opt"), name: draft.options.length ? "Colour" : "Size", values: [] }])}>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="self-start"
+          leadingIcon={<Plus className="size-4" />}
+          onClick={() =>
+            setOptions([
+              ...draft.options,
+              { id: uid("opt"), name: draft.options.length ? "Colour" : "Size", values: [] },
+            ])
+          }
+        >
           Add an option (size, colour, flavour…)
         </Button>
       )}
@@ -283,18 +436,39 @@ function OptionsField({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: Dr
   );
 }
 
-function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: Draft) => Draft) => void }) {
-  const update = (key: string, patch: Partial<Variant>) => setDraft((d) => ({ ...d, variants: d.variants.map((v) => (v.key === key ? { ...v, ...patch } : v)) }));
+function VariantsTable({
+  draft,
+  setDraft,
+}: {
+  draft: Draft;
+  setDraft: (fn: (d: Draft) => Draft) => void;
+}) {
+  const update = (key: string, patch: Partial<Variant>) =>
+    setDraft((d) => ({
+      ...d,
+      variants: d.variants.map((v) => (v.key === key ? { ...v, ...patch } : v)),
+    }));
   const valid = draft.options.every((o) => o.values.length > 0);
-  if (!valid) return <p className="text-small text-muted">Add values to every option to set stock per combination.</p>;
+  if (!valid)
+    return (
+      <p className="text-small text-muted">
+        Add values to every option to set stock per combination.
+      </p>
+    );
   return (
-    <div className="overflow-x-auto rounded-md hairline">
+    <TableScroll label="Stock per variant" className="rounded-md hairline">
       <table className="w-full min-w-[420px] text-small">
         <thead>
           <tr className="border-b border-line text-left text-muted">
-            <th scope="col" className="eyebrow px-4 py-2.5 font-medium">{draft.options.length ? "Combination" : "Item"}</th>
-            <th scope="col" className="eyebrow w-28 px-3 py-2.5 font-medium">Stock</th>
-            <th scope="col" className="eyebrow w-36 px-3 py-2.5 font-medium">Extra price (₦)</th>
+            <th scope="col" className="px-4 py-2.5 eyebrow font-medium">
+              {draft.options.length ? "Combination" : "Item"}
+            </th>
+            <th scope="col" className="w-28 px-3 py-2.5 eyebrow font-medium">
+              Stock
+            </th>
+            <th scope="col" className="w-36 px-3 py-2.5 eyebrow font-medium">
+              Extra price (₦)
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -307,7 +481,14 @@ function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: D
                   inputMode="numeric"
                   aria-label={`Stock for ${variantLabel(draft.options, v.key) || "default"}`}
                   value={String(v.stock)}
-                  onChange={(e) => update(v.key, { stock: Math.max(0, Math.min(9999, Number(e.target.value.replace(/\D/g, "")) || 0)) })}
+                  onChange={(e) =>
+                    update(v.key, {
+                      stock: Math.max(
+                        0,
+                        Math.min(9999, Number(e.target.value.replace(/\D/g, "")) || 0),
+                      ),
+                    })
+                  }
                 />
               </td>
               <td className="px-3 py-2">
@@ -316,20 +497,32 @@ function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: (fn: (d: D
                   inputMode="numeric"
                   aria-label={`Extra price for ${variantLabel(draft.options, v.key) || "default"}`}
                   value={String(v.priceDeltaKobo / 100)}
-                  onChange={(e) => update(v.key, { priceDeltaKobo: (Number(e.target.value.replace(/[^\d]/g, "")) || 0) * 100 })}
+                  onChange={(e) =>
+                    update(v.key, {
+                      priceDeltaKobo: (Number(e.target.value.replace(/[^\d]/g, "")) || 0) * 100,
+                    })
+                  }
                 />
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 
 /* ------------------------------- Editor --------------------------------- */
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-lg bg-surface p-5 hairline md:p-6">
       <h2 className="text-title font-semibold">{title}</h2>
@@ -343,7 +536,9 @@ function EditorForm({ product }: { product: Product | undefined }) {
   const { data: brand } = useMyBrand();
   const save = useSaveProduct();
   const router = useRouter();
-  const [draft, setDraftState] = useState<Draft>(() => toDraft(product, brand?.category ?? "fashion"));
+  const [draft, setDraftState] = useState<Draft>(() =>
+    toDraft(product, brand?.category ?? "fashion"),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
   const [detailText, setDetailText] = useState("");
@@ -376,7 +571,9 @@ function EditorForm({ product }: { product: Product | undefined }) {
       tags: draft.tags,
       priceKobo: priceKobo ?? 0,
       ...(compareKobo ? { compareAtKobo: compareKobo } : {}),
-      images: draft.images.length ? draft.images.map((i) => i.ref) : [{ kind: "art", motif: cat.motif, palette: cat.palette, seed: draft.name.length + 3 }],
+      images: draft.images.length
+        ? draft.images.map((i) => i.ref)
+        : [{ kind: "art", motif: cat.motif, palette: cat.palette, seed: draft.name.length + 3 }],
       options: draft.options,
       variants: draft.variants,
       status: draft.status,
@@ -386,7 +583,16 @@ function EditorForm({ product }: { product: Product | undefined }) {
       viewCount: 0,
       createdAt: product?.createdAt ?? "",
       updatedAt: "",
-      brand: { id: brand.id, handle: brand.handle, name: brand.name, logo: brand.logo, campusId: brand.campusId, vacation: brand.vacation, rating: brand.rating, verified: brand.verified },
+      brand: {
+        id: brand.id,
+        handle: brand.handle,
+        name: brand.name,
+        logo: brand.logo,
+        campusId: brand.campusId,
+        vacation: brand.vacation,
+        rating: brand.rating,
+        verified: brand.verified,
+      },
     };
   }, [brand, draft, priceKobo, compareKobo, product]);
 
@@ -409,8 +615,10 @@ function EditorForm({ product }: { product: Product | undefined }) {
     const e: Record<string, string> = {};
     if (priceKobo === null) e.priceKobo = "Enter a price, e.g. 4500";
     if (draft.compareAt && compareKobo === null) e.compareAtKobo = "Enter a number";
-    if (compareKobo !== null && priceKobo !== null && compareKobo <= priceKobo) e.compareAtKobo = "Must be higher than the price";
-    if (draft.options.some((o) => !o.name.trim() || o.values.length === 0)) e.options = "Every option needs a name and at least one value";
+    if (compareKobo !== null && priceKobo !== null && compareKobo <= priceKobo)
+      e.compareAtKobo = "Must be higher than the price";
+    if (draft.options.some((o) => !o.name.trim() || o.values.length === 0))
+      e.options = "Every option needs a name and at least one value";
     if (!parsed.success) for (const i of parsed.error.issues) e[String(i.path[0])] ??= i.message;
     if (Object.keys(e).length) {
       setErrors(e);
@@ -423,10 +631,20 @@ function EditorForm({ product }: { product: Product | undefined }) {
       {
         onSuccess: (p) => {
           setDirty(false);
-          toast.success(product ? "Changes saved" : status === "published" ? "Product is live" : "Saved as draft", {
-            description: status === "published" ? "Buyers can find it now." : undefined,
-            action: status === "published" ? { label: "View", onClick: () => router.push(`/products/${p.slug}`) } : undefined,
-          });
+          toast.success(
+            product
+              ? "Changes saved"
+              : status === "published"
+                ? "Product is live"
+                : "Saved as draft",
+            {
+              description: status === "published" ? "Buyers can find it now." : undefined,
+              action:
+                status === "published"
+                  ? { label: "View", onClick: () => router.push(`/products/${p.slug}`) }
+                  : undefined,
+            },
+          );
           router.push("/studio/products");
         },
         onError: (err) => toast.error("Couldn't save", { description: errorMessage(err) }),
@@ -436,7 +654,10 @@ function EditorForm({ product }: { product: Product | undefined }) {
 
   return (
     <div>
-      <Link href="/studio/products" className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink">
+      <Link
+        href="/studio/products"
+        className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink"
+      >
         <ArrowLeft className="size-4" /> Products
       </Link>
       <StudioHeaderBlock
@@ -444,34 +665,74 @@ function EditorForm({ product }: { product: Product | undefined }) {
         title={product ? product.name : "Add a product"}
         actions={
           <>
-            <Button variant="secondary" loading={save.isPending && save.variables?.input.status === "draft"} onClick={() => submit("draft")}>
+            <Button
+              variant="secondary"
+              loading={save.isPending && save.variables?.input.status === "draft"}
+              onClick={() => submit("draft")}
+            >
               Save draft
             </Button>
-            <Button loading={save.isPending && save.variables?.input.status === "published"} onClick={() => submit("published")}>
+            <Button
+              loading={save.isPending && save.variables?.input.status === "published"}
+              onClick={() => submit("published")}
+            >
               {product?.status === "published" ? "Save & keep live" : "Publish"}
             </Button>
           </>
         }
       />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <Section title="Photos" description="Bright, natural light works best. Square-ish framing crops nicely.">
-            <ImagesField images={draft.images} onChange={(images) => setDraft((d) => ({ ...d, images }))} />
+          <Section
+            title="Photos"
+            description="Bright, natural light works best. Square-ish framing crops nicely."
+          >
+            <ImagesField
+              images={draft.images}
+              onChange={(images) => setDraft((d) => ({ ...d, images }))}
+            />
           </Section>
           <Section title="Basics">
             <div className="flex flex-col gap-5">
               <Field label="Name" error={errors.name}>
-                <Input value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} placeholder="Indigo Àdìrẹ Boxy Tee" maxLength={80} />
+                <Input
+                  value={draft.name}
+                  onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                  placeholder="Indigo Àdìrẹ Boxy Tee"
+                  maxLength={80}
+                />
               </Field>
-              <Field label="Description" error={errors.description} hint="What is it, why is it good, how do people use it?">
-                <Textarea value={draft.description} onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))} maxLength={1200} />
+              <Field
+                label="Description"
+                error={errors.description}
+                hint="What is it, why is it good, how do people use it?"
+              >
+                <Textarea
+                  value={draft.description}
+                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                  maxLength={1200}
+                />
               </Field>
-              <Field label="Details" optional hint="Short facts: materials, size guide, allergens. Press Enter to add.">
+              <Field
+                label="Details"
+                optional
+                hint="Short facts: materials, size guide, allergens. Press Enter to add."
+              >
                 <div className="flex flex-col gap-2">
                   {draft.details.map((d, i) => (
-                    <div key={`${d}-${i}`} className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-small hairline">
+                    <div
+                      key={`${d}-${i}`}
+                      className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-small hairline"
+                    >
                       <span className="flex-1">{d}</span>
-                      <button type="button" className="flex size-7 items-center justify-center rounded-sm hover:bg-ink/[0.06]" aria-label={`Remove detail ${d}`} onClick={() => setDraft((x) => ({ ...x, details: x.details.filter((_, j) => j !== i) }))}>
+                      <button
+                        type="button"
+                        className="flex size-7 items-center justify-center rounded-sm hover:bg-ink/[0.06]"
+                        aria-label={`Remove detail ${d}`}
+                        onClick={() =>
+                          setDraft((x) => ({ ...x, details: x.details.filter((_, j) => j !== i) }))
+                        }
+                      >
                         <X className="size-3.5" />
                       </button>
                     </div>
@@ -496,29 +757,62 @@ function EditorForm({ product }: { product: Product | undefined }) {
             </div>
           </Section>
           <Section title="Pricing">
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Price (₦)" error={errors.priceKobo}>
-                <Input value={draft.price} onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))} inputMode="decimal" placeholder="4,500" className="font-mono" />
+                <Input
+                  value={draft.price}
+                  onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))}
+                  inputMode="decimal"
+                  placeholder="4,500"
+                  className="font-mono"
+                />
               </Field>
-              <Field label="Compare-at price (₦)" optional error={errors.compareAtKobo} hint="Shows a strike-through and a % off badge">
-                <Input value={draft.compareAt} onChange={(e) => setDraft((d) => ({ ...d, compareAt: e.target.value }))} inputMode="decimal" placeholder="6,000" className="font-mono" />
+              <Field
+                label="Compare-at price (₦)"
+                optional
+                error={errors.compareAtKobo}
+                hint="Shows a strike-through and a % off badge"
+              >
+                <Input
+                  value={draft.compareAt}
+                  onChange={(e) => setDraft((d) => ({ ...d, compareAt: e.target.value }))}
+                  inputMode="decimal"
+                  placeholder="6,000"
+                  className="font-mono"
+                />
               </Field>
             </div>
           </Section>
-          <Section title="Options & stock" description="Add sizes, colours or flavours. Each combination gets its own stock.">
+          <Section
+            title="Options & stock"
+            description="Add sizes, colours or flavours. Each combination gets its own stock."
+          >
             <OptionsField draft={draft} setDraft={setDraft} />
-            {errors.options && <p className="mt-3 text-small font-medium text-danger">{errors.options}</p>}
+            {errors.options && (
+              <p className="mt-3 text-small font-medium text-danger">{errors.options}</p>
+            )}
             <div className="mt-5">
               <VariantsTable draft={draft} setDraft={setDraft} />
             </div>
           </Section>
           <Section title="Organisation">
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field label="Category">
-                <Select label="Category" value={draft.category} onValueChange={(v) => setDraft((d) => ({ ...d, category: v as CategoryId }))} options={categories.map((c) => ({ value: c.id, label: c.name }))} />
+                <Select
+                  label="Category"
+                  value={draft.category}
+                  onValueChange={(v) => setDraft((d) => ({ ...d, category: v as CategoryId }))}
+                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                />
               </Field>
               <Field label="Tags" optional hint="Helps search, e.g. vintage, gift">
-                <TagInput label="Tags" values={draft.tags} onChange={(tags) => setDraft((d) => ({ ...d, tags }))} placeholder="vintage, gift" max={8} />
+                <TagInput
+                  label="Tags"
+                  values={draft.tags}
+                  onChange={(tags) => setDraft((d) => ({ ...d, tags }))}
+                  placeholder="vintage, gift"
+                  max={8}
+                />
               </Field>
             </div>
           </Section>
@@ -526,7 +820,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
         <aside className="min-w-0">
           <div className="sticky top-24 flex flex-col gap-4">
             <div className="rounded-lg bg-surface p-5 hairline">
-              <p className="eyebrow mb-4 text-muted">Live preview</p>
+              <p className="mb-4 eyebrow text-muted">Live preview</p>
               {preview ? (
                 <div className="pointer-events-none mx-auto max-w-56" aria-hidden inert>
                   <ProductCard product={preview} />
@@ -534,7 +828,9 @@ function EditorForm({ product }: { product: Product | undefined }) {
               ) : (
                 <Skeleton className="aspect-[4/5] w-full" />
               )}
-              <p className="mt-4 text-small text-muted">This is exactly how buyers see it in Explore and search.</p>
+              <p className="mt-4 text-small text-muted">
+                This is exactly how buyers see it in Explore and search.
+              </p>
             </div>
             <div className="rounded-lg bg-surface p-5 hairline">
               <p className="mb-3 text-small font-medium">Visibility</p>
@@ -548,10 +844,22 @@ function EditorForm({ product }: { product: Product | undefined }) {
                 ]}
                 className="w-full [&>button]:flex-1"
               />
-              <Button className="mt-4 w-full" loading={save.isPending} onClick={() => submit(draft.status)}>
-                {draft.status === "published" ? (product ? "Save changes" : "Publish") : "Save draft"}
+              <Button
+                className="mt-4 w-full"
+                loading={save.isPending}
+                onClick={() => submit(draft.status)}
+              >
+                {draft.status === "published"
+                  ? product
+                    ? "Save changes"
+                    : "Publish"
+                  : "Save draft"}
               </Button>
-              {priceKobo !== null && <p className="mt-3 text-center text-small text-muted">Sells for {formatNaira(priceKobo)} · you keep 95%</p>}
+              {priceKobo !== null && (
+                <p className="mt-3 text-center text-small text-muted">
+                  Sells for {formatNaira(priceKobo)} · you keep 95%
+                </p>
+              )}
             </div>
           </div>
         </aside>
@@ -573,7 +881,14 @@ export function ProductEditor({ id }: { id: string | null }) {
     );
   }
   if (id && (error || !data)) {
-    return <EmptyState illustration="products" title="Product not found" body="It may have been deleted." action={<Button onClick={() => history.back()}>Go back</Button>} />;
+    return (
+      <EmptyState
+        illustration="products"
+        title="Product not found"
+        body="It may have been deleted."
+        action={<Button onClick={() => history.back()}>Go back</Button>}
+      />
+    );
   }
   return <EditorForm key={data?.id ?? `new-${brand?.id}`} product={data} />;
 }

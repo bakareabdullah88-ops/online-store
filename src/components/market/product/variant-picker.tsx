@@ -64,7 +64,7 @@ export function VariantPicker({
                     className={cn(
                       "relative h-11 min-w-12 rounded-md px-4 text-small font-medium transition-[color,box-shadow]",
                       active ? "text-on-primary" : "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--ink)]",
-                      !available && !active && "text-faint line-through decoration-1",
+                      !available && !active && "text-muted line-through decoration-1",
                     )}
                   >
                     {active && <motion.span layoutId={`${id}-${o.id}`} className="absolute inset-0 rounded-md bg-primary" transition={spring.snappy} aria-hidden />}

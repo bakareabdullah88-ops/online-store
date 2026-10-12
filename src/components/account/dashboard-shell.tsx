@@ -87,7 +87,7 @@ export function DashboardSkeleton() {
 export function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="container-page pt-6 md:pt-10">
-      <div className="grid gap-10 lg:grid-cols-[var(--sidebar-w)_minmax(0,1fr)] xl:gap-14">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[var(--sidebar-w)_minmax(0,1fr)] xl:gap-14">
         <Suspense fallback={<div className="hidden lg:block" />}>
           <Sidebar />
         </Suspense>

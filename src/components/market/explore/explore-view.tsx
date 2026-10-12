@@ -71,7 +71,7 @@ function BrandMatches({ q }: { q: string }) {
   return (
     <section aria-label="Matching brands" className="mb-10">
       <p className="eyebrow mb-3 text-muted">Brands</p>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {data.brands.map((b) => (
           <BrandCard key={b.id} brand={b} variant="compact" className="hairline bg-surface" />
         ))}
@@ -133,7 +133,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
 
   return (
     <div className="container-page pt-6 md:pt-10">
-      <header className="grid gap-4 md:grid-cols-12 md:items-end">
+      <header className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
         <div className="md:col-span-8">
           <p className="eyebrow text-muted">{mode === "search" ? "Search" : "Explore"}</p>
           <h1 className="mt-2 font-display text-display-lg text-balance">{title}</h1>
@@ -184,7 +184,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
         </div>
       </div>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
         <aside className="hidden lg:block" aria-label="Filters">
           <div className="sticky top-44">
             <div className="mb-4 flex items-center justify-between">

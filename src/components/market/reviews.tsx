@@ -85,7 +85,7 @@ export function ReviewsBlock({
   const [limit, setLimit] = useState(4);
   if (isPending) {
     return (
-      <div aria-hidden className="grid gap-8 md:grid-cols-[280px_1fr]">
+      <div aria-hidden className="grid grid-cols-1 gap-8 md:grid-cols-[280px_1fr]">
         <Skeleton className="h-28 w-full" />
         <div className="flex flex-col gap-6">
           {[0, 1, 2].map((i) => (
@@ -106,7 +106,7 @@ export function ReviewsBlock({
     return <EmptyState compact illustration="reviews" title="No reviews yet" body={emptyBody} />;
   }
   return (
-    <div className="grid gap-8 md:grid-cols-[280px_1fr] md:gap-12">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-[280px_1fr] md:gap-12">
       <div>
         <RatingSummary breakdown={data.breakdown} />
       </div>

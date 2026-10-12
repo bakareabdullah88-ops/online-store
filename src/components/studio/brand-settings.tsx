@@ -143,7 +143,7 @@ function BrandForm({ brand }: { brand: Brand }) {
       </Section>
       <Section id="bio" title="Story">
         <div className="flex flex-col gap-5">
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Brand name" error={errors.name}>
               <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
             </Field>

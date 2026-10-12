@@ -10,7 +10,7 @@ for (const r of routes.split(",")) {
     const vw = document.documentElement.clientWidth; const res = [];
     for (const e of document.querySelectorAll("body *")) {
       const rr = e.getBoundingClientRect();
-      if (rr.right > vw + 1 && rr.width > 0 && !e.closest("nav.fixed")) {
+      if (rr.right > vw + 1 && rr.width > 0 && !(function f(x){for(;x;x=x.parentElement){if(getComputedStyle(x).position==="fixed")return true}return false})(e)) {
         // skip if inside a horizontally scrolling ancestor
         let a = e.parentElement, clipped = false;
         while (a) { const s = getComputedStyle(a); if (s.overflowX !== "visible") { const ar = a.getBoundingClientRect(); if (ar.right <= vw + 1) { clipped = true; break; } } a = a.parentElement; }

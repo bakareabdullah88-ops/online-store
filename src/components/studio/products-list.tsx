@@ -4,14 +4,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useDeferredValue, useMemo, useState } from "react";
-import { Eye, EyeOff, LayoutGrid, List, MoreHorizontal, Pencil, Plus, Trash2, ExternalLink } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LayoutGrid,
+  List,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+  ExternalLink,
+} from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/controls";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchInput } from "@/components/ui/input";
 import { Pill } from "@/components/ui/misc";
-import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Select } from "@/components/ui/overlay";
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+  Select,
+} from "@/components/ui/overlay";
 import { Dialog } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SegmentedControl } from "@/components/ui/tabs";
@@ -28,14 +45,32 @@ import type { CategoryId, Product } from "@/services/types";
 import { usePrefs } from "@/stores/ui";
 import { toast } from "@/stores/toast";
 import { StudioHeaderBlock } from "./studio-shell";
+import { TableScroll } from "@/components/ui/table-scroll";
 
 function StockLabel({ p }: { p: Product }) {
   const n = totalStock(p);
   const s = stockState(n);
-  return <span className={cn("font-mono tabular", s === "sold_out" ? "text-danger" : s === "low" ? "text-warning" : "text-ink-2")}>{s === "sold_out" ? "Sold out" : `${n} in stock`}</span>;
+  return (
+    <span
+      className={cn(
+        "font-mono tabular",
+        s === "sold_out" ? "text-danger" : s === "low" ? "text-warning" : "text-ink-2",
+      )}
+    >
+      {s === "sold_out" ? "Sold out" : `${n} in stock`}
+    </span>
+  );
 }
 
-function RowMenu({ p, onDelete, onToggle }: { p: Product; onDelete: () => void; onToggle: () => void }) {
+function RowMenu({
+  p,
+  onDelete,
+  onToggle,
+}: {
+  p: Product;
+  onDelete: () => void;
+  onToggle: () => void;
+}) {
   const router = useRouter();
   return (
     <Menu>
@@ -49,7 +84,10 @@ function RowMenu({ p, onDelete, onToggle }: { p: Product; onDelete: () => void; 
           Edit
         </MenuItem>
         {p.status === "published" && (
-          <MenuItem icon={<ExternalLink />} onSelect={() => window.open(`/products/${p.slug}`, "_blank", "noopener")}>
+          <MenuItem
+            icon={<ExternalLink />}
+            onSelect={() => window.open(`/products/${p.slug}`, "_blank", "noopener")}
+          >
             View on Kiosk
           </MenuItem>
         )}
@@ -73,7 +111,11 @@ export function StudioProducts() {
   const view = usePrefs((s) => s.studioProductsView);
   const setPrefs = usePrefs((s) => s.set);
   const mounted = useMounted();
-  const { data, isPending } = useStudioProducts({ q: deferredQ, status, ...(category !== "all" ? { category } : {}) });
+  const { data, isPending } = useStudioProducts({
+    q: deferredQ,
+    status,
+    ...(category !== "all" ? { category } : {}),
+  });
   const bulk = useBulkProducts();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState<string[] | null>(null);
@@ -89,7 +131,11 @@ export function StudioProducts() {
         onSuccess: () => {
           setSelected(new Set());
           toast.success(
-            action === "delete" ? `Deleted ${ids.length} product${ids.length > 1 ? "s" : ""}` : action === "publish" ? `Published ${ids.length}` : `Moved ${ids.length} to drafts`,
+            action === "delete"
+              ? `Deleted ${ids.length} product${ids.length > 1 ? "s" : ""}`
+              : action === "publish"
+                ? `Published ${ids.length}`
+                : `Moved ${ids.length} to drafts`,
           );
         },
         onError: (e) => toast.error(errorMessage(e)),
@@ -119,7 +165,14 @@ export function StudioProducts() {
 
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="lg:w-72">
-          <SearchInput value={q} onChange={(e) => setQ(e.target.value)} onClear={() => setQ("")} placeholder="Search your products" aria-label="Search products" inputSize="md" />
+          <SearchInput
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onClear={() => setQ("")}
+            placeholder="Search your products"
+            aria-label="Search products"
+            inputSize="md"
+          />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SegmentedControl
@@ -134,7 +187,16 @@ export function StudioProducts() {
             ]}
           />
           <div className="w-44">
-            <Select label="Category" value={category} onValueChange={(v) => setCategory(v as CategoryId | "all")} className="h-9 text-small" options={[{ value: "all", label: "All categories" }, ...categories.map((c) => ({ value: c.id, label: c.name }))]} />
+            <Select
+              label="Category"
+              value={category}
+              onValueChange={(v) => setCategory(v as CategoryId | "all")}
+              className="h-9 text-small"
+              options={[
+                { value: "all", label: "All categories" },
+                ...categories.map((c) => ({ value: c.id, label: c.name })),
+              ]}
+            />
           </div>
         </div>
         <SegmentedControl
@@ -162,16 +224,36 @@ export function StudioProducts() {
             aria-label="Bulk actions"
           >
             <span className="mr-2 text-small font-medium">{visibleSelected.length} selected</span>
-            <Button size="sm" variant="ghost" className="text-on-primary hover:bg-on-primary/10" onClick={() => run(visibleSelected, "publish")}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-on-primary hover:bg-on-primary/10"
+              onClick={() => run(visibleSelected, "publish")}
+            >
               Publish
             </Button>
-            <Button size="sm" variant="ghost" className="text-on-primary hover:bg-on-primary/10" onClick={() => run(visibleSelected, "draft")}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-on-primary hover:bg-on-primary/10"
+              onClick={() => run(visibleSelected, "draft")}
+            >
               Move to drafts
             </Button>
-            <Button size="sm" variant="ghost" className="text-on-primary hover:bg-on-primary/10" onClick={() => setConfirmDelete(visibleSelected)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-on-primary hover:bg-on-primary/10"
+              onClick={() => setConfirmDelete(visibleSelected)}
+            >
               Delete
             </Button>
-            <Button size="sm" variant="ghost" className="ml-auto text-on-primary hover:bg-on-primary/10" onClick={() => setSelected(new Set())}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto text-on-primary hover:bg-on-primary/10"
+              onClick={() => setSelected(new Set())}
+            >
               Clear
             </Button>
           </motion.div>
@@ -187,33 +269,73 @@ export function StudioProducts() {
       ) : items.length === 0 ? (
         <EmptyState
           illustration="products"
-          title={q || status !== "all" || category !== "all" ? "No products match" : "No products yet"}
-          body={q || status !== "all" || category !== "all" ? "Try a different search or filter." : "Add your first product. It takes about two minutes."}
+          title={
+            q || status !== "all" || category !== "all" ? "No products match" : "No products yet"
+          }
+          body={
+            q || status !== "all" || category !== "all"
+              ? "Try a different search or filter."
+              : "Add your first product. It takes about two minutes."
+          }
           action={<ButtonLink href="/studio/products/new">Add a product</ButtonLink>}
         />
       ) : (mounted ? view : "table") === "table" ? (
-        <div className="overflow-x-auto rounded-lg bg-surface hairline">
+        <TableScroll label="Products" className="rounded-lg bg-surface hairline">
           <table className="w-full min-w-[720px] text-small">
             <thead>
               <tr className="border-b border-line text-left text-muted">
                 <th scope="col" className="w-12 px-4 py-3">
-                  <Checkbox hideLabel label="Select all products" checked={allChecked ? true : visibleSelected.length ? "indeterminate" : false} onCheckedChange={(v) => setSelected(v ? new Set(items.map((p) => p.id)) : new Set())} />
+                  <Checkbox
+                    hideLabel
+                    label="Select all products"
+                    checked={allChecked ? true : visibleSelected.length ? "indeterminate" : false}
+                    onCheckedChange={(v) =>
+                      setSelected(v ? new Set(items.map((p) => p.id)) : new Set())
+                    }
+                  />
                 </th>
-                <th scope="col" className="eyebrow py-3 font-medium">Product</th>
-                <th scope="col" className="eyebrow px-3 py-3 font-medium">Status</th>
-                <th scope="col" className="eyebrow px-3 py-3 font-medium">Stock</th>
-                <th scope="col" className="eyebrow px-3 py-3 text-right font-medium">Price</th>
-                <th scope="col" className="eyebrow px-3 py-3 text-right font-medium">Sold</th>
-                <th scope="col" className="eyebrow px-3 py-3 font-medium">Updated</th>
-                <th scope="col" className="w-12 px-3 py-3"><span className="sr-only">Actions</span></th>
+                <th scope="col" className="py-3 eyebrow font-medium">
+                  Product
+                </th>
+                <th scope="col" className="px-3 py-3 eyebrow font-medium">
+                  Status
+                </th>
+                <th scope="col" className="px-3 py-3 eyebrow font-medium">
+                  Stock
+                </th>
+                <th scope="col" className="px-3 py-3 text-right eyebrow font-medium">
+                  Price
+                </th>
+                <th scope="col" className="px-3 py-3 text-right eyebrow font-medium">
+                  Sold
+                </th>
+                <th scope="col" className="px-3 py-3 eyebrow font-medium">
+                  Updated
+                </th>
+                <th scope="col" className="w-12 px-3 py-3">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               <AnimatePresence initial={false}>
                 {items.map((p) => (
-                  <motion.tr key={p.id} layout="position" exit={{ opacity: 0 }} className={cn("border-b border-line last:border-0", selected.has(p.id) ? "bg-accent-soft/50" : "hover:bg-ink/[0.02]")}>
+                  <motion.tr
+                    key={p.id}
+                    layout="position"
+                    exit={{ opacity: 0 }}
+                    className={cn(
+                      "border-b border-line last:border-0",
+                      selected.has(p.id) ? "bg-accent-soft/50" : "hover:bg-ink/[0.02]",
+                    )}
+                  >
                     <td className="px-4 py-2.5">
-                      <Checkbox hideLabel label={`Select ${p.name}`} checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
+                      <Checkbox
+                        hideLabel
+                        label={`Select ${p.name}`}
+                        checked={selected.has(p.id)}
+                        onCheckedChange={() => toggle(p.id)}
+                      />
                     </td>
                     <td className="py-2.5">
                       <Link href={`/studio/products/${p.id}`} className="flex items-center gap-3">
@@ -221,31 +343,55 @@ export function StudioProducts() {
                           <AppImage image={p.images[0]} alt="" />
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate font-medium hover:underline">{p.name}</span>
+                          <span className="block truncate font-medium hover:underline">
+                            {p.name}
+                          </span>
                           <span className="block text-muted capitalize">{p.category}</span>
                         </span>
                       </Link>
                     </td>
-                    <td className="px-3 py-2.5">{p.status === "published" ? <Pill tone="success" dot>Live</Pill> : <Pill>Draft</Pill>}</td>
+                    <td className="px-3 py-2.5">
+                      {p.status === "published" ? (
+                        <Pill tone="success" dot>
+                          Live
+                        </Pill>
+                      ) : (
+                        <Pill>Draft</Pill>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
                       <StockLabel p={p} />
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular">{formatNaira(p.priceKobo)}</td>
+                    <td className="px-3 py-2.5 text-right font-mono tabular">
+                      {formatNaira(p.priceKobo)}
+                    </td>
                     <td className="px-3 py-2.5 text-right font-mono tabular">{p.salesCount}</td>
-                    <td className="px-3 py-2.5 text-muted">{mounted ? formatDate(p.updatedAt) : ""}</td>
+                    <td className="px-3 py-2.5 text-muted">
+                      {mounted ? formatDate(p.updatedAt) : ""}
+                    </td>
                     <td className="px-3 py-2.5">
-                      <RowMenu p={p} onDelete={() => setConfirmDelete([p.id])} onToggle={() => run([p.id], p.status === "published" ? "draft" : "publish")} />
+                      <RowMenu
+                        p={p}
+                        onDelete={() => setConfirmDelete([p.id])}
+                        onToggle={() => run([p.id], p.status === "published" ? "draft" : "publish")}
+                      />
                     </td>
                   </motion.tr>
                 ))}
               </AnimatePresence>
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       ) : (
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
           {items.map((p) => (
-            <li key={p.id} className={cn("relative overflow-hidden rounded-lg bg-surface hairline", selected.has(p.id) && "ring-2 ring-accent")}>
+            <li
+              key={p.id}
+              className={cn(
+                "relative overflow-hidden rounded-lg bg-surface hairline",
+                selected.has(p.id) && "ring-2 ring-accent",
+              )}
+            >
               <Link href={`/studio/products/${p.id}`} className="block">
                 <div className="aspect-[4/5]">
                   <AppImage image={p.images[0]} alt="" />
@@ -259,9 +405,20 @@ export function StudioProducts() {
                 </div>
               </Link>
               <div className="absolute top-2 left-2 rounded-xs bg-surface/90 p-1">
-                <Checkbox hideLabel label={`Select ${p.name}`} checked={selected.has(p.id)} onCheckedChange={() => toggle(p.id)} />
+                <Checkbox
+                  hideLabel
+                  label={`Select ${p.name}`}
+                  checked={selected.has(p.id)}
+                  onCheckedChange={() => toggle(p.id)}
+                />
               </div>
-              <div className="absolute top-2 right-2">{p.status === "published" ? <Pill tone="success">Live</Pill> : <Pill className="bg-surface">Draft</Pill>}</div>
+              <div className="absolute top-2 right-2">
+                {p.status === "published" ? (
+                  <Pill tone="success">Live</Pill>
+                ) : (
+                  <Pill className="bg-surface">Draft</Pill>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -290,7 +447,9 @@ export function StudioProducts() {
           </>
         }
       >
-        <p className="text-body text-muted">Tip: move it to drafts instead if you might sell it again.</p>
+        <p className="text-body text-muted">
+          Tip: move it to drafts instead if you might sell it again.
+        </p>
       </Dialog>
     </div>
   );

@@ -86,7 +86,7 @@ export function AccountOverview() {
           })}
       </nav>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-lg bg-surface p-5 hairline md:col-span-2">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -144,7 +144,7 @@ export function AccountOverview() {
           <h2 id="reorder-title" className="mb-4 text-title-lg font-semibold">
             Order again
           </h2>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {delivered.slice(0, 4).map((o) => (
               <li key={o.id} className="flex items-center gap-3 rounded-lg bg-surface p-3 hairline">
                 <span className="size-14 shrink-0 overflow-hidden rounded-sm">

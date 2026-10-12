@@ -55,3 +55,14 @@ test("seller pages", async ({ page }) => {
   }
   await expectNoAppErrors(page, errors);
 });
+
+test.describe("dark mode", () => {
+  test.use({ colorScheme: "dark" });
+  test("key pages in dark mode", async ({ page }) => {
+    const errors = trackErrors(page);
+    for (const path of ["/", "/explore", "/brands/adirelab", "/login"]) await audit(page, path);
+    await demoLogin(page, "seller", "/studio");
+    for (const path of ["/orders", "/account", "/studio", "/studio/orders", "/studio/analytics"]) await audit(page, path);
+    await expectNoAppErrors(page, errors);
+  });
+});

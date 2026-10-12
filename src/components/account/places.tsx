@@ -105,7 +105,7 @@ export function PlacesView() {
         }
       />
       {isPending ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {[0, 1].map((i) => (
             <Skeleton key={i} className="h-36" rounded="lg" />
           ))}
@@ -113,7 +113,7 @@ export function PlacesView() {
       ) : !data?.length ? (
         <EmptyState illustration="places" title="No saved places" body="Add your hostel room or a favourite pickup point." action={<Button onClick={() => setEditing(blank)}>Add a place</Button>} />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => {
               const campus = campuses.data?.find((c) => c.id === p.campusId);

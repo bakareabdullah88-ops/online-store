@@ -71,7 +71,7 @@ export function Conversation({ threadId, as, className, emptyHint }: { threadId:
                     transition={spring.smooth}
                     className="flex flex-col"
                   >
-                    {showDay && mounted && <span className="eyebrow my-3 self-center text-faint">{day}</span>}
+                    {showDay && mounted && <span className="eyebrow my-3 self-center text-muted">{day}</span>}
                     <div
                       className={cn(
                         "max-w-[80%] rounded-lg px-3.5 py-2.5 text-body",

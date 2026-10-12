@@ -22,7 +22,7 @@ export function DemoPanel({ next, highlight }: { next?: string | null; highlight
   return (
     <div className="rounded-lg bg-canvas-sunk p-5">
       <p className="eyebrow text-muted">Try the demo · no sign-up</p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Button
           variant="secondary"
           className={cn("h-auto justify-start py-3 text-left", highlight === "buyer" && "shadow-[inset_0_0_0_1.5px_var(--ink)]")}

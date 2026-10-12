@@ -184,7 +184,7 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-line py-12 md:py-16">
-      <div className="grid gap-8 md:grid-cols-[220px_1fr] md:gap-12">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr] md:gap-12">
         <div>
           <Eyebrow>{kicker}</Eyebrow>
           <h2 className="mt-2 font-display text-display-sm">{title}</h2>
@@ -882,7 +882,7 @@ export function DesignSystemView() {
               </figure>
             ))}
           </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-[96px_1fr]">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-[96px_1fr]">
             <div className="size-24 overflow-hidden rounded-lg">
               <AppImage
                 image={{ kind: "art", motif: "monogram", palette, seed: 1 }}
