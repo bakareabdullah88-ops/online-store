@@ -1,6 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { pagePad } from "@/components/app/page-header";
+import { NavPageHeader } from "@/components/app/nav-header";
+import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
@@ -8,12 +10,10 @@ import {
   Banknote,
   Bike,
   Building2,
-  Check,
   CreditCard,
   Lock,
   MapPin,
   Tag,
-  Wallet,
   X,
 } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
@@ -31,7 +31,7 @@ import { formatNaira } from "@/domain/money";
 import type { GroupQuote } from "@/domain/checkout";
 import { cn } from "@/lib/cn";
 import { useCampuses } from "@/queries/catalog";
-import { usePlaces, useWallet } from "@/queries/inbox";
+import { usePlaces } from "@/queries/inbox";
 import { useCreateOrders, useQuote } from "@/queries/orders";
 import { useSession } from "@/queries/session";
 import { errorMessage } from "@/services/errors";
@@ -39,6 +39,7 @@ import type { CheckoutInput } from "@/services/inputs";
 import type { Campus, PaymentMethod } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
+import { features } from "@/config/features";
 import { useBagView, type BagGroupView } from "./use-bag-view";
 
 type GroupState = {
@@ -49,79 +50,6 @@ type GroupState = {
   note: string;
   promoInput: string;
 };
-
-const demoCards = [
-  {
-    id: "visa",
-    brand: "Visa",
-    last4: "4242",
-    name: "Demo card",
-    tone: "from-[#22304A] to-[#3B4F73]",
-  },
-  {
-    id: "verve",
-    brand: "Verve",
-    last4: "0618",
-    name: "Demo card",
-    tone: "from-[#1E5B45] to-[#2F7A5E]",
-  },
-  {
-    id: "master",
-    brand: "Mastercard",
-    last4: "5100",
-    name: "Demo card",
-    tone: "from-[#6E2335] to-[#9A3A50]",
-  },
-];
-
-function CardCarousel({ value, onChange }: { value: string; onChange: (id: string) => void }) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Saved demo cards"
-      className="-mx-2 scrollbar-none flex snap-x scroll-px-2 gap-3 overflow-x-auto p-2"
-    >
-      {demoCards.map((c) => {
-        const active = c.id === value;
-        return (
-          <motion.button
-            key={c.id}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            onClick={() => onChange(c.id)}
-            whileTap={{ scale: 0.97 }}
-            animate={{ scale: active ? 1 : 0.96, opacity: active ? 1 : 0.7 }}
-            transition={spring.snappy}
-            className={cn(
-              "relative flex aspect-[1.6/1] w-56 shrink-0 snap-start flex-col justify-between rounded-lg bg-linear-to-br p-4 text-left text-white shadow-md",
-              c.tone,
-              active && "ring-2 ring-ink ring-offset-2 ring-offset-surface",
-            )}
-          >
-            <span className="flex items-center justify-between">
-              <span className="font-mono text-[11px] tracking-wider uppercase opacity-80">
-                Demo · not real
-              </span>
-              {active && (
-                <span className="flex size-5 items-center justify-center rounded-full bg-white text-ink">
-                  <Check className="size-3" strokeWidth={3} />
-                </span>
-              )}
-            </span>
-            <span>
-              <span className="block font-mono text-body tracking-[0.15em]">•••• {c.last4}</span>
-              <span className="mt-1 flex items-center justify-between text-small opacity-85">
-                <span>{c.name}</span>
-                <span className="font-semibold">{c.brand}</span>
-              </span>
-            </span>
-          </motion.button>
-        );
-      })}
-    </div>
-  );
-}
 
 function SummaryRow({
   label,
@@ -371,19 +299,16 @@ export function CheckoutView() {
   const { groups, isEmpty, loading } = useBagView();
   const campuses = useCampuses();
   const places = usePlaces();
-  const wallet = useWallet();
   const promoCodes = useBag((s) => s.promoCodes);
   const removeBrand = useBag((s) => s.removeBrand);
   const setPromo = useBag((s) => s.setPromo);
   const create = useCreateOrders();
   const router = useRouter();
-  const reduce = useReducedMotion();
 
   const [phoneInput, setPhone] = useState<string | null>(null);
   const phone = phoneInput ?? user?.phone ?? "";
   const [overrides, setOverrides] = useState<Record<string, GroupState>>({});
-  const [payment, setPayment] = useState<PaymentMethod>("card");
-  const [card, setCard] = useState("visa");
+  const [paymentChoice, setPayment] = useState<PaymentMethod | null>(null);
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const [placed, setPlaced] = useState(false);
@@ -424,6 +349,9 @@ export function CheckoutView() {
     groups.every((g) => g.brand && state[g.brandId] && g.items.every((i) => i.product)) &&
     !places.isPending;
   const blockedGroup = groups.find((g) => g.blockedReason);
+  const anyDelivery = groups.some((g) => state[g.brandId]?.method === "delivery");
+  const payment: PaymentMethod =
+    paymentChoice ?? (anyDelivery ? "pay_on_delivery" : "pay_on_pickup");
 
   const buildInput = (forQuote: boolean): CheckoutInput | null => {
     if (!ready || !user) return null;
@@ -470,7 +398,6 @@ export function CheckoutView() {
   const quote = useQuote(buildInput(true));
   const quoteByBrand = new Map((quote.data?.groups ?? []).map((g) => [g.brandId, g]));
   const total = quote.data?.totalKobo ?? groups.reduce((n, g) => n + g.subtotalKobo, 0);
-  const balance = wallet.data?.balanceKobo ?? 0;
   const problems = (quote.data?.groups ?? []).some((g) => g.problems.length > 0);
 
   const validate = () => {
@@ -540,43 +467,36 @@ export function CheckoutView() {
 
   const payOptions = [
     {
-      value: "card" as const,
-      title: "Card",
-      description: "Pay now with a saved demo card",
-      icon: <CreditCard className="size-5" />,
-    },
-    {
-      value: "transfer" as const,
-      title: "Bank transfer",
-      description: "Transfer to a one-time demo account",
-      icon: <Building2 className="size-5" />,
-    },
-    {
-      value: "pay_on_pickup" as const,
-      title: "Pay on pickup or delivery",
-      description: "Cash or transfer when you get it",
+      value: "pay_on_delivery" as const,
+      title: "Pay on delivery",
+      description: "Cash or transfer to the seller when your order arrives",
       icon: <Banknote className="size-5" />,
     },
     {
-      value: "wallet" as const,
-      title: "Kiosk wallet",
-      description: wallet.data
-        ? `Demo balance ${formatNaira(balance)}${balance < total ? " · not enough" : ""}`
-        : "Loading balance…",
-      icon: <Wallet className="size-5" />,
-      disabled: !!wallet.data && balance < total,
+      value: "pay_on_pickup" as const,
+      title: "Pay at pickup",
+      description: "Pay the seller when you collect it",
+      icon: <Building2 className="size-5" />,
+    },
+    {
+      value: "card" as const,
+      title: "Pay online",
+      description: features.onlinePayments
+        ? "Card or bank transfer"
+        : "Card and transfer payments are coming soon",
+      icon: <CreditCard className="size-5" />,
+      disabled: !features.onlinePayments,
     },
   ];
 
   return (
-    <div className="container-page pt-6 md:pt-10">
-      <header className="mb-8">
-        <p className="eyebrow text-muted">Checkout</p>
-        <h1 className="mt-2 font-display text-display-lg">Almost yours</h1>
-        <p className="mt-2 flex items-center gap-2 text-small text-muted">
-          <Lock className="size-4" /> Demo checkout. No real payment is taken.
-        </p>
-      </header>
+    <div className={pagePad}>
+      <NavPageHeader
+        title="Almost yours"
+        current="Checkout"
+        icon={Lock}
+        description="You pay the seller directly when you get your order."
+      />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="flex min-w-0 flex-col gap-5 lg:col-span-7">
@@ -627,9 +547,6 @@ export function CheckoutView() {
               <h2 id="pay" className="text-body font-semibold">
                 Payment
               </h2>
-              <span className="ml-auto rounded-full bg-warning-soft px-2.5 py-1 font-mono text-[10px] font-semibold tracking-wider text-warning uppercase">
-                Demo
-              </span>
             </div>
             <RadioCards
               label="Payment method"
@@ -637,49 +554,6 @@ export function CheckoutView() {
               onChange={setPayment}
               options={payOptions}
             />
-            <AnimatePresence initial={false} mode="wait">
-              {payment === "card" && (
-                <motion.div
-                  key="card"
-                  initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  transition={spring.smooth}
-                  className="overflow-hidden"
-                >
-                  <div className="pt-5">
-                    <p className="mb-3 text-small text-muted">
-                      Pick a saved card. These are pretend cards; nothing is charged.
-                    </p>
-                    <CardCarousel value={card} onChange={setCard} />
-                  </div>
-                </motion.div>
-              )}
-              {payment === "transfer" && (
-                <motion.div
-                  key="transfer"
-                  initial={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  transition={spring.smooth}
-                  className="overflow-hidden"
-                >
-                  <dl className="mt-5 grid grid-cols-2 gap-3 rounded-md bg-canvas-sunk p-4 text-small">
-                    <div>
-                      <dt className="text-muted">Bank</dt>
-                      <dd className="font-medium">Demo Bank</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted">Account</dt>
-                      <dd className="font-mono font-medium">00 0000 0000</dd>
-                    </div>
-                    <p className="col-span-2 text-muted">
-                      In the demo, placing the order marks the transfer as received.
-                    </p>
-                  </dl>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </section>
         </div>
 

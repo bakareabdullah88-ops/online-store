@@ -19,7 +19,7 @@ import { placeSchema } from "@/services/inputs";
 import { errorMessage } from "@/services/errors";
 import type { SavedPlace } from "@/services/types";
 import { toast } from "@/stores/toast";
-import { DashboardHeader } from "./dashboard-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 type Draft = {
   id?: string;
@@ -141,7 +141,7 @@ export function PlacesView() {
 
   return (
     <div>
-      <DashboardHeader
+      <NavPageHeader
         eyebrow="Addresses"
         title="Addresses & pickup points"
         description="Save the places you order to. Checkout fills them in for you."

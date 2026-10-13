@@ -1,12 +1,12 @@
 import { allVariantKeys } from "@/domain/variants";
-import { isActive } from "@/domain/orders";
+import { counts, hourlyViews, inRange, productStats, sellerDashboard } from "@/domain/analytics";
 import { newId, slugify } from "@/lib/ids";
 import { hashString } from "@/lib/random";
 import { categoryById } from "@/config/categories";
-import type { Customer, StudioPeriod, StudioService } from "../contracts";
+import type { Customer, StudioService } from "../contracts";
 import { ServiceError } from "../errors";
 import { schemas, type Schemas } from "./schemas";
-import type { Brand, BrandMetric, ImageRef, Product, Promo } from "../types";
+import type { Brand, ImageRef, Product, Promo } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireBrand, requireUser } from "./context";
 import { latency, quick } from "./latency";
@@ -14,42 +14,11 @@ import { applySellerTransition } from "./orders";
 import { pushNotification } from "./notify";
 import type { DbSnapshot } from "./seed";
 
-export const PLATFORM_FEE_PERCENT = 5;
-const DAY = 86_400_000;
-
-const periodDays: Record<StudioPeriod, number> = { "7d": 7, "30d": 30, "90d": 90 };
-
 function zodFail(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
   for (const i of error.issues) fields[i.path.map(String).join(".") || "form"] ??= i.message;
   throw new ServiceError("VALIDATION", Object.values(fields)[0] ?? "Check the form", fields);
 }
-
-function series(db: DbSnapshot, brandId: string, days: number, offsetDays = 0): BrandMetric[] {
-  const out: BrandMetric[] = [];
-  const end = Date.now() - offsetDays * DAY;
-  for (let d = days - 1; d >= 0; d--) {
-    const date = new Date(end - d * DAY).toISOString().slice(0, 10);
-    const m = db.metrics.find((x) => x.brandId === brandId && x.date === date);
-    out.push(
-      m
-        ? clone(m)
-        : {
-            brandId,
-            date,
-            views: 0,
-            addToBag: 0,
-            orders: 0,
-            revenueKobo: 0,
-            hourly: Array.from({ length: 24 }, () => 0),
-          },
-    );
-  }
-  return out;
-}
-
-const sum = (xs: BrandMetric[], k: "views" | "addToBag" | "orders" | "revenueKobo") =>
-  xs.reduce((n, x) => n + x[k], 0);
 
 function uniqueSlug(db: DbSnapshot, name: string, handle: string, ignoreId?: string) {
   const base = `${slugify(name)}-${handle}`;
@@ -82,15 +51,6 @@ function buildProduct(
   const kept = (input.keepImages ?? []) as ImageRef[];
   const uploaded: ImageRef[] = input.imageIds.map((id) => ({ kind: "blob", id }));
   const images = [...kept, ...uploaded];
-  if (images.length === 0) {
-    const cat = categoryById(input.category);
-    images.push({
-      kind: "art",
-      motif: cat.motif,
-      palette: cat.palette,
-      seed: hashString(input.name),
-    });
-  }
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? newId("p"),
@@ -123,30 +83,6 @@ function refreshCounts(db: DbSnapshot, brand: Brand) {
   brand.productCount = db.products.filter(
     (p) => p.brandId === brand.id && p.status === "published",
   ).length;
-}
-
-function balances(db: DbSnapshot, brand: Brand) {
-  const net = (kobo: number) => Math.round(kobo * (1 - PLATFORM_FEE_PERCENT / 100));
-  const orders = db.orders.filter((o) => o.brandId === brand.id);
-  const earned = orders
-    .filter((o) => o.status === "delivered")
-    .reduce((n, o) => n + net(o.subtotalKobo - o.discountKobo + o.deliveryFeeKobo), 0);
-  const pendingKobo = orders
-    .filter((o) => isActive(o.status))
-    .reduce((n, o) => n + net(o.subtotalKobo - o.discountKobo + o.deliveryFeeKobo), 0);
-  // Seeded history: assume earlier earnings were already paid out.
-  const paid = db.payouts
-    .filter((p) => p.brandId === brand.id)
-    .reduce((n, p) => n + p.amountKobo, 0);
-  const recentWindow = Date.now() - 14 * DAY;
-  const recentEarned = orders
-    .filter((o) => o.status === "delivered" && Date.parse(o.placedAt) >= recentWindow)
-    .reduce((n, o) => n + net(o.subtotalKobo - o.discountKobo + o.deliveryFeeKobo), 0);
-  const processing = db.payouts
-    .filter((p) => p.brandId === brand.id && p.status === "processing")
-    .reduce((n, p) => n + p.amountKobo, 0);
-  const availableKobo = Math.max(0, Math.min(earned - paid, recentEarned - processing));
-  return { availableKobo, pendingKobo };
 }
 
 export const mockStudio: StudioService = {
@@ -292,9 +228,9 @@ export const mockStudio: StudioService = {
       },
       {
         id: "payout",
-        label: "Add a payout account",
+        label: "Add payout details",
         done: !!brand.payoutAccount,
-        href: "/studio/payouts",
+        href: "/studio/finance",
       },
       {
         id: "promo",
@@ -305,116 +241,67 @@ export const mockStudio: StudioService = {
     ];
   },
 
-  async getOverview(period) {
-    await latency();
+  async getDashboard(range) {
+    await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    const days = periodDays[period];
-    const cur = series(db, brand.id, days);
-    const prev = series(db, brand.id, days, days);
-    const since = Date.now() - days * DAY;
-    const brandOrders = db.orders.filter((o) => o.brandId === brand.id);
-    const units = new Map<string, { units: number; revenue: number }>();
-    for (const o of brandOrders) {
-      if (Date.parse(o.placedAt) < since || o.status === "declined" || o.status === "cancelled")
-        continue;
-      for (const it of o.items) {
-        const u = units.get(it.productId) ?? { units: 0, revenue: 0 };
-        u.units += it.quantity;
-        u.revenue += it.unitPriceKobo * it.quantity;
-        units.set(it.productId, u);
-      }
-    }
-    const topProducts = [...units.entries()]
-      .map(([id, u]) => ({
-        product: db.products.find((p) => p.id === id),
-        unitsSold: u.units,
-        revenueKobo: u.revenue,
-      }))
-      .filter((x): x is { product: Product; unitsSold: number; revenueKobo: number } => !!x.product)
-      .sort((a, b) => b.revenueKobo - a.revenueKobo)
-      .slice(0, 5)
-      .map((x) => ({ ...x, product: clone(x.product) }));
-    const conv = (s: BrandMetric[]) => {
-      const v = sum(s, "views");
-      return v ? (sum(s, "orders") / v) * 100 : 0;
-    };
-    return {
-      period,
-      revenueKobo: sum(cur, "revenueKobo"),
-      revenuePrevKobo: sum(prev, "revenueKobo"),
-      orders: sum(cur, "orders"),
-      ordersPrev: sum(prev, "orders"),
-      conversion: conv(cur),
-      conversionPrev: conv(prev),
-      rating: brand.rating,
-      ratingCount: brand.ratingCount,
-      series: cur,
-      topProducts,
-      recentOrders: clone(
-        brandOrders.sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)).slice(0, 6),
-      ),
-    };
+    const dashboard = sellerDashboard({
+      orders: db.orders.filter((o) => o.brandId === brand.id),
+      events: db.events.filter((e) => e.brandId === brand.id),
+      products: db.products.filter((p) => p.brandId === brand.id),
+      range,
+    });
+    dashboard.todo.push(
+      {
+        id: "messages",
+        label: "Reply to messages",
+        detail: "Customers waiting on you",
+        href: "/studio/messages",
+        count: db.threads.filter((t) => t.brandId === brand.id && t.unreadForBrand > 0).length,
+      },
+      {
+        id: "reviews",
+        label: "Answer reviews",
+        detail: "A reply shows you care",
+        href: "/studio/reviews",
+        count: db.reviews.filter((r) => r.brandId === brand.id && !r.reply).length,
+      },
+    );
+    return dashboard;
   },
 
-  async getAnalytics(period) {
-    await latency();
+  async getProductAnalytics(range) {
+    await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    const days = periodDays[period];
-    const cur = series(db, brand.id, days);
-    const prev = series(db, brand.id, days, days);
-    const views = sum(cur, "views");
-    const addToBag = sum(cur, "addToBag");
-    const orders = sum(cur, "orders");
-    const hourly = Array.from({ length: 24 }, (_, h) =>
-      cur.reduce((n, m) => n + (m.hourly[h] ?? 0), 0),
-    );
-    const since = Date.now() - days * DAY;
+    const orders = db.orders.filter((o) => o.brandId === brand.id);
+    const events = db.events.filter((e) => e.brandId === brand.id);
     const byCampus = new Map<string, { orders: number; revenue: number }>();
-    for (const o of db.orders) {
-      if (
-        o.brandId !== brand.id ||
-        Date.parse(o.placedAt) < since ||
-        o.status === "declined" ||
-        o.status === "cancelled"
-      )
-        continue;
+    for (const o of orders) {
+      if (!counts(o) || !inRange(o.placedAt, range)) continue;
       const buyer = db.users.find((u) => u.id === o.buyerId);
       const cid = buyer?.campusId ?? o.fulfilment.campusId;
       const c = byCampus.get(cid) ?? { orders: 0, revenue: 0 };
       c.orders += 1;
-      c.revenue += o.subtotalKobo - o.discountKobo;
+      c.revenue += o.totalKobo;
       byCampus.set(cid, c);
     }
-    const products = db.products.filter((p) => p.brandId === brand.id);
     return {
-      period,
-      views,
-      viewsPrev: sum(prev, "views"),
-      addToBag,
-      addToBagRate: views ? (addToBag / views) * 100 : 0,
-      orders,
-      conversion: views ? (orders / views) * 100 : 0,
-      series: cur,
-      hourly,
-      topCampuses: [...byCampus.entries()]
+      stats: productStats({
+        orders,
+        events,
+        products: db.products.filter((p) => p.brandId === brand.id),
+        range,
+      }),
+      hourly: hourlyViews(events, range),
+      campuses: [...byCampus.entries()]
         .map(([campusId, v]) => ({
           campusId,
           name: db.campuses.find((c) => c.id === campusId)?.shortName ?? "Other",
           orders: v.orders,
           revenueKobo: v.revenue,
         }))
-        .sort((a, b) => b.orders - a.orders)
-        .slice(0, 6),
-      topProducts: products
-        .map((p) => ({
-          product: clone(p),
-          views: Math.round(p.viewCount * (days / 90)),
-          addToBag: Math.round(p.salesCount * 1.6 * (days / 90)),
-        }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 6),
+        .sort((a, b) => b.orders - a.orders),
     };
   },
 
@@ -634,41 +521,32 @@ export const mockStudio: StudioService = {
     await commit("promos");
   },
 
-  async listPayouts() {
+  async getFinance() {
     await latency();
     const db = await getDb();
     const { brand } = await requireBrand(db);
-    const { availableKobo, pendingKobo } = balances(db, brand);
+    const orders = db.orders.filter((o) => o.brandId === brand.id);
+    const done = orders.filter((o) => o.status === "delivered");
+    const inProgress = ["confirmed", "preparing", "ready", "out_for_delivery"];
+    const now = new Date();
+    const byMonth = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      return {
+        month: new Intl.DateTimeFormat("en-NG", { month: "short" }).format(d),
+        amountKobo: done
+          .filter((o) => o.placedAt.slice(0, 7) === key)
+          .reduce((n, o) => n + o.totalKobo, 0),
+      };
+    });
     return {
-      availableKobo,
-      pendingKobo,
-      payouts: clone(
-        db.payouts
-          .filter((p) => p.brandId === brand.id)
-          .sort((a, b) => Date.parse(b.at) - Date.parse(a.at)),
-      ),
+      earnedKobo: done.reduce((n, o) => n + o.totalKobo, 0),
+      pendingKobo: orders
+        .filter((o) => inProgress.includes(o.status))
+        .reduce((n, o) => n + o.totalKobo, 0),
+      completedOrders: done.length,
+      byMonth,
+      payoutAccount: clone(brand.payoutAccount),
     };
-  },
-
-  async requestPayout() {
-    await latency(1.2);
-    const db = await getDb();
-    const { brand } = await requireBrand(db);
-    if (!brand.payoutAccount) throw new ServiceError("CONFLICT", "Add a payout account first.");
-    const { availableKobo } = balances(db, brand);
-    if (availableKobo < 100_000)
-      throw new ServiceError("CONFLICT", "You need at least ₦1,000 available to request a payout.");
-    // BACKEND-SEAM: payouts API (Paystack transfers). DEMO: no money moves.
-    const payout = {
-      id: newId("po"),
-      brandId: brand.id,
-      amountKobo: availableKobo,
-      status: "processing" as const,
-      at: new Date().toISOString(),
-      reference: `PAY-${Date.now().toString(36).toUpperCase().slice(-6)}`,
-    };
-    db.payouts.push(payout);
-    await commit("payouts");
-    return clone(payout);
   },
 };

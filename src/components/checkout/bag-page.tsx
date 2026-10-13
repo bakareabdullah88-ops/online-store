@@ -1,5 +1,7 @@
 "use client";
 
+import { pagePad } from "@/components/app/page-header";
+import { NavPageHeader } from "@/components/app/nav-header";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { BagContents, BagSummary } from "./bag-contents";
@@ -11,17 +13,16 @@ export function BagPage() {
     (g) => g.blockedReason || g.items.some((i) => i.unavailable || i.line.quantity > i.stock),
   );
   return (
-    <div className="container-page pt-6 md:pt-10">
-      <header className="mb-8">
-        <p className="eyebrow text-muted">Bag</p>
-        <h1 className="mt-2 font-display text-display-lg">Your bag</h1>
-        {!isEmpty && (
-          <p className="mt-2 text-body text-muted">
-            {count} item{count === 1 ? "" : "s"} from {groups.length} brand
-            {groups.length === 1 ? "" : "s"}
-          </p>
-        )}
-      </header>
+    <div className={pagePad}>
+      <NavPageHeader
+        title="Your bag"
+        current="Bag"
+        description={
+          isEmpty
+            ? "Things you add from shops land here."
+            : `${count} item${count === 1 ? "" : "s"} from ${groups.length} shop${groups.length === 1 ? "" : "s"}`
+        }
+      />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="min-w-0 lg:col-span-7">
           <BagContents />
@@ -42,7 +43,7 @@ export function BagPage() {
                 Go to checkout
               </ButtonLink>
               <p className="mt-4 flex items-center gap-2 text-small text-muted">
-                <ShieldCheck className="size-4" /> Demo checkout: nothing is charged.
+                <ShieldCheck className="size-4" /> You pay the seller when you get your order.
               </p>
             </div>
           </aside>

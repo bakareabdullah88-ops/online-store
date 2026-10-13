@@ -1,24 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
-import { Bike, MapPin, RotateCcw, Star } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Compass, Eye, MessageCircle, Receipt, RotateCcw, Star, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { NavPageHeader } from "@/components/app/nav-header";
+import { paymentTag, statusTag } from "@/components/studio/orders-board";
+import { DataTable, FilterMenu, type Column } from "@/components/table/data-table";
+import { TableEmpty } from "@/components/table/empty";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { spring, stagger } from "@/design/motion";
-import { etaSeconds, isActive } from "@/domain/orders";
+import { Dialog } from "@/components/ui/sheet";
+import { canBuyerCancel, isActive } from "@/domain/orders";
 import { formatNaira } from "@/domain/money";
 import { formatDate, formatRelative } from "@/lib/format";
 import { useNow } from "@/lib/hooks";
-import { useMyOrders } from "@/queries/orders";
+import { useStartThread } from "@/queries/inbox";
+import { useCancelOrder, useMyOrders } from "@/queries/orders";
+import { errorMessage } from "@/services/errors";
 import type { Order } from "@/services/types";
-import { OrderProgress } from "./order-timeline";
+import { toast } from "@/stores/toast";
 import { ReviewDialog } from "./review-dialog";
-import { StatusPill } from "./status-pill";
 import { useReorder } from "./use-reorder";
 
 export function formatEta(seconds: number) {
@@ -36,190 +37,244 @@ export function etaLine(order: Order, eta: number | null) {
     : `Arriving in ${formatEta(eta)}`;
 }
 
-export function OrderCard({ order, index = 0 }: { order: Order; index?: number }) {
-  const now = useNow(1000);
+type Tab = "all" | "active" | "past";
+
+/** Your orders as a table (image 4); each row opens live tracking. */
+export function OrdersList() {
+  const { data, isPending } = useMyOrders();
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/orders";
+  const now = useNow(30_000);
   const reorder = useReorder();
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const active = isActive(order.status);
-  const eta = now ? etaSeconds(order, now) : null;
-  const units = order.items.reduce((n, i) => n + i.quantity, 0);
+  const startThread = useStartThread();
+  const cancel = useCancelOrder();
+  const [q, setQ] = useState("");
+  const [reviewing, setReviewing] = useState<Order | null>(null);
+  const [cancelling, setCancelling] = useState<Order | null>(null);
+  const raw = params.get("tab");
+  const tab: Tab = raw === "active" || raw === "past" ? raw : "all";
 
-  return (
-    <motion.li
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ ...spring.smooth, delay: stagger(index) }}
-      className="relative rounded-lg bg-surface hairline transition-shadow hover:shadow-md"
-    >
-      <Link
-        href={`/orders/${order.id}`}
-        className="block p-4 md:p-5"
-        aria-label={`Order ${order.code} from ${order.brandName}`}
-      >
-        <div className="flex items-start gap-3">
-          <span className="size-10 shrink-0 overflow-hidden rounded-full">
-            <AppImage image={order.brandLogo} alt="" variant="logo" name={order.brandName} />
+  const orders = useMemo(
+    () => [...(data ?? [])].sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)),
+    [data],
+  );
+  const rows = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    return orders.filter(
+      (o) =>
+        (tab === "all" || (tab === "active" ? isActive(o.status) : !isActive(o.status))) &&
+        (!t ||
+          o.code.toLowerCase().includes(t) ||
+          o.brandName.toLowerCase().includes(t) ||
+          o.items.some((i) => i.name.toLowerCase().includes(t))),
+    );
+  }, [orders, q, tab]);
+  const activeCount = orders.filter((o) => isActive(o.status)).length;
+
+  const message = (o: Order) =>
+    void startThread.mutateAsync({ brandId: o.brandId }).then(
+      (t) => router.push(`/messages?thread=${t.id}`),
+      (e) => toast.error(errorMessage(e)),
+    );
+
+  const columns: Column<Order>[] = [
+    {
+      key: "code",
+      header: "Order",
+      csv: (o) => o.code,
+      cell: (o) => <span className="font-mono font-medium whitespace-nowrap">{o.code}</span>,
+    },
+    {
+      key: "shop",
+      header: "Shop",
+      csv: (o) => o.brandName,
+      cell: (o) => (
+        <span className="inline-flex items-center gap-2 rounded-full bg-surface py-1 pr-3 pl-1 shadow-xs ring-1 ring-line">
+          <span className="size-6 overflow-hidden rounded-full">
+            <AppImage image={o.brandLogo} alt="" variant="logo" name={o.brandName} />
           </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className="truncate text-body font-semibold">{order.brandName}</p>
-              <StatusPill status={order.status} method={order.fulfilment.method} />
-            </div>
-            <p className="mt-1 flex items-center gap-1.5 text-small text-muted">
-              {order.fulfilment.method === "delivery" ? (
-                <Bike className="size-3.5" />
-              ) : (
-                <MapPin className="size-3.5" />
-              )}
-              <span className="font-mono">{order.code}</span>
-              <span aria-hidden>·</span>
-              {now
-                ? active
-                  ? formatRelative(order.placedAt, now)
-                  : formatDate(order.placedAt, { year: true })
-                : " "}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="font-mono text-small font-medium tabular">
-              {formatNaira(order.totalKobo)}
-            </p>
-            <p className="text-small text-muted">
-              {units} item{units === 1 ? "" : "s"}
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          {order.items.slice(0, 4).map((it) => (
-            <span key={it.productId + it.variantKey} className="size-12 overflow-hidden rounded-sm">
-              <AppImage image={it.image} alt="" />
-            </span>
-          ))}
-          {order.items.length > 4 && (
-            <span className="font-mono text-small text-muted">+{order.items.length - 4}</span>
-          )}
-        </div>
-        {active && (
-          <div className="mt-4">
-            <OrderProgress order={order} />
-            <p className="mt-2 text-small text-muted">{etaLine(order, eta)}</p>
-          </div>
-        )}
-      </Link>
-      {order.status === "delivered" && (
-        <div className="flex flex-wrap gap-2 border-t border-line px-4 py-3 md:px-5">
-          <Button
-            size="sm"
-            variant="secondary"
-            leadingIcon={<RotateCcw className="size-4" />}
-            onClick={() => void reorder(order)}
-          >
-            Reorder
-          </Button>
-          {!order.reviewed && (
-            <Button
-              size="sm"
-              variant="ghost"
-              leadingIcon={<Star className="size-4" />}
-              onClick={() => setReviewOpen(true)}
-            >
-              Rate &amp; review
-            </Button>
-          )}
-        </div>
-      )}
-      {order.status === "delivered" && (
-        <ReviewDialog order={order} open={reviewOpen} onOpenChange={setReviewOpen} />
-      )}
-    </motion.li>
-  );
-}
-
-export function OrdersSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <ul className="flex flex-col gap-3" aria-hidden>
-      {Array.from({ length: count }, (_, i) => (
-        <li key={i} className="rounded-lg bg-surface p-5 hairline">
-          <div className="flex items-start gap-3">
-            <Skeleton className="size-10" rounded="full" />
-            <div className="flex-1">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="mt-2 h-3.5 w-28" />
-            </div>
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <div className="mt-4 flex gap-2">
-            {[0, 1, 2].map((k) => (
-              <Skeleton key={k} className="size-12" />
-            ))}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-export function OrdersList({ embedded = false }: { embedded?: boolean }) {
-  const { data, isPending, isError, refetch } = useMyOrders();
-  const [tab, setTab] = useState<"active" | "past">("active");
-  const activeOrders = (data ?? []).filter((o) => isActive(o.status));
-  const past = (data ?? []).filter((o) => !isActive(o.status));
-  const shown = tab === "active" ? activeOrders : past;
-  const effectiveTab =
-    !isPending && activeOrders.length === 0 && tab === "active" && past.length > 0 ? "past" : tab;
-  const list = effectiveTab === tab ? shown : past;
+          <span className="max-w-36 truncate font-medium">{o.brandName}</span>
+        </span>
+      ),
+    },
+    {
+      key: "items",
+      header: "Items",
+      csv: (o) => o.items.map((i) => `${i.quantity}x ${i.name}`).join("; "),
+      cell: (o) => (
+        <span className="max-w-44 truncate text-ink-2">
+          {o.items[0]?.name}
+          {o.items.length > 1 ? ` +${o.items.length - 1} more` : ""}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      csv: (o) => o.placedAt,
+      cell: (o) => (
+        <span className="whitespace-nowrap text-ink-2">
+          {now ? formatRelative(o.placedAt, now) : formatDate(o.placedAt)}
+        </span>
+      ),
+    },
+    {
+      key: "total",
+      header: "Amount",
+      align: "right",
+      csv: (o) => o.totalKobo / 100,
+      cell: (o) => <span className="font-semibold tabular">{formatNaira(o.totalKobo)}</span>,
+    },
+    {
+      key: "payment",
+      header: "Payment",
+      csv: (o) => `${o.payment.method} ${o.payment.status}`,
+      cell: paymentTag,
+    },
+    { key: "status", header: "Status", csv: (o) => o.status, cell: statusTag },
+  ];
 
   return (
     <div>
-      {!embedded && (
-        <header className="mb-6">
-          <p className="eyebrow text-muted">Orders</p>
-          <h1 className="mt-2 font-display text-display-lg">Your orders</h1>
-        </header>
-      )}
-      <Tabs
-        value={effectiveTab}
-        onValueChange={(v) => setTab(v as "active" | "past")}
-        variant="pill"
-      >
-        <TabsList label="Order status">
-          <TabsTrigger value="active" count={activeOrders.length}>
-            Active
-          </TabsTrigger>
-          <TabsTrigger value="past" count={past.length}>
-            Past
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value={effectiveTab} className="mt-6">
-          {isError ? (
-            <EmptyState
-              compact
-              illustration="error"
-              title="Couldn't load your orders"
-              action={<Button onClick={() => void refetch()}>Try again</Button>}
-            />
-          ) : isPending ? (
-            <OrdersSkeleton />
-          ) : list.length === 0 ? (
-            <EmptyState
-              illustration="orders"
-              title={effectiveTab === "active" ? "No orders on the way" : "No past orders yet"}
-              body="When you order from a campus brand, you'll track it here, live."
-              action={<ButtonLink href="/explore">Find something</ButtonLink>}
+      <NavPageHeader
+        title="Orders"
+        description={
+          activeCount
+            ? `${activeCount} on the way. Open one to follow it live.`
+            : "Everything you've ordered, newest first."
+        }
+        actions={
+          <ButtonLink
+            href="/explore"
+            variant="secondary"
+            leadingIcon={<Compass className="size-4" />}
+          >
+            Discover
+          </ButtonLink>
+        }
+      />
+      <DataTable
+        label="Your orders"
+        loading={isPending}
+        rows={rows}
+        columns={columns}
+        getId={(o) => o.id}
+        rowLabel={(o) => `order ${o.code}`}
+        exportName="my-orders"
+        onRowClick={(o) => router.push(`/orders/${o.id}`)}
+        search={{ value: q, onChange: setQ, placeholder: "Search orders…" }}
+        filters={
+          <FilterMenu<Tab>
+            label="All orders"
+            value={tab}
+            onChange={(v) =>
+              router.replace(v === "all" ? pathname : `${pathname}?tab=${v}`, { scroll: false })
+            }
+            options={[
+              { value: "all", label: "All orders" },
+              { value: "active", label: `On the way (${activeCount})` },
+              { value: "past", label: "Completed or closed" },
+            ]}
+          />
+        }
+        rowActions={(o) => [
+          { label: "Track order", icon: <Eye />, href: `/orders/${o.id}` },
+          { label: "Message the shop", icon: <MessageCircle />, onSelect: message },
+          {
+            label: "Rate your items",
+            icon: <Star />,
+            hidden: o.status !== "delivered",
+            onSelect: setReviewing,
+          },
+          {
+            label: "Order again",
+            icon: <RotateCcw />,
+            hidden: isActive(o.status),
+            onSelect: (x) => void reorder(x),
+          },
+          {
+            label: "Cancel order",
+            icon: <X />,
+            danger: true,
+            hidden: !canBuyerCancel(o),
+            onSelect: setCancelling,
+          },
+        ]}
+        card={(o) => (
+          <div className="flex items-center gap-3">
+            <span className="size-11 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+              <AppImage
+                image={o.items[0]?.image}
+                alt=""
+                name={o.items[0]?.name ?? o.brandName}
+                sizes="44px"
+              />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate font-medium">{o.brandName}</span>
+                {statusTag(o)}
+              </div>
+              <div className="mt-1">{paymentTag(o)}</div>
+              <p className="mt-1 truncate text-[12.5px] text-muted">
+                {o.code} · {now ? formatRelative(o.placedAt, now) : ""} ·{" "}
+                <b className="font-semibold text-ink">{formatNaira(o.totalKobo)}</b>
+              </p>
+            </div>
+          </div>
+        )}
+        empty={
+          orders.length === 0 ? (
+            <TableEmpty
+              icon={Receipt}
+              title="No orders yet"
+              body="When you order from a shop on your campus, you'll follow it here from placed to delivered."
+              action={
+                <ButtonLink href="/explore" leadingIcon={<Compass className="size-4" />}>
+                  Discover shops
+                </ButtonLink>
+              }
             />
           ) : (
-            <ul className="flex flex-col gap-3">
-              <AnimatePresence initial={false}>
-                {list.map((o, i) => (
-                  <OrderCard key={o.id} order={o} index={i} />
-                ))}
-              </AnimatePresence>
-            </ul>
-          )}
-        </TabsContent>
-      </Tabs>
+            <TableEmpty icon={Receipt} title="Nothing here" body="No orders match this filter." />
+          )
+        }
+      />
+      {reviewing && (
+        <ReviewDialog order={reviewing} open onOpenChange={(v) => !v && setReviewing(null)} />
+      )}
+      <Dialog
+        open={!!cancelling}
+        onOpenChange={(v) => !v && setCancelling(null)}
+        title={`Cancel order ${cancelling?.code ?? ""}?`}
+        description="The shop hasn't accepted it yet, so you can still cancel."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCancelling(null)}>
+              Keep it
+            </Button>
+            <Button
+              variant="danger"
+              loading={cancel.isPending}
+              onClick={() =>
+                cancelling &&
+                cancel.mutate(cancelling.id, {
+                  onSuccess: () => {
+                    setCancelling(null);
+                    toast("Order cancelled");
+                  },
+                  onError: (e) => toast.error(errorMessage(e)),
+                })
+              }
+            >
+              Cancel order
+            </Button>
+          </>
+        }
+      >
+        <p className="text-small text-muted">The shop will be told straight away.</p>
+      </Dialog>
     </div>
   );
 }

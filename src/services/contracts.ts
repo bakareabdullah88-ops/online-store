@@ -4,9 +4,11 @@
  */
 import type { Kobo } from "@/domain/money";
 import type { CheckoutQuote } from "@/domain/checkout";
+import type { BuyerDashboard, DayRange, ProductStat, SellerDashboard } from "@/domain/analytics";
 import type {
   CheckoutInput,
   CreateBrandInput,
+  DeleteAccountInput,
   PlaceInput,
   ProductInput,
   ProfileInput,
@@ -20,7 +22,6 @@ import type {
 import type {
   AppNotification,
   Brand,
-  BrandMetric,
   Campus,
   CategoryId,
   ID,
@@ -28,7 +29,6 @@ import type {
   Order,
   OrderStatus,
   Page,
-  Payout,
   Product,
   ProductQuery,
   ProductWithBrand,
@@ -38,7 +38,6 @@ import type {
   SavedPlace,
   Thread,
   User,
-  WalletTransaction,
 } from "./types";
 
 export interface AuthService {
@@ -46,11 +45,11 @@ export interface AuthService {
   getSession(): Promise<User | null>;
   signUp(input: SignUpInput): Promise<User>;
   signIn(input: SignInInput): Promise<User>;
-  /** One-click demo login. */
-  signInDemo(kind: "buyer" | "seller"): Promise<User>;
   signOut(): Promise<void>;
-  /** Demo: always resolves; real backend sends an email. */
+  /** Emails a reset link. BACKEND-SEAM: needs transactional email (see config/features). */
   requestPasswordReset(input: ResetInput): Promise<{ sent: true }>;
+  /** Deletes the account, its shop and listings. Orders stay in the other party's history. */
+  deleteAccount(input: DeleteAccountInput): Promise<void>;
   /** Onboarding + profile settings. */
   updateProfile(input: ProfileInput): Promise<User>;
   updateNotificationPrefs(prefs: Partial<User["notificationPrefs"]>): Promise<User>;
@@ -102,6 +101,8 @@ export interface OrderService {
   cancelOrder(id: ID): Promise<Order>;
   reviewOrderItem(input: ReviewInput): Promise<Review>;
   myReviews(): Promise<Review[]>;
+  /** Spending dashboard for the signed-in buyer. */
+  getDashboard(range: DayRange): Promise<BuyerDashboard>;
 }
 
 export interface NotificationService {
@@ -117,34 +118,11 @@ export interface MessageService {
   send(input: { threadId: ID; body: string; as: "buyer" | "brand" }): Promise<Thread>;
 }
 
-export interface WalletService {
-  getWallet(): Promise<{ balanceKobo: Kobo; transactions: WalletTransaction[] }>;
-  /** DEMO: no money moves. */
-  topUp(amountKobo: Kobo): Promise<{ balanceKobo: Kobo }>;
-}
-
 export interface PlacesService {
   list(): Promise<SavedPlace[]>;
   save(input: PlaceInput): Promise<SavedPlace>;
   remove(id: ID): Promise<void>;
 }
-
-export type StudioPeriod = "7d" | "30d" | "90d";
-
-export type StudioOverview = {
-  period: StudioPeriod;
-  revenueKobo: Kobo;
-  revenuePrevKobo: Kobo;
-  orders: number;
-  ordersPrev: number;
-  conversion: number;
-  conversionPrev: number;
-  rating: number;
-  ratingCount: number;
-  series: BrandMetric[];
-  topProducts: { product: Product; unitsSold: number; revenueKobo: Kobo }[];
-  recentOrders: Order[];
-};
 
 export type SetupStep = { id: string; label: string; done: boolean; href: string };
 
@@ -157,18 +135,22 @@ export type Customer = {
   lastOrderAt: string;
 };
 
-export type StudioAnalytics = {
-  period: StudioPeriod;
-  views: number;
-  viewsPrev: number;
-  addToBag: number;
-  addToBagRate: number;
-  orders: number;
-  conversion: number;
-  series: BrandMetric[];
+export type Finance = {
+  /** Completed (delivered) orders, all time. */
+  earnedKobo: Kobo;
+  /** Accepted orders still in progress. */
+  pendingKobo: Kobo;
+  completedOrders: number;
+  /** Completed order value by month, oldest first (last 6 months). */
+  byMonth: { month: string; amountKobo: Kobo }[];
+  payoutAccount: Brand["payoutAccount"];
+};
+
+export type ProductAnalytics = {
+  stats: ProductStat[];
+  /** Product views by hour of day. */
   hourly: number[];
-  topCampuses: { campusId: ID; name: string; orders: number; revenueKobo: Kobo }[];
-  topProducts: { product: Product; views: number; addToBag: number }[];
+  campuses: { campusId: ID; name: string; orders: number; revenueKobo: Kobo }[];
 };
 
 export interface StudioService {
@@ -177,8 +159,8 @@ export interface StudioService {
   getMyBrand(): Promise<Brand | null>;
   updateBrand(input: UpdateBrandInput): Promise<Brand>;
   getSetup(): Promise<SetupStep[]>;
-  getOverview(period: StudioPeriod): Promise<StudioOverview>;
-  getAnalytics(period: StudioPeriod): Promise<StudioAnalytics>;
+  getDashboard(range: DayRange): Promise<SellerDashboard>;
+  getProductAnalytics(range: DayRange): Promise<ProductAnalytics>;
 
   listProducts(query?: {
     q?: string;
@@ -203,8 +185,7 @@ export interface StudioService {
   updatePromo(id: ID, input: Partial<PromoInput>): Promise<Promo>;
   deletePromo(id: ID): Promise<void>;
 
-  listPayouts(): Promise<{ availableKobo: Kobo; pendingKobo: Kobo; payouts: Payout[] }>;
-  requestPayout(): Promise<Payout>;
+  getFinance(): Promise<Finance>;
 }
 
 export interface MediaService {
@@ -214,10 +195,8 @@ export interface MediaService {
   deleteImage(id: ID): Promise<void>;
 }
 
-export interface DemoService {
-  /** Wipes IndexedDB and reseeds. */
-  reset(): Promise<void>;
-  /** Notifies when data changed in another tab. BACKEND-SEAM: realtime channel. */
+export interface RealtimeService {
+  /** Notifies when data changed elsewhere (another tab today). BACKEND-SEAM: realtime channel. */
   subscribe(cb: () => void): () => void;
 }
 
@@ -228,9 +207,8 @@ export interface Services {
   orders: OrderService;
   notifications: NotificationService;
   messages: MessageService;
-  wallet: WalletService;
   places: PlacesService;
   studio: StudioService;
   media: MediaService;
-  demo: DemoService;
+  realtime: RealtimeService;
 }

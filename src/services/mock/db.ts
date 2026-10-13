@@ -1,14 +1,12 @@
 import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
 import { generateSeed, type DbSnapshot } from "./seed";
-import { coverFor, motifCovers, motifPhotos, photosFor } from "./seed/photos";
-import { hashString } from "@/lib/random";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
  * One key per collection keeps writes small; the whole dataset is < 1MB.
  */
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export type CollectionName = keyof DbSnapshot;
 
@@ -22,42 +20,55 @@ const COLLECTIONS: CollectionName[] = [
   "promos",
   "notifications",
   "threads",
-  "wallet",
   "places",
-  "payouts",
-  "metrics",
+  "events",
 ];
+
+/** Collections from v1 that no longer exist. */
+const RETIRED = ["col:wallet", "col:payouts", "col:metrics", "meta:photos"];
 
 /** Ordered migrations: key = version being migrated TO. */
 const migrations: Record<number, (db: DbSnapshot) => void> = {
-  // 2: (db) => { for (const p of db.products) p.newField ??= defaultValue },
+  2: purgeSampleData,
 };
+
+const isSampleUser = (id: string) =>
+  id.startsWith("u_demo_") || id.startsWith("u_owner_") || /^u_c\d+$/.test(id);
+
+/**
+ * v1 shipped with sample shops, products and accounts. v2 keeps only what
+ * people created themselves: their accounts, shops, products and the orders,
+ * messages and reviews between real accounts.
+ */
+export function purgeSampleData(db: DbSnapshot) {
+  const users = db.users.filter((u) => !isSampleUser(u.id));
+  const userIds = new Set(users.map((u) => u.id));
+  const brands = db.brands.filter((b) => userIds.has(b.ownerId));
+  const brandIds = new Set(brands.map((b) => b.id));
+  const products = db.products.filter((p) => brandIds.has(p.brandId));
+  const productIds = new Set(products.map((p) => p.id));
+  const realOrder = (o: { buyerId: string; brandId: string }) =>
+    userIds.has(o.buyerId) && brandIds.has(o.brandId);
+  for (const u of users) {
+    u.followingBrandIds = u.followingBrandIds.filter((id) => brandIds.has(id));
+    u.wishlistProductIds = u.wishlistProductIds.filter((id) => productIds.has(id));
+    delete (u as { isDemo?: boolean }).isDemo;
+  }
+  db.users = users;
+  db.brands = brands;
+  db.products = products;
+  db.orders = db.orders.filter(realOrder);
+  db.reviews = db.reviews.filter((r) => userIds.has(r.userId) && brandIds.has(r.brandId));
+  db.promos = db.promos.filter((p) => p.brandId !== null && brandIds.has(p.brandId));
+  db.threads = db.threads.filter((t) => userIds.has(t.buyerId) && brandIds.has(t.brandId));
+  db.notifications = db.notifications.filter((n) => userIds.has(n.userId));
+  db.places = db.places.filter((p) => userIds.has(p.userId));
+  db.events = [];
+}
 
 export function migrate(db: DbSnapshot, from: number, to: number = SCHEMA_VERSION): DbSnapshot {
   for (let v = from + 1; v <= to; v++) migrations[v]?.(db);
   return db;
-}
-
-/** Changes whenever the photo set changes, so saved demo data picks up new photos. */
-const PHOTO_KEY = hashString(JSON.stringify([motifPhotos, motifCovers, 2]));
-
-/** Swaps generated art for real photos where we have them. Leaves uploads and URLs alone. */
-export function applyPhotos(db: DbSnapshot) {
-  for (const p of db.products) {
-    const first = p.images[0];
-    if (first?.kind !== "art" || !p.images.every((i) => i.kind === "art")) continue;
-    p.images = photosFor(first.motif, p.id, p.images.length, p.category) ?? p.images;
-  }
-  for (const b of db.brands) {
-    if (b.cover.kind === "art") b.cover = coverFor(b.cover.motif) ?? b.cover;
-  }
-  const firstImage = new Map(db.products.map((p) => [p.id, p.images[0]]));
-  for (const o of db.orders) {
-    for (const it of o.items) {
-      const img = firstImage.get(it.productId);
-      if (it.image.kind === "art" && img) it.image = img;
-    }
-  }
 }
 
 const hasIdb = () => typeof indexedDB !== "undefined";
@@ -85,7 +96,6 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     const seed = await generateSeed();
     await writeAll(seed);
     await set("meta:version", SCHEMA_VERSION, store());
-    await set("meta:photos", PHOTO_KEY, store());
     sessionUserId = null;
     return seed;
   }
@@ -94,18 +104,18 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     store(),
   );
   const db = Object.fromEntries(COLLECTIONS.map((c, i) => [c, values[i] ?? []])) as DbSnapshot;
+  let session = sid ?? null;
   if (version < SCHEMA_VERSION) {
     migrate(db, version);
+    if (session && !db.users.some((u) => u.id === session)) {
+      session = null;
+      await del("session", store());
+    }
     await writeAll(db);
+    await Promise.all(RETIRED.map((k) => del(k, store())));
     await set("meta:version", SCHEMA_VERSION, store());
   }
-  const photoKey = (await getMany(["meta:photos"], store()))[0] as number | undefined;
-  if (photoKey !== PHOTO_KEY) {
-    applyPhotos(db);
-    await writeAll(db);
-    await set("meta:photos", PHOTO_KEY, store());
-  }
-  sessionUserId = sid ?? null;
+  sessionUserId = session;
   return db;
 }
 

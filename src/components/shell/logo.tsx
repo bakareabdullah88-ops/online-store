@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { KioskMark } from "@/components/app/kiosk-mark";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/cn";
 
-/** Wordmark: the name in the display face with a small mode-aware dot. */
+/** Mark tile plus the name. */
 export function Logo({
   className,
   href = "/",
@@ -15,16 +16,15 @@ export function Logo({
   return (
     <Link
       href={href}
-      className={cn("group inline-flex items-baseline gap-1.5 rounded-xs", className)}
+      className={cn("group inline-flex items-center gap-2 rounded-xs", className)}
       aria-label={`${brand.name} home`}
     >
-      <span className="font-display text-[1.75rem] leading-none tracking-[-0.02em] text-ink">
+      <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-on-primary shadow-sm transition-transform duration-300 group-hover:-rotate-6">
+        <KioskMark className="size-[18px]" />
+      </span>
+      <span className="text-[22px] leading-none font-bold tracking-[-0.03em] text-ink">
         {brand.name}
       </span>
-      <span
-        className="size-1.5 translate-y-[-2px] rounded-full bg-accent transition-transform duration-300 group-hover:scale-150"
-        aria-hidden
-      />
       {suffix && <span className="ml-1 eyebrow text-muted">{suffix}</span>}
     </Link>
   );

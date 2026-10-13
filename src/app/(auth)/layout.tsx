@@ -1,37 +1,16 @@
-import { ProductArt } from "@/components/art/product-art";
+import { BadgeCheck } from "lucide-react";
+import { AppPreview } from "@/components/landing/app-preview";
 import { Logo } from "@/components/shell/logo";
+
+const points = [
+  "One account to buy and to sell",
+  "Pay on delivery or at pickup",
+  "Live order status from placed to delivered",
+];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(0,560px)] xl:grid-cols-[1fr_640px]">
-      <aside className="relative hidden overflow-hidden bg-canvas-sunk lg:block" aria-hidden>
-        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-3 p-3 opacity-95">
-          <div className="col-span-2 row-span-2 overflow-hidden rounded-lg">
-            <ProductArt motif="jacket" palette="sand" seed={3} className="size-full" />
-          </div>
-          <div className="overflow-hidden rounded-lg">
-            <ProductArt motif="cookie" palette="rose" seed={8} className="size-full" />
-          </div>
-          <div className="overflow-hidden rounded-lg">
-            <ProductArt motif="earring" palette="plum" seed={5} className="size-full" />
-          </div>
-          <div className="overflow-hidden rounded-lg">
-            <ProductArt motif="poster" palette="sea" seed={2} className="size-full" />
-          </div>
-          <div className="overflow-hidden rounded-lg">
-            <ProductArt motif="drink" palette="ochre" seed={6} className="size-full" />
-          </div>
-          <div className="overflow-hidden rounded-lg">
-            <ProductArt motif="book" palette="sage" seed={1} className="size-full" />
-          </div>
-        </div>
-        <div className="absolute inset-x-6 bottom-6 rounded-lg bg-surface/92 p-6 backdrop-blur-md">
-          <p className="font-display text-display-sm text-balance">
-            “I sold out my first drop in a weekend, all to people from my hall.”
-          </p>
-          <p className="mt-3 text-small text-muted">Tolu, Àdìrẹ Lab · UNILAG</p>
-        </div>
-      </aside>
+    <div className="grid min-h-dvh bg-surface lg:grid-cols-[minmax(0,560px)_1fr] xl:grid-cols-[640px_1fr]">
       <div className="flex flex-col">
         <div className="flex h-16 items-center px-6 md:px-10">
           <Logo />
@@ -40,6 +19,30 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
       </div>
+      <aside
+        className="relative hidden overflow-hidden bg-canvas lg:flex lg:flex-col lg:justify-center lg:p-10"
+        aria-label="About Kiosk"
+      >
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,color-mix(in_oklab,var(--chart-mint)_40%,transparent),transparent_70%),radial-gradient(50%_45%_at_100%_100%,#ffe6cc,transparent_70%)] opacity-70 dark:opacity-20"
+          aria-hidden
+        />
+        <div className="relative">
+          <h2 className="max-w-md text-[34px] leading-tight font-bold tracking-[-0.035em]">
+            The campus marketplace, run by students.
+          </h2>
+          <ul className="mt-5 flex flex-col gap-2">
+            {points.map((p) => (
+              <li key={p} className="flex items-center gap-2.5 text-[15px] text-ink-2">
+                <BadgeCheck className="size-[18px] text-chart-green" /> {p}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-10 -mr-40">
+            <AppPreview />
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

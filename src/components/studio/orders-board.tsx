@@ -1,98 +1,32 @@
 "use client";
 
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Bike, Check, Eye, MapPin, Printer, Receipt as ReceiptIcon, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Bike, Columns3, List, MapPin, Printer } from "lucide-react";
+import { NavPageHeader } from "@/components/app/nav-header";
+import {
+  DataTable,
+  FilterMenu,
+  PersonChip,
+  StatusTag,
+  type Column,
+} from "@/components/table/data-table";
+import { TableEmpty } from "@/components/table/empty";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Select } from "@/components/ui/overlay";
 import { Dialog, ResponsiveSheet } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SegmentedControl } from "@/components/ui/tabs";
 import { AppImage } from "@/components/ui/app-image";
 import { StatusPill } from "@/components/orders/status-pill";
 import { OrderTimeline } from "@/components/orders/order-timeline";
 import { brand as appBrand } from "@/config/brand";
-import { spring } from "@/design/motion";
-import { canTransition, nextSellerStatus, statusLabel, stepsFor } from "@/domain/orders";
+import { canTransition, isActive, nextSellerStatus, statusLabel } from "@/domain/orders";
 import { formatNaira } from "@/domain/money";
 import { formatDate, formatRelative, formatTime } from "@/lib/format";
 import { useMounted, useNow } from "@/lib/hooks";
-import { cn } from "@/lib/cn";
 import { useCampuses } from "@/queries/catalog";
-import { useMyBrand, useStudioOrders, useUpdateOrderStatus } from "@/queries/studio";
+import { useStudioOrders, useUpdateOrderStatus } from "@/queries/studio";
 import { errorMessage } from "@/services/errors";
 import type { Order, OrderStatus } from "@/services/types";
-import { usePrefs } from "@/stores/ui";
 import { toast } from "@/stores/toast";
-import { StudioHeaderBlock } from "./studio-shell";
-import { TableScroll } from "@/components/ui/table-scroll";
-
-type ColumnId = "new" | "accepted" | "preparing" | "ready" | "done";
-
-const columns: { id: ColumnId; title: string; hint: string }[] = [
-  { id: "new", title: "New", hint: "Accept or decline" },
-  { id: "accepted", title: "Accepted", hint: "Start preparing" },
-  { id: "preparing", title: "Preparing", hint: "Pack it up" },
-  { id: "ready", title: "Ready / out", hint: "Hand over" },
-  { id: "done", title: "Completed", hint: "Most recent" },
-];
-
-function columnOf(o: Order): ColumnId | null {
-  switch (o.status) {
-    case "placed":
-      return "new";
-    case "confirmed":
-      return "accepted";
-    case "preparing":
-      return "preparing";
-    case "ready":
-    case "out_for_delivery":
-      return "ready";
-    case "delivered":
-      return "done";
-    default:
-      return null;
-  }
-}
-
-function targetStatus(o: Order, col: ColumnId): OrderStatus | null {
-  switch (col) {
-    case "accepted":
-      return "confirmed";
-    case "preparing":
-      return "preparing";
-    case "ready":
-      return o.fulfilment.method === "pickup" ? "ready" : "out_for_delivery";
-    case "done":
-      return "delivered";
-    default:
-      return null;
-  }
-}
-
-/** Forward path from the current status to `to` along the happy path. */
-function pathTo(o: Order, to: OrderStatus): OrderStatus[] | null {
-  const steps = stepsFor(o.fulfilment.method);
-  const a = steps.indexOf(o.status);
-  const b = steps.indexOf(to);
-  if (a < 0 || b <= a) return null;
-  return steps.slice(a + 1, b + 1);
-}
 
 function actionLabel(o: Order, s: OrderStatus) {
   switch (s) {
@@ -131,180 +65,6 @@ function useAdvance() {
     }
   };
   return { advance, pending: update.isPending };
-}
-
-function OrderCardContent({
-  o,
-  now,
-  dragging,
-}: {
-  o: Order;
-  now: number | null;
-  dragging?: boolean;
-}) {
-  const units = o.items.reduce((n, i) => n + i.quantity, 0);
-  return (
-    <div
-      className={cn(
-        "rounded-md bg-surface p-3.5 hairline",
-        dragging && "rotate-[1.5deg] shadow-lg ring-2 ring-accent",
-      )}
-    >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="font-mono text-small font-semibold whitespace-nowrap">{o.code}</span>
-        <span className="truncate text-[12px] text-muted">
-          {now ? formatRelative(o.placedAt, now) : ""}
-        </span>
-      </div>
-      <p className="mt-1 truncate text-small text-ink-2">{o.buyerName}</p>
-      <div className="mt-2.5 flex items-center gap-1.5">
-        {o.items.slice(0, 3).map((it) => (
-          <span key={it.productId + it.variantKey} className="size-8 overflow-hidden rounded-xs">
-            <AppImage image={it.image} alt="" />
-          </span>
-        ))}
-        <span className="ml-auto flex items-center gap-1 text-[12px] text-muted">
-          {o.fulfilment.method === "delivery" ? (
-            <Bike className="size-3.5" />
-          ) : (
-            <MapPin className="size-3.5" />
-          )}
-          {units} · <span className="font-mono text-ink">{formatNaira(o.totalKobo)}</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function DraggableCard({
-  o,
-  now,
-  onOpen,
-  onAdvance,
-  busy,
-}: {
-  o: Order;
-  now: number | null;
-  onOpen: () => void;
-  onAdvance: (path: OrderStatus[]) => void;
-  busy: boolean;
-}) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: o.id,
-    data: { order: o },
-  });
-  const next = nextSellerStatus(o);
-  return (
-    <motion.li
-      layout
-      layoutId={`order-${o.id}`}
-      transition={spring.smooth}
-      className={cn("list-none", isDragging && "opacity-30")}
-    >
-      <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        role="button"
-        tabIndex={0}
-        aria-label={`Order ${o.code} from ${o.buyerName}. Press space to drag, or enter to open.`}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") onOpen();
-          listeners?.onKeyDown?.(e);
-        }}
-        onClick={onOpen}
-        className="cursor-grab touch-manipulation rounded-md outline-offset-2 active:cursor-grabbing"
-      >
-        <OrderCardContent o={o} now={now} />
-      </div>
-      {(next || o.status === "placed") && (
-        <div className="mt-1.5 flex gap-1.5">
-          {o.status === "placed" && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 flex-1 text-danger"
-              disabled={busy}
-              onClick={() => onAdvance(["declined"])}
-            >
-              Decline
-            </Button>
-          )}
-          {next && (
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 flex-1"
-              disabled={busy}
-              onClick={() => onAdvance([next])}
-            >
-              {actionLabel(o, next)}
-            </Button>
-          )}
-        </div>
-      )}
-    </motion.li>
-  );
-}
-
-function Column({
-  id,
-  title,
-  hint,
-  orders,
-  now,
-  onOpen,
-  onAdvance,
-  busy,
-}: {
-  id: ColumnId;
-  title: string;
-  hint: string;
-  orders: Order[];
-  now: number | null;
-  onOpen: (o: Order) => void;
-  onAdvance: (o: Order, path: OrderStatus[]) => void;
-  busy: boolean;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return (
-    <section
-      aria-label={`${title}, ${orders.length} orders`}
-      className="flex w-72 shrink-0 flex-col xl:w-auto xl:min-w-0 xl:flex-1"
-    >
-      <header className="mb-3 flex items-baseline justify-between gap-2 px-1 whitespace-nowrap">
-        <h2 className="text-small font-semibold">
-          {title} <span className="ml-1 font-mono text-muted">{orders.length}</span>
-        </h2>
-        <span className="truncate text-[12px] text-muted">{hint}</span>
-      </header>
-      <ul
-        ref={setNodeRef}
-        className={cn(
-          "flex min-h-40 flex-1 flex-col gap-3 rounded-lg p-2 transition-colors duration-200",
-          isOver ? "bg-accent-soft ring-2 ring-accent/40" : "bg-canvas-sunk",
-        )}
-      >
-        <AnimatePresence initial={false}>
-          {orders.map((o) => (
-            <DraggableCard
-              key={o.id}
-              o={o}
-              now={now}
-              onOpen={() => onOpen(o)}
-              onAdvance={(p) => onAdvance(o, p)}
-              busy={busy}
-            />
-          ))}
-        </AnimatePresence>
-        {orders.length === 0 && (
-          <li className="flex flex-1 items-center justify-center p-4 text-center text-[12px] text-muted">
-            Drop orders here
-          </li>
-        )}
-      </ul>
-    </section>
-  );
 }
 
 function Receipt({ o, campusName }: { o: Order; campusName: string }) {
@@ -375,7 +135,7 @@ function Receipt({ o, campusName }: { o: Order; campusName: string }) {
           </>
         )}
       </p>
-      <p className="mt-3 text-center">Thank you! · Demo receipt</p>
+      <p className="mt-3 text-center">Thank you!</p>
     </div>
   );
 }
@@ -507,218 +267,345 @@ function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => v
   );
 }
 
+type StatusFilter = "all" | "placed" | "active" | "ready" | "done" | "closed";
+type MethodFilter = "all" | "delivery" | "pickup";
+type WhenFilter = "all" | "today" | "7d" | "30d";
+
+const statusGroups: Record<Exclude<StatusFilter, "all">, (o: Order) => boolean> = {
+  placed: (o) => o.status === "placed",
+  active: (o) => o.status === "confirmed" || o.status === "preparing",
+  ready: (o) => o.status === "ready" || o.status === "out_for_delivery",
+  done: (o) => o.status === "delivered",
+  closed: (o) => o.status === "declined" || o.status === "cancelled",
+};
+
+export function statusTag(o: Order) {
+  const label = statusLabel(o.status, o.fulfilment.method);
+  switch (o.status) {
+    case "placed":
+      return <StatusTag tone="blue">New</StatusTag>;
+    case "confirmed":
+    case "preparing":
+      return <StatusTag tone="amber">{label}</StatusTag>;
+    case "ready":
+    case "out_for_delivery":
+      return <StatusTag tone="violet">{label}</StatusTag>;
+    case "delivered":
+      return <StatusTag tone="green">{label}</StatusTag>;
+    default:
+      return <StatusTag tone="red">{label}</StatusTag>;
+  }
+}
+
+export function paymentTag(o: Order) {
+  const how =
+    o.payment.method === "pay_on_pickup"
+      ? "At pickup"
+      : o.payment.method === "pay_on_delivery"
+        ? "On delivery"
+        : "Online";
+  if (o.status === "declined" || o.status === "cancelled")
+    return <StatusTag tone="grey">{how} · Void</StatusTag>;
+  return o.payment.status === "paid" ? (
+    <StatusTag tone="green">{how} · Paid</StatusTag>
+  ) : (
+    <StatusTag tone="amber">{how} · Due</StatusTag>
+  );
+}
+
+/** Shop orders as a table (image 4). Next steps are one click; details open in a drawer. */
 export function OrdersBoard() {
   const { data, isPending } = useStudioOrders();
-  const { data: brand } = useMyBrand();
-  const view = usePrefs((s) => s.studioOrdersView);
-  const setPrefs = usePrefs((s) => s.set);
-  const mounted = useMounted();
   const now = useNow(30_000);
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() ?? "/studio/orders";
-  const openId = params.get("order");
   const { advance, pending } = useAdvance();
-  const [dragging, setDragging] = useState<Order | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 6 } }),
-    useSensor(KeyboardSensor),
-  );
+  const raw = params.get("status");
+  const status = (raw && raw in statusGroups ? raw : "all") as StatusFilter;
+  const [method, setMethod] = useState<MethodFilter>("all");
+  const [when, setWhen] = useState<WhenFilter>("all");
+  const [q, setQ] = useState(params.get("q") ?? "");
+  const openId = params.get("order");
 
-  const orders = useMemo(() => data ?? [], [data]);
-  const open = orders.find((o) => o.id === openId) ?? null;
-  const setOpen = (o: Order | null) =>
-    router.replace(o ? `${pathname}?order=${o.id}` : pathname, { scroll: false });
-
-  const byColumn = useMemo(() => {
-    const map: Record<ColumnId, Order[]> = {
-      new: [],
-      accepted: [],
-      preparing: [],
-      ready: [],
-      done: [],
-    };
-    for (const o of orders) {
-      const c = columnOf(o);
-      if (c) map[c].push(o);
+  const setQuery = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(params.toString());
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null) next.delete(k);
+      else next.set(k, v);
     }
-    for (const k of Object.keys(map) as ColumnId[])
-      map[k].sort((a, b) => Date.parse(a.placedAt) - Date.parse(b.placedAt));
-    // Completed: only the most recent few, newest first.
-    map.done = map.done.sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)).slice(0, 6);
-    return map;
-  }, [orders]);
-
-  const onDragStart = (e: DragStartEvent) =>
-    setDragging((e.active.data.current?.order as Order) ?? null);
-  const onDragEnd = (e: DragEndEvent) => {
-    setDragging(null);
-    const o = e.active.data.current?.order as Order | undefined;
-    const col = e.over?.id as ColumnId | undefined;
-    if (!o || !col || columnOf(o) === col) return;
-    const to = targetStatus(o, col);
-    const path = to ? pathTo(o, to) : null;
-    if (!path) {
-      toast.error("Orders only move forward", {
-        description:
-          col === "new"
-            ? "An accepted order can't go back to New."
-            : "Use the buttons on the card to change its status.",
-      });
-      return;
-    }
-    void advance(o, path);
+    const s = next.toString();
+    router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false });
   };
 
-  const listRows = orders.filter((o) => statusFilter === "all" || o.status === statusFilter);
-  const currentView = mounted ? view : "board";
+  const orders = useMemo(
+    () => [...(data ?? [])].sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt)),
+    [data],
+  );
+  const open = orders.find((o) => o.id === openId) ?? null;
+  const counts = {
+    placed: orders.filter(statusGroups.placed).length,
+    active: orders.filter((o) => isActive(o.status)).length,
+  };
+
+  const rows = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    const since =
+      when === "all" || !now
+        ? 0
+        : when === "today"
+          ? new Date(now).setHours(0, 0, 0, 0)
+          : now - (when === "7d" ? 7 : 30) * 86_400_000;
+    return orders.filter(
+      (o) =>
+        (status === "all" || statusGroups[status](o)) &&
+        (method === "all" || o.fulfilment.method === method) &&
+        Date.parse(o.placedAt) >= since &&
+        (!term ||
+          o.code.toLowerCase().includes(term) ||
+          o.buyerName.toLowerCase().includes(term) ||
+          o.items.some((i) => i.name.toLowerCase().includes(term))),
+    );
+  }, [orders, q, status, method, when, now]);
+
+  const columns: Column<Order>[] = [
+    {
+      key: "code",
+      header: "Order",
+      csv: (o) => o.code,
+      cell: (o) => <span className="font-mono font-medium whitespace-nowrap">{o.code}</span>,
+    },
+    {
+      key: "buyer",
+      header: "Customer",
+      csv: (o) => o.buyerName,
+      cell: (o) => <PersonChip name={o.buyerName} />,
+    },
+    {
+      key: "items",
+      header: "Items",
+      csv: (o) => o.items.map((i) => `${i.quantity}x ${i.name}`).join("; "),
+      cell: (o) => (
+        <span className="flex items-center gap-2">
+          <span className="flex -space-x-2">
+            {o.items.slice(0, 3).map((it) => (
+              <span
+                key={it.productId + it.variantKey}
+                className="size-7 overflow-hidden rounded-lg ring-2 ring-surface"
+              >
+                <AppImage image={it.image} alt="" name={it.name} sizes="28px" />
+              </span>
+            ))}
+          </span>
+          <span className="max-w-36 truncate text-ink-2">
+            {o.items[0]?.name}
+            {o.items.length > 1 ? ` +${o.items.length - 1}` : ""}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: "method",
+      header: "Fulfilment",
+      csv: (o) => o.fulfilment.method,
+      cell: (o) => (
+        <span className="flex items-center gap-1.5 text-ink-2">
+          {o.fulfilment.method === "delivery" ? (
+            <Bike className="size-4 text-muted" />
+          ) : (
+            <MapPin className="size-4 text-muted" />
+          )}
+          {o.fulfilment.method === "delivery" ? "Delivery" : "Pickup"}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      csv: (o) => o.placedAt,
+      cell: (o) => (
+        <span className="whitespace-nowrap text-ink-2">
+          {now ? formatRelative(o.placedAt, now) : formatDate(o.placedAt)}
+        </span>
+      ),
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      align: "right",
+      csv: (o) => o.totalKobo / 100,
+      cell: (o) => <span className="font-semibold tabular">{formatNaira(o.totalKobo)}</span>,
+    },
+    {
+      key: "payment",
+      header: "Payment",
+      csv: (o) => `${o.payment.method} ${o.payment.status}`,
+      cell: paymentTag,
+    },
+    { key: "status", header: "Status", csv: (o) => o.status, cell: statusTag },
+    {
+      key: "next",
+      header: "Next step",
+      cell: (o) => {
+        const next = nextSellerStatus(o);
+        if (!next) return <span className="text-muted">–</span>;
+        return (
+          <Button
+            size="sm"
+            variant={o.status === "placed" ? "primary" : "secondary"}
+            disabled={pending}
+            onClick={(e) => {
+              e.stopPropagation();
+              void advance(o, [next]);
+            }}
+          >
+            {actionLabel(o, next)}
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
     <div>
-      <StudioHeaderBlock
-        eyebrow={brand?.name ?? "Orders"}
+      <NavPageHeader
         title="Orders"
-        description="Drag cards between columns, or use the buttons. Buyers are notified at every step."
-        actions={
-          <SegmentedControl
-            size="sm"
-            label="View"
-            value={currentView}
-            onChange={(v) => setPrefs({ studioOrdersView: v })}
-            options={[
-              { value: "board", label: "Board", icon: <Columns3 className="size-4" /> },
-              { value: "list", label: "List", icon: <List className="size-4" /> },
-            ]}
-          />
+        description={
+          counts.placed
+            ? `${counts.placed} new ${counts.placed === 1 ? "order needs" : "orders need"} you. Buyers are notified at every step.`
+            : "Accept, prepare and hand over. Buyers are notified at every step."
         }
       />
-      {isPending ? (
-        <div className="flex gap-4 overflow-hidden">
-          {columns.map((c) => (
-            <Skeleton key={c.id} className="h-96 w-72 shrink-0 md:flex-1" rounded="lg" />
-          ))}
-        </div>
-      ) : orders.length === 0 ? (
-        <EmptyState
-          illustration="orders"
-          title="No orders yet"
-          body="When students order from your shop, they land here. Share your shop link to get started."
-        />
-      ) : currentView === "board" ? (
-        <DndContext
-          sensors={sensors}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onDragCancel={() => setDragging(null)}
-        >
-          <div className="-mx-(--gutter) scrollbar-none flex gap-4 overflow-x-auto px-(--gutter) pb-4 md:-mx-8 md:px-8 xl:mx-0 xl:px-0">
-            {columns.map((c) => (
-              <Column
-                key={c.id}
-                {...c}
-                orders={byColumn[c.id]}
-                now={now}
-                onOpen={setOpen}
-                onAdvance={(o, p) => void advance(o, p)}
-                busy={pending}
-              />
-            ))}
-          </div>
-          <DragOverlay dropAnimation={{ duration: 220, easing: "cubic-bezier(0.22,1,0.36,1)" }}>
-            {dragging ? <OrderCardContent o={dragging} now={now} dragging /> : null}
-          </DragOverlay>
-        </DndContext>
-      ) : (
-        <div>
-          <div className="mb-4 w-56">
-            <Select
-              label="Filter by status"
-              value={statusFilter}
-              onValueChange={(v) => setStatusFilter(v as "all" | OrderStatus)}
-              className="h-9 text-small"
+      <DataTable
+        label="Orders"
+        loading={isPending}
+        rows={rows}
+        columns={columns}
+        getId={(o) => o.id}
+        rowLabel={(o) => `order ${o.code}`}
+        exportName="orders"
+        onRowClick={(o) => setQuery({ order: o.id })}
+        search={{ value: q, onChange: setQ, placeholder: "Search orders…" }}
+        filters={
+          <>
+            <FilterMenu<StatusFilter>
+              label="Status"
+              value={status}
+              onChange={(v) => setQuery({ status: v === "all" ? null : v })}
               options={[
                 { value: "all", label: "All statuses" },
-                ...(
-                  [
-                    "placed",
-                    "confirmed",
-                    "preparing",
-                    "ready",
-                    "out_for_delivery",
-                    "delivered",
-                    "declined",
-                    "cancelled",
-                  ] as const
-                ).map((s) => ({ value: s, label: statusLabel(s) })),
+                { value: "placed", label: `New (${counts.placed})` },
+                { value: "active", label: "Accepted / preparing" },
+                { value: "ready", label: "Ready or on the way" },
+                { value: "done", label: "Completed" },
+                { value: "closed", label: "Declined or cancelled" },
               ]}
             />
-          </div>
-          <TableScroll label="Orders" className="rounded-lg bg-surface hairline">
-            <table className="w-full min-w-[720px] text-small">
-              <thead>
-                <tr className="border-b border-line text-left text-muted">
-                  <th scope="col" className="px-5 py-3 eyebrow font-medium">
-                    Order
-                  </th>
-                  <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                    Customer
-                  </th>
-                  <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                    Method
-                  </th>
-                  <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                    Status
-                  </th>
-                  <th scope="col" className="px-3 py-3 text-right eyebrow font-medium">
-                    Total
-                  </th>
-                  <th scope="col" className="px-5 py-3 text-right eyebrow font-medium">
-                    Placed
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {listRows.slice(0, 80).map((o) => (
-                  <tr
-                    key={o.id}
-                    className="cursor-pointer border-b border-line last:border-0 hover:bg-ink/[0.02]"
-                    onClick={() => setOpen(o)}
-                  >
-                    <td className="px-5 py-3">
-                      <button
-                        type="button"
-                        className="font-mono font-medium hover:underline"
-                        onClick={() => setOpen(o)}
-                      >
-                        {o.code}
-                      </button>
-                    </td>
-                    <td className="px-3 py-3">{o.buyerName}</td>
-                    <td className="px-3 py-3 text-muted capitalize">{o.fulfilment.method}</td>
-                    <td className="px-3 py-3">
-                      <StatusPill status={o.status} method={o.fulfilment.method} />
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono tabular">
-                      {formatNaira(o.totalKobo)}
-                    </td>
-                    <td className="px-5 py-3 text-right text-muted">
-                      {now ? formatRelative(o.placedAt, now) : ""}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableScroll>
-          {listRows.length > 80 && (
-            <p className="mt-3 text-small text-muted">
-              Showing the 80 most recent of {listRows.length} orders.
-            </p>
-          )}
-        </div>
-      )}
-      <OrderDrawer order={open} onClose={() => setOpen(null)} />
+            <FilterMenu<MethodFilter>
+              label="Fulfilment"
+              value={method}
+              onChange={setMethod}
+              options={[
+                { value: "all", label: "Delivery and pickup" },
+                { value: "delivery", label: "Delivery" },
+                { value: "pickup", label: "Pickup" },
+              ]}
+            />
+            <FilterMenu<WhenFilter>
+              label="Any time"
+              value={when}
+              onChange={setWhen}
+              options={[
+                { value: "all", label: "Any time" },
+                { value: "today", label: "Today" },
+                { value: "7d", label: "Last 7 days" },
+                { value: "30d", label: "Last 30 days" },
+              ]}
+            />
+          </>
+        }
+        bulkActions={(sel, clear) => {
+          const acceptable = sel.filter((o) => o.status === "placed");
+          return (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!acceptable.length}
+              loading={pending}
+              leadingIcon={<Check className="size-4" />}
+              onClick={async () => {
+                for (const o of acceptable) await advance(o, ["confirmed"]);
+                clear();
+              }}
+            >
+              Accept {acceptable.length || ""} new
+            </Button>
+          );
+        }}
+        rowActions={(o) => [
+          { label: "View details", icon: <Eye />, onSelect: () => setQuery({ order: o.id }) },
+          {
+            label: "Decline",
+            icon: <X />,
+            danger: true,
+            hidden: o.status !== "placed",
+            onSelect: () => void advance(o, ["declined"]),
+          },
+          {
+            label: "Cancel order",
+            icon: <X />,
+            danger: true,
+            hidden: !canTransition(o, "cancelled"),
+            onSelect: () => void advance(o, ["cancelled"]),
+          },
+        ]}
+        card={(o) => {
+          const next = nextSellerStatus(o);
+          return (
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[13px] font-semibold">{o.code}</span>
+                {statusTag(o)}
+              </div>
+              <div className="mt-1.5">{paymentTag(o)}</div>
+              <p className="mt-1.5 truncate text-[13px] text-ink-2">
+                {o.buyerName} · {o.items.reduce((n, i) => n + i.quantity, 0)} items ·{" "}
+                <b className="font-semibold">{formatNaira(o.totalKobo)}</b>
+              </p>
+              {next && (
+                <Button
+                  size="sm"
+                  className="mt-2.5"
+                  variant={o.status === "placed" ? "primary" : "secondary"}
+                  disabled={pending}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void advance(o, [next]);
+                  }}
+                >
+                  {actionLabel(o, next)}
+                </Button>
+              )}
+            </div>
+          );
+        }}
+        empty={
+          orders.length === 0 ? (
+            <TableEmpty
+              icon={ReceiptIcon}
+              title="No orders yet"
+              body="When students order from your shop, they land here. Share your shop link to get started."
+            />
+          ) : (
+            <TableEmpty
+              icon={ReceiptIcon}
+              title="No orders match"
+              body="Try another status or search."
+            />
+          )
+        }
+      />
+      <OrderDrawer order={open} onClose={() => setQuery({ order: null })} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import type { BrandQuery, StudioPeriod } from "@/services/contracts";
+import type { DayRange } from "@/domain/analytics";
+import type { BrandQuery } from "@/services/contracts";
 import type { ProductQuery } from "@/services/types";
 
 /** Query key factory: one place to reason about cache invalidation. */
@@ -24,14 +25,14 @@ export const qk = {
   notifications: ["notifications"] as const,
   threads: (as: "buyer" | "brand") => ["threads", as] as const,
   thread: (id: string, as: "buyer" | "brand") => ["thread", id, as] as const,
-  wallet: ["wallet"] as const,
+  buyerDashboard: (r: DayRange) => ["buyer-dashboard", r.from, r.to] as const,
   places: ["places"] as const,
   studio: {
     all: ["studio"] as const,
     brand: ["studio", "brand"] as const,
     setup: ["studio", "setup"] as const,
-    overview: (p: StudioPeriod) => ["studio", "overview", p] as const,
-    analytics: (p: StudioPeriod) => ["studio", "analytics", p] as const,
+    dashboard: (r: DayRange) => ["studio", "dashboard", r.from, r.to] as const,
+    productAnalytics: (r: DayRange) => ["studio", "product-analytics", r.from, r.to] as const,
     products: (q: object) => ["studio", "products", q] as const,
     productsAll: ["studio", "products"] as const,
     product: (id: string) => ["studio", "product", id] as const,
@@ -39,6 +40,6 @@ export const qk = {
     customers: ["studio", "customers"] as const,
     reviews: ["studio", "reviews"] as const,
     promos: ["studio", "promos"] as const,
-    payouts: ["studio", "payouts"] as const,
+    finance: ["studio", "finance"] as const,
   },
 };

@@ -1,5 +1,16 @@
 import type { ArtMotif, CategoryId } from "@/services/types";
 import type { ArtPalette } from "@/design/tokens";
+import {
+  BookOpen,
+  Cpu,
+  Gem,
+  Palette,
+  Recycle,
+  Shirt,
+  Soup,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 
 export type Category = {
   id: CategoryId;
@@ -8,75 +19,74 @@ export type Category = {
   blurb: string;
   motif: ArtMotif;
   palette: ArtPalette;
-  /** Optional real photo in /public/seed, used instead of the generated art. */
-  photo?: string;
+  icon: LucideIcon;
 };
 
 /** Static taxonomy. BACKEND-SEAM: could be served by the API later. */
 export const categories: readonly Category[] = [
   {
     id: "fashion",
+    icon: Shirt,
     name: "Fashion",
     blurb: "Made-on-campus streetwear and tailoring",
     motif: "tee",
     palette: "clay",
-    photo: "/seed/dress-2.jpg",
   },
   {
     id: "thrift",
+    icon: Recycle,
     name: "Thrift",
     blurb: "Vintage finds, one of one",
     motif: "jacket",
     palette: "sand",
-    photo: "/seed/jacket-5.jpg",
   },
   {
     id: "food",
+    icon: Soup,
     name: "Food & snacks",
     blurb: "Small chops, jollof, late-night bites",
     motif: "bowl",
     palette: "ochre",
-    photo: "/seed/bowl-1.jpg",
   },
   {
     id: "beauty",
+    icon: Sparkles,
     name: "Skincare & beauty",
     blurb: "Shea, black soap, glow oils",
     motif: "dropper",
     palette: "rose",
-    photo: "/seed/jar-1.jpg",
   },
   {
     id: "accessories",
+    icon: Gem,
     name: "Accessories",
     blurb: "Beads, bags and little extras",
     motif: "bracelet",
     palette: "plum",
-    photo: "/seed/bracelet-3.jpg",
   },
   {
     id: "print",
+    icon: Palette,
     name: "Print & design",
     blurb: "Posters, stickers, custom cards",
     motif: "poster",
     palette: "sea",
-    photo: "/seed/poster-1.jpg",
   },
   {
     id: "tech",
+    icon: Cpu,
     name: "Tech accessories",
     blurb: "Cases, cables, earbuds",
     motif: "earbuds",
     palette: "ink",
-    photo: "/seed/earbuds-3.jpg",
   },
   {
     id: "books",
+    icon: BookOpen,
     name: "Books & notes",
     blurb: "Past questions, novels, study packs",
     motif: "book",
     palette: "sage",
-    photo: "/seed/book-6.jpg",
   },
 ] as const;
 

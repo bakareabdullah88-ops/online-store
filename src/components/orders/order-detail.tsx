@@ -32,14 +32,15 @@ import { etaLine } from "./orders-list";
 import { OrderTimeline } from "./order-timeline";
 import { ReviewDialog } from "./review-dialog";
 import { StatusPill } from "./status-pill";
+import type { PaymentMethod } from "@/services/types";
 import { useReorder } from "./use-reorder";
 
-const paymentLabels = {
-  card: "Card (demo)",
-  transfer: "Bank transfer (demo)",
-  pay_on_pickup: "Pay on pickup / delivery",
-  wallet: "Kiosk wallet (demo)",
-} as const;
+const paymentLabels: Record<PaymentMethod, string> = {
+  pay_on_delivery: "Pay on delivery",
+  pay_on_pickup: "Pay at pickup",
+  card: "Card",
+  transfer: "Bank transfer",
+};
 
 export function OrderDetailSkeleton() {
   return (
@@ -328,7 +329,7 @@ export function OrderDetail() {
                     toast("Order cancelled", {
                       description:
                         order.payment.status === "paid"
-                          ? "Your demo payment was refunded."
+                          ? "Your payment will be refunded."
                           : undefined,
                     });
                   },

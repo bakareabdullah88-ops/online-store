@@ -96,6 +96,7 @@ export function useBrand(handle: string) {
   return useQuery({
     queryKey: qk.brand(handle),
     queryFn: () => services.catalog.getBrand(handle),
+    enabled: handle.length > 0,
     placeholderData: () => {
       for (const [, data] of qc.getQueriesData<{ handle: string }[]>({ queryKey: ["brands"] })) {
         const hit = data?.find((b) => b.handle === handle);

@@ -79,7 +79,7 @@ export function WelcomeFlow() {
           toast.success(`You're all set, ${u.name.split(" ")[0]}`, {
             description: "Here's what's on your campus.",
           });
-          router.push(next ?? "/explore");
+          router.push(next ?? "/home");
         },
         onError: (e) => toast.error(errorMessage(e)),
       },

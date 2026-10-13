@@ -1,5 +1,7 @@
 "use client";
 
+import { pagePad } from "@/components/app/page-header";
+import { NavPageHeader } from "@/components/app/nav-header";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { useInfiniteQuery } from "@/queries/use-query";
@@ -155,24 +157,23 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
     );
 
   return (
-    <div className="container-page pt-6 md:pt-10">
-      <header className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
-        <div className="md:col-span-8">
-          <p className="eyebrow text-muted">{mode === "search" ? "Search" : "Explore"}</p>
-          <h1 className="mt-2 font-display text-display-lg text-balance">{title}</h1>
-        </div>
-        <p className="text-body text-muted md:col-span-4 md:text-right" aria-live="polite">
-          {list.isPending
-            ? "Loading…"
-            : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
-          {category && !list.isPending && (
-            <span className="block text-small">{category.blurb}</span>
-          )}
-        </p>
-      </header>
+    <div className={pagePad}>
+      <NavPageHeader
+        title={title}
+        current={mode === "search" ? "Search" : category ? category.name : "Discover"}
+        className="mb-0"
+        description={
+          <span aria-live="polite">
+            {list.isPending
+              ? "Loading…"
+              : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
+            {category && !list.isPending && ` · ${category.blurb}`}
+          </span>
+        }
+      />
 
       {/* Sticky category rail + tools */}
-      <div className="sticky top-14 z-(--z-sticky) -mx-(--gutter) mt-6 bg-canvas/92 px-(--gutter) py-3 backdrop-blur-md md:-mx-6 md:px-6 lg:top-14 xl:-mx-8 xl:px-8">
+      <div className="sticky top-[calc(var(--header-h)+env(safe-area-inset-top))] z-(--z-sticky) -mx-4 mt-5 bg-surface/90 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6 lg:top-0 lg:-mx-8 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
             <ChipGroup

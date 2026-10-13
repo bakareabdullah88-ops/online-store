@@ -4,7 +4,7 @@ import { siteUrl } from "@/env";
 
 /**
  * Public, indexable routes. Product and brand pages render from data that
- * lives in the browser in this demo, so they're discovered through Explore.
+ * lives in the browser until the backend lands, so they're discovered in the app.
  * BACKEND-SEAM: with a real API, list published brands and products here.
  */
 export default function sitemap(): MetadataRoute.Sitemap {

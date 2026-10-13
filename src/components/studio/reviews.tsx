@@ -16,7 +16,7 @@ import { useReplyToReview, useStudioProducts, useStudioReviews } from "@/queries
 import { errorMessage } from "@/services/errors";
 import type { RatingBreakdown, Review } from "@/services/types";
 import { toast } from "@/stores/toast";
-import { StudioHeaderBlock } from "./studio-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 function ReplyBox({ review }: { review: Review }) {
   const [open, setOpen] = useState(false);
@@ -114,7 +114,7 @@ export function StudioReviews() {
     : null;
   return (
     <div>
-      <StudioHeaderBlock
+      <NavPageHeader
         eyebrow="Reviews"
         title="Reviews"
         description="Replying publicly, especially to the tough ones, builds trust with every buyer who reads them."

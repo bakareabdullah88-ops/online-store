@@ -4,7 +4,6 @@ import { defaultFontPreset, emphasis, fontPresetCss } from "@/config/font-preset
 import { fontClassNames } from "@/config/fonts";
 import { siteUrl } from "@/env";
 import { Providers } from "@/components/providers";
-import { DemoNotice } from "@/components/shell/demo-notice";
 import { themeBootScript } from "@/components/providers/theme";
 import "./globals.css";
 
@@ -57,7 +56,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body className="min-h-dvh">
-        <DemoNotice />
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -32,18 +32,19 @@ None are required. Optional, set under **Project → Settings → Environment Va
 | Variable                   | When to set it                                                                                                                                                                  |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`     | When you add a custom domain, e.g. `https://kiosk.ng`. Otherwise canonical URLs, the sitemap and OG images use `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically |
-| `NEXT_PUBLIC_MOCK_LATENCY` | Lower (or `0`) for snappier demos; default `900` ms upper bound shows off loading states                                                                                        |
+| `NEXT_PUBLIC_MOCK_LATENCY` | Upper bound in ms of simulated network delay in the browser-only data layer. Default `900`; `0` turns it off                                                                    |
 | `NEXT_PUBLIC_DATA_SOURCE`  | Leave as `mock` until `src/services/remote` is implemented                                                                                                                      |
 
 `NEXT_PUBLIC_*` values are inlined at build time, so **redeploy after changing them**.
 
 ## 4. After the first deploy: checklist
 
-- [ ] `/` loads, and **Start exploring** lists products (first visit seeds IndexedDB).
-- [ ] Log in with the demo buyer (`ada@demo.kiosk` / `kiosk-demo-1`), place an order and watch
-      it move on `/orders/[id]`.
-- [ ] Log in with the demo seller (`tolu@demo.kiosk`), switch to **Selling**, and check that the
-      mode curtain plays and Shop Studio loads.
+- [ ] `/` loads the landing page; **Create your account** signs you up and lands on `/home`.
+- [ ] Open a shop from the rail's **+** (or `/open-shop`) and add a product.
+- [ ] In a second browser (or a private window), sign up as someone else, find the product and
+      place an order paying at pickup. Back in the first browser the order shows under
+      **Orders** in Shop Studio; move it through to completed. (Without a backend each browser
+      has its own data, so do both steps in the same browser by signing out in between.)
 - [ ] `/robots.txt` and `/sitemap.xml` show your production domain, not `localhost`.
 - [ ] `/opengraph-image` renders the share card; paste the URL into a link-preview checker.
 - [ ] `/manifest.webmanifest` loads; Chrome DevTools → Application shows the manifest and an
@@ -64,14 +65,15 @@ None are required. Optional, set under **Project → Settings → Environment Va
 - `/sw.js` is served with `no-cache` so a new deploy's service worker is picked up on the next
   visit. To force every client to drop its cached pages, bump `VERSION` in `public/sw.js`.
 - Preview deployments behave exactly like production. Every visitor (and every preview URL) gets
-  its own fresh demo data, because data is per browser and per origin.
+  its own empty data, because until the backend lands data is per browser and per origin.
 
-## 6. Going beyond the demo
+## 6. Connecting the backend
 
 When a real backend exists:
 
 1. Implement `src/services/remote` against [`API_CONTRACT.md`](../API_CONTRACT.md).
 2. Set `NEXT_PUBLIC_DATA_SOURCE=remote` and any API base URL you add to `src/env.ts`.
-3. Replace the demo-only pieces flagged with `BACKEND-SEAM` (auth sessions, uploads, payments,
-   payouts, realtime order updates) and remove the "Demo" labels only once they're real.
+3. Replace the browser-only pieces flagged with `BACKEND-SEAM` (auth sessions, uploads, realtime
+   order updates), then switch on the features in `src/config/features.ts` (online payments,
+   password reset email, payouts) as each one becomes real.
 4. Add a Content-Security-Policy in `next.config.ts` that allows your API origin.

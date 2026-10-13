@@ -1,434 +1,334 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import { useDeferredValue, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  BarChart3,
+  ExternalLink,
   Eye,
   EyeOff,
-  LayoutGrid,
-  List,
-  MoreHorizontal,
+  Package,
   Pencil,
   Plus,
+  Tag,
   Trash2,
-  ExternalLink,
 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { NavPageHeader } from "@/components/app/nav-header";
+import { CardMenu } from "@/components/dash/card";
+import { Gauge } from "@/components/dash/gauge";
+import { DataTable, FilterMenu, StatusTag, type Column } from "@/components/table/data-table";
+import { TableEmpty } from "@/components/table/empty";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/controls";
-import { EmptyState } from "@/components/ui/empty-state";
-import { SearchInput } from "@/components/ui/input";
-import { Pill } from "@/components/ui/misc";
-import {
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuSeparator,
-  MenuTrigger,
-  Select,
-} from "@/components/ui/overlay";
 import { Dialog } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SegmentedControl } from "@/components/ui/tabs";
 import { categories } from "@/config/categories";
-import { spring } from "@/design/motion";
+import { presetRange } from "@/domain/analytics";
 import { formatNaira } from "@/domain/money";
 import { stockState, totalStock } from "@/domain/variants";
 import { formatDate } from "@/lib/format";
-import { useMounted } from "@/lib/hooks";
-import { cn } from "@/lib/cn";
-import { useBulkProducts, useStudioProducts } from "@/queries/studio";
+import { useBulkProducts, useProductAnalytics, useStudioProducts } from "@/queries/studio";
 import { errorMessage } from "@/services/errors";
 import type { CategoryId, Product } from "@/services/types";
-import { usePrefs } from "@/stores/ui";
 import { toast } from "@/stores/toast";
-import { StudioHeaderBlock } from "./studio-shell";
-import { TableScroll } from "@/components/ui/table-scroll";
 
-function StockLabel({ p }: { p: Product }) {
+type Status = "all" | "published" | "draft";
+type Stock = "all" | "low" | "out";
+const range = presetRange("30d");
+
+function stockTag(p: Product) {
   const n = totalStock(p);
   const s = stockState(n);
-  return (
-    <span
-      className={cn(
-        "font-mono tabular",
-        s === "sold_out" ? "text-danger" : s === "low" ? "text-warning" : "text-ink-2",
-      )}
-    >
-      {s === "sold_out" ? "Sold out" : `${n} in stock`}
-    </span>
-  );
+  if (s === "sold_out") return <StatusTag tone="red">Sold out</StatusTag>;
+  if (s === "low") return <StatusTag tone="amber">{n} left</StatusTag>;
+  return <span className="tabular">{n}</span>;
 }
 
-function RowMenu({
-  p,
-  onDelete,
-  onToggle,
-}: {
-  p: Product;
-  onDelete: () => void;
-  onToggle: () => void;
-}) {
-  const router = useRouter();
-  return (
-    <Menu>
-      <MenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${p.name}`}>
-          <MoreHorizontal className="size-4.5" />
-        </Button>
-      </MenuTrigger>
-      <MenuContent>
-        <MenuItem icon={<Pencil />} onSelect={() => router.push(`/studio/products/${p.id}`)}>
-          Edit
-        </MenuItem>
-        {p.status === "published" && (
-          <MenuItem
-            icon={<ExternalLink />}
-            onSelect={() => window.open(`/products/${p.slug}`, "_blank", "noopener")}
-          >
-            View on Kiosk
-          </MenuItem>
-        )}
-        <MenuItem icon={p.status === "published" ? <EyeOff /> : <Eye />} onSelect={onToggle}>
-          {p.status === "published" ? "Move to drafts" : "Publish"}
-        </MenuItem>
-        <MenuSeparator />
-        <MenuItem icon={<Trash2 />} danger onSelect={onDelete}>
-          Delete
-        </MenuItem>
-      </MenuContent>
-    </Menu>
-  );
-}
-
+/** Shop products as a table (image 4) with each product's performance gauge (image 2). */
 export function StudioProducts() {
-  const [q, setQ] = useState("");
-  const deferredQ = useDeferredValue(q);
-  const [status, setStatus] = useState<"all" | "published" | "draft">("all");
-  const [category, setCategory] = useState<CategoryId | "all">("all");
-  const view = usePrefs((s) => s.studioProductsView);
-  const setPrefs = usePrefs((s) => s.set);
-  const mounted = useMounted();
-  const { data, isPending } = useStudioProducts({
-    q: deferredQ,
-    status,
-    ...(category !== "all" ? { category } : {}),
-  });
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/studio/products";
+  const status = (
+    ["published", "draft"].includes(params.get("status") ?? "") ? params.get("status") : "all"
+  ) as Status;
+  const stock = (
+    ["low", "out"].includes(params.get("stock") ?? "") ? params.get("stock") : "all"
+  ) as Stock;
+  const category = (
+    categories.some((c) => c.id === params.get("category")) ? params.get("category") : "all"
+  ) as CategoryId | "all";
+  const [q, setQ] = useState(params.get("q") ?? "");
+  const setParam = (key: string, value: string, fallback: string) => {
+    const next = new URLSearchParams(params.toString());
+    if (value === fallback) next.delete(key);
+    else next.set(key, value);
+    const s = next.toString();
+    router.replace(s ? `${pathname}?${s}` : pathname, { scroll: false });
+  };
+
+  const { data, isPending } = useStudioProducts({});
+  const stats = useProductAnalytics(range).data?.stats;
   const bulk = useBulkProducts();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [confirmDelete, setConfirmDelete] = useState<string[] | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Product[] | null>(null);
 
-  const items = useMemo(() => data ?? [], [data]);
-  const visibleSelected = items.filter((p) => selected.has(p.id)).map((p) => p.id);
-  const allChecked = items.length > 0 && visibleSelected.length === items.length;
+  const scoreOf = useMemo(() => new Map((stats ?? []).map((s) => [s.productId, s])), [stats]);
+  const rows = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return (data ?? []).filter((p) => {
+      if (status !== "all" && p.status !== status) return false;
+      if (category !== "all" && p.category !== category) return false;
+      const st = stockState(totalStock(p));
+      if (stock === "low" && st !== "low") return false;
+      if (stock === "out" && st !== "sold_out") return false;
+      return (
+        !term ||
+        p.name.toLowerCase().includes(term) ||
+        p.tags.some((t) => t.toLowerCase().includes(term))
+      );
+    });
+  }, [data, q, status, category, stock]);
 
-  const run = (ids: string[], action: "publish" | "draft" | "delete") =>
+  const run = (items: Product[], action: "publish" | "draft" | "delete", done?: () => void) =>
     bulk.mutate(
-      { ids, action },
+      { ids: items.map((p) => p.id), action },
       {
         onSuccess: () => {
-          setSelected(new Set());
+          done?.();
+          const n = items.length;
           toast.success(
             action === "delete"
-              ? `Deleted ${ids.length} product${ids.length > 1 ? "s" : ""}`
+              ? `Deleted ${n} product${n > 1 ? "s" : ""}`
               : action === "publish"
-                ? `Published ${ids.length}`
-                : `Moved ${ids.length} to drafts`,
+                ? `Published ${n}`
+                : `Moved ${n} to drafts`,
           );
         },
         onError: (e) => toast.error(errorMessage(e)),
       },
     );
 
-  const toggle = (id: string) =>
-    setSelected((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  const columns: Column<Product>[] = [
+    {
+      key: "product",
+      header: "Product",
+      csv: (p) => p.name,
+      cell: (p) => (
+        <Link
+          href={`/studio/products/${p.id}`}
+          className="flex min-w-0 items-center gap-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="size-10 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+            <AppImage image={p.images[0]} alt="" name={p.name} sizes="40px" />
+          </span>
+          <span className="min-w-0">
+            <span className="block max-w-56 truncate font-medium hover:underline">{p.name}</span>
+            <span className="block text-[12px] text-muted">Updated {formatDate(p.updatedAt)}</span>
+          </span>
+        </Link>
+      ),
+    },
+    {
+      key: "category",
+      header: "Category",
+      csv: (p) => p.category,
+      cell: (p) => categories.find((c) => c.id === p.category)?.name ?? p.category,
+    },
+    {
+      key: "price",
+      header: "Price",
+      align: "right",
+      csv: (p) => p.priceKobo / 100,
+      cell: (p) => <span className="font-medium tabular">{formatNaira(p.priceKobo)}</span>,
+    },
+    { key: "stock", header: "Stock", align: "center", csv: (p) => totalStock(p), cell: stockTag },
+    {
+      key: "performance",
+      header: "Performance",
+      csv: (p) => scoreOf.get(p.id)?.score ?? 0,
+      cell: (p) => {
+        const s = scoreOf.get(p.id);
+        return (
+          <span className="flex items-center gap-2.5">
+            <Gauge value={s?.score ?? 0} size={44} />
+            <span className="text-[12.5px] leading-tight">
+              <span className="block font-medium">{s?.performance ?? "New"}</span>
+              <span className="text-muted tabular">{s?.views ?? 0} views</span>
+            </span>
+          </span>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "Status",
+      csv: (p) => p.status,
+      cell: (p) =>
+        p.status === "published" ? (
+          <StatusTag tone="green">Published</StatusTag>
+        ) : (
+          <StatusTag tone="grey">Draft</StatusTag>
+        ),
+    },
+  ];
 
   return (
     <div>
-      <StudioHeaderBlock
-        eyebrow="Products"
-        title="Products"
+      <NavPageHeader
+        title="All products"
         description="Everything in your shop. Drafts aren't visible to buyers."
         actions={
-          <ButtonLink href="/studio/products/new" leadingIcon={<Plus className="size-4.5" />}>
-            New product
-          </ButtonLink>
+          <>
+            <ButtonLink href="/studio/products/new" leadingIcon={<Plus className="size-4.5" />}>
+              Add product
+            </ButtonLink>
+            <CardMenu
+              label="Products"
+              actions={[
+                { label: "Product analytics", href: "/studio/analytics", icon: <BarChart3 /> },
+                { label: "Promotions", href: "/studio/promotions", icon: <Tag /> },
+              ]}
+            />
+          </>
         }
       />
-
-      <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="lg:w-72">
-          <SearchInput
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onClear={() => setQ("")}
-            placeholder="Search your products"
-            aria-label="Search products"
-            inputSize="md"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <SegmentedControl
-            size="sm"
-            label="Status"
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: "all", label: "All" },
-              { value: "published", label: "Live" },
-              { value: "draft", label: "Drafts" },
-            ]}
-          />
-          <div className="w-44">
-            <Select
+      <DataTable
+        label="Products"
+        loading={isPending}
+        rows={rows}
+        columns={columns}
+        getId={(p) => p.id}
+        rowLabel={(p) => p.name}
+        exportName="products"
+        onRowClick={(p) => router.push(`/studio/products/${p.id}`)}
+        search={{ value: q, onChange: setQ, placeholder: "Search products…" }}
+        filters={
+          <>
+            <FilterMenu<Status>
+              label="Status"
+              value={status}
+              onChange={(v) => setParam("status", v, "all")}
+              options={[
+                { value: "all", label: "All statuses" },
+                { value: "published", label: "Published" },
+                { value: "draft", label: "Drafts" },
+              ]}
+            />
+            <FilterMenu<CategoryId | "all">
               label="Category"
               value={category}
-              onValueChange={(v) => setCategory(v as CategoryId | "all")}
-              className="h-9 text-small"
+              onChange={(v) => setParam("category", v, "all")}
               options={[
                 { value: "all", label: "All categories" },
                 ...categories.map((c) => ({ value: c.id, label: c.name })),
               ]}
             />
-          </div>
-        </div>
-        <SegmentedControl
-          size="sm"
-          className="lg:ml-auto"
-          label="View"
-          value={mounted ? view : "table"}
-          onChange={(v) => setPrefs({ studioProductsView: v })}
-          options={[
-            { value: "table", label: "Table", icon: <List className="size-4" /> },
-            { value: "grid", label: "Grid", icon: <LayoutGrid className="size-4" /> },
-          ]}
-        />
-      </div>
-
-      <AnimatePresence>
-        {visibleSelected.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={spring.snappy}
-            className="sticky top-20 z-(--z-sticky) mb-4 flex flex-wrap items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-on-primary shadow-md"
-            role="region"
-            aria-label="Bulk actions"
-          >
-            <span className="mr-2 text-small font-medium">{visibleSelected.length} selected</span>
+            <FilterMenu<Stock>
+              label="Stock"
+              value={stock}
+              onChange={(v) => setParam("stock", v, "all")}
+              options={[
+                { value: "all", label: "Any stock" },
+                { value: "low", label: "Low stock" },
+                { value: "out", label: "Sold out" },
+              ]}
+            />
+          </>
+        }
+        bulkActions={(sel, clear) => (
+          <>
             <Button
               size="sm"
-              variant="ghost"
-              className="text-on-primary hover:bg-on-primary/10"
-              onClick={() => run(visibleSelected, "publish")}
+              variant="secondary"
+              loading={bulk.isPending}
+              onClick={() => run(sel, "publish", clear)}
             >
               Publish
             </Button>
             <Button
               size="sm"
-              variant="ghost"
-              className="text-on-primary hover:bg-on-primary/10"
-              onClick={() => run(visibleSelected, "draft")}
+              variant="secondary"
+              loading={bulk.isPending}
+              onClick={() => run(sel, "draft", clear)}
             >
               Move to drafts
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-on-primary hover:bg-on-primary/10"
-              onClick={() => setConfirmDelete(visibleSelected)}
-            >
+            <Button size="sm" variant="danger" onClick={() => setConfirmDelete(sel)}>
               Delete
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="ml-auto text-on-primary hover:bg-on-primary/10"
-              onClick={() => setSelected(new Set())}
-            >
-              Clear
-            </Button>
-          </motion.div>
+          </>
         )}
-      </AnimatePresence>
-
-      {isPending ? (
-        <div className="flex flex-col gap-2">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" rounded="md" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <EmptyState
-          illustration="products"
-          title={
-            q || status !== "all" || category !== "all" ? "No products match" : "No products yet"
-          }
-          body={
-            q || status !== "all" || category !== "all"
-              ? "Try a different search or filter."
-              : "Add your first product. It takes about two minutes."
-          }
-          action={<ButtonLink href="/studio/products/new">Add a product</ButtonLink>}
-        />
-      ) : (mounted ? view : "table") === "table" ? (
-        <TableScroll label="Products" className="rounded-lg bg-surface hairline">
-          <table className="w-full min-w-[720px] text-small">
-            <thead>
-              <tr className="border-b border-line text-left text-muted">
-                <th scope="col" className="w-12 px-4 py-3">
-                  <Checkbox
-                    hideLabel
-                    label="Select all products"
-                    checked={allChecked ? true : visibleSelected.length ? "indeterminate" : false}
-                    onCheckedChange={(v) =>
-                      setSelected(v ? new Set(items.map((p) => p.id)) : new Set())
-                    }
-                  />
-                </th>
-                <th scope="col" className="py-3 eyebrow font-medium">
-                  Product
-                </th>
-                <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                  Status
-                </th>
-                <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                  Stock
-                </th>
-                <th scope="col" className="px-3 py-3 text-right eyebrow font-medium">
-                  Price
-                </th>
-                <th scope="col" className="px-3 py-3 text-right eyebrow font-medium">
-                  Sold
-                </th>
-                <th scope="col" className="px-3 py-3 eyebrow font-medium">
-                  Updated
-                </th>
-                <th scope="col" className="w-12 px-3 py-3">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence initial={false}>
-                {items.map((p) => (
-                  <motion.tr
-                    key={p.id}
-                    layout="position"
-                    exit={{ opacity: 0 }}
-                    className={cn(
-                      "border-b border-line last:border-0",
-                      selected.has(p.id) ? "bg-accent-soft/50" : "hover:bg-ink/[0.02]",
-                    )}
-                  >
-                    <td className="px-4 py-2.5">
-                      <Checkbox
-                        hideLabel
-                        label={`Select ${p.name}`}
-                        checked={selected.has(p.id)}
-                        onCheckedChange={() => toggle(p.id)}
-                      />
-                    </td>
-                    <td className="py-2.5">
-                      <Link href={`/studio/products/${p.id}`} className="flex items-center gap-3">
-                        <span className="size-11 shrink-0 overflow-hidden rounded-sm">
-                          <AppImage image={p.images[0]} alt="" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate font-medium hover:underline">
-                            {p.name}
-                          </span>
-                          <span className="block text-muted capitalize">{p.category}</span>
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2.5">
-                      {p.status === "published" ? (
-                        <Pill tone="success" dot>
-                          Live
-                        </Pill>
-                      ) : (
-                        <Pill>Draft</Pill>
-                      )}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <StockLabel p={p} />
-                    </td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular">
-                      {formatNaira(p.priceKobo)}
-                    </td>
-                    <td className="px-3 py-2.5 text-right font-mono tabular">{p.salesCount}</td>
-                    <td className="px-3 py-2.5 text-muted">
-                      {mounted ? formatDate(p.updatedAt) : ""}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <RowMenu
-                        p={p}
-                        onDelete={() => setConfirmDelete([p.id])}
-                        onToggle={() => run([p.id], p.status === "published" ? "draft" : "publish")}
-                      />
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
-        </TableScroll>
-      ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-          {items.map((p) => (
-            <li
-              key={p.id}
-              className={cn(
-                "relative overflow-hidden rounded-lg bg-surface hairline",
-                selected.has(p.id) && "ring-2 ring-accent",
-              )}
-            >
-              <Link href={`/studio/products/${p.id}`} className="block">
-                <div className="aspect-[4/5]">
-                  <AppImage image={p.images[0]} alt="" />
-                </div>
-                <div className="p-3">
-                  <p className="truncate text-small font-medium">{p.name}</p>
-                  <p className="mt-1 flex items-center justify-between text-small">
-                    <span className="font-mono tabular">{formatNaira(p.priceKobo)}</span>
-                    <StockLabel p={p} />
-                  </p>
-                </div>
-              </Link>
-              <div className="absolute top-2 left-2 rounded-xs bg-surface/90 p-1">
-                <Checkbox
-                  hideLabel
-                  label={`Select ${p.name}`}
-                  checked={selected.has(p.id)}
-                  onCheckedChange={() => toggle(p.id)}
-                />
-              </div>
-              <div className="absolute top-2 right-2">
+        rowActions={(p) => [
+          { label: "Edit", icon: <Pencil />, href: `/studio/products/${p.id}` },
+          {
+            label: "View in the market",
+            icon: <ExternalLink />,
+            href: `/products/${p.slug}`,
+            hidden: p.status !== "published",
+          },
+          p.status === "published"
+            ? { label: "Move to drafts", icon: <EyeOff />, onSelect: () => run([p], "draft") }
+            : { label: "Publish", icon: <Eye />, onSelect: () => run([p], "publish") },
+          {
+            label: "Delete",
+            icon: <Trash2 />,
+            danger: true,
+            onSelect: () => setConfirmDelete([p]),
+          },
+        ]}
+        card={(p) => (
+          <div className="flex items-center gap-3">
+            <span className="size-14 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+              <AppImage image={p.images[0]} alt="" name={p.name} sizes="56px" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{p.name}</p>
+              <p className="mt-0.5 text-[12.5px] text-muted tabular">
+                {formatNaira(p.priceKobo)} · {totalStock(p)} in stock
+              </p>
+              <div className="mt-1.5">
                 {p.status === "published" ? (
-                  <Pill tone="success">Live</Pill>
+                  <StatusTag tone="green">Published</StatusTag>
                 ) : (
-                  <Pill className="bg-surface">Draft</Pill>
+                  <StatusTag tone="grey">Draft</StatusTag>
                 )}
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
+            </div>
+            <Gauge value={scoreOf.get(p.id)?.score ?? 0} size={48} />
+          </div>
+        )}
+        empty={
+          (data?.length ?? 0) === 0 ? (
+            <TableEmpty
+              icon={Package}
+              title="No products yet"
+              body="Add your first product with a photo, a price and how many you have."
+              action={
+                <ButtonLink href="/studio/products/new" leadingIcon={<Plus className="size-4" />}>
+                  Add a product
+                </ButtonLink>
+              }
+            />
+          ) : (
+            <TableEmpty
+              icon={Package}
+              title="Nothing matches"
+              body="Try another search or clear the filters."
+              action={
+                <ButtonLink href="/studio/products" variant="secondary">
+                  Clear filters
+                </ButtonLink>
+              }
+            />
+          )
+        }
+      />
       <Dialog
         open={!!confirmDelete}
         onOpenChange={(v) => !v && setConfirmDelete(null)}
-        title={`Delete ${confirmDelete?.length === 1 ? "this product" : `${confirmDelete?.length} products`}?`}
-        description="Buyers won't see it anymore. Past orders keep their details."
+        title={`Delete ${confirmDelete?.length === 1 ? `“${confirmDelete[0]!.name}”` : `${confirmDelete?.length ?? 0} products`}?`}
+        description="They'll disappear from your shop and the market. Past orders keep their details."
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmDelete(null)}>
@@ -437,19 +337,16 @@ export function StudioProducts() {
             <Button
               variant="danger"
               loading={bulk.isPending}
-              onClick={() => {
-                if (confirmDelete) run(confirmDelete, "delete");
-                setConfirmDelete(null);
-              }}
+              onClick={() =>
+                confirmDelete && run(confirmDelete, "delete", () => setConfirmDelete(null))
+              }
             >
               Delete
             </Button>
           </>
         }
       >
-        <p className="text-body text-muted">
-          Tip: move it to drafts instead if you might sell it again.
-        </p>
+        <p className="text-small text-muted">This can&apos;t be undone.</p>
       </Dialog>
     </div>
   );

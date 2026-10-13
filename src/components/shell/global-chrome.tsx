@@ -11,10 +11,8 @@ import { OfflineBanner } from "./offline-banner";
 // browser is idle), never on the critical path of a page load.
 const loadPalette = () => import("./command-palette").then((m) => m.CommandPalette);
 const loadBag = () => import("@/components/checkout/bag-drawer").then((m) => m.BagDrawer);
-const loadAccount = () => import("./account-sheet").then((m) => m.AccountSheet);
 const CommandPalette = dynamic(loadPalette, { ssr: false });
 const BagDrawer = dynamic(loadBag, { ssr: false });
-const AccountSheet = dynamic(loadAccount, { ssr: false });
 
 /** True from the first time `open` is true; keeps closing animations intact. */
 function useOpenedOnce(open: boolean) {
@@ -26,10 +24,8 @@ function useOpenedOnce(open: boolean) {
 function Overlays() {
   const commandOpen = useUi((s) => s.commandOpen);
   const bagOpen = useUi((s) => s.bagOpen);
-  const accountOpen = useUi((s) => s.accountOpen);
   const palette = useOpenedOnce(commandOpen);
   const bag = useOpenedOnce(bagOpen);
-  const account = useOpenedOnce(accountOpen);
 
   // ⌘K / Ctrl+K toggles search from anywhere.
   useEffect(() => {
@@ -46,7 +42,7 @@ function Overlays() {
 
   // Warm the chunks once the page has settled so first open feels instant.
   useEffect(() => {
-    const warm = () => void Promise.all([loadPalette(), loadBag(), loadAccount()]);
+    const warm = () => void Promise.all([loadPalette(), loadBag()]);
     const id = window.setTimeout(() => {
       if (typeof window.requestIdleCallback === "function")
         window.requestIdleCallback(warm, { timeout: 4000 });
@@ -59,7 +55,6 @@ function Overlays() {
     <>
       {palette && <CommandPalette />}
       {bag && <BagDrawer />}
-      {account && <AccountSheet />}
     </>
   );
 }

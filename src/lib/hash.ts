@@ -1,5 +1,5 @@
 /**
- * DEMO password hashing with Web Crypto (PBKDF2-SHA-256). This runs in the
+ * Browser-side password hashing with Web Crypto (PBKDF2-SHA-256). This runs in the
  * browser only because there is no backend. It is NOT a security boundary.
  * BACKEND-SEAM: real auth hashes server-side (argon2/bcrypt) and never ships hashes to clients.
  */

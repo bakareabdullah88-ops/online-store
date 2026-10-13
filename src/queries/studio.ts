@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "./use-query";
 import { services } from "@/services";
-import type { StudioPeriod } from "@/services/contracts";
+import type { DayRange } from "@/domain/analytics";
 import type {
   CreateBrandInput,
   ProductInput,
@@ -61,19 +61,19 @@ export function useSetup() {
   });
 }
 
-export function useOverview(period: StudioPeriod) {
+export function useShopDashboard(range: DayRange) {
   return useQuery({
-    queryKey: qk.studio.overview(period),
-    queryFn: () => services.studio.getOverview(period),
+    queryKey: qk.studio.dashboard(range),
+    queryFn: () => services.studio.getDashboard(range),
     enabled: useHasBrand(),
     placeholderData: (p) => p,
   });
 }
 
-export function useAnalytics(period: StudioPeriod) {
+export function useProductAnalytics(range: DayRange) {
   return useQuery({
-    queryKey: qk.studio.analytics(period),
-    queryFn: () => services.studio.getAnalytics(period),
+    queryKey: qk.studio.productAnalytics(range),
+    queryFn: () => services.studio.getProductAnalytics(range),
     enabled: useHasBrand(),
     placeholderData: (p) => p,
   });
@@ -143,7 +143,7 @@ export function useStudioOrders() {
   });
 }
 
-/** Optimistic: cards move columns immediately; rolled back if the transition is illegal. */
+/** Optimistic: the status changes immediately; rolled back if the transition is illegal. */
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
@@ -163,9 +163,13 @@ export function useUpdateOrderStatus() {
         list?.map((x) => (x.id === o.id ? o : x)),
       );
       qc.setQueryData(qk.order(o.id), o);
+      // Money and counts derived from orders.
       void qc.invalidateQueries({
         queryKey: qk.studio.all,
-        predicate: (q) => q.queryKey[1] === "overview",
+        predicate: (q) =>
+          ["dashboard", "product-analytics", "finance", "customers", "products"].includes(
+            String(q.queryKey[1]),
+          ),
       });
     },
   });
@@ -231,19 +235,11 @@ export function useDeletePromo() {
   });
 }
 
-export function usePayouts() {
+export function useFinance() {
   return useQuery({
-    queryKey: qk.studio.payouts,
-    queryFn: () => services.studio.listPayouts(),
+    queryKey: qk.studio.finance,
+    queryFn: () => services.studio.getFinance(),
     enabled: useHasBrand(),
-  });
-}
-
-export function useRequestPayout() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => services.studio.requestPayout(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.studio.payouts }),
   });
 }
 

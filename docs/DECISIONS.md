@@ -120,46 +120,51 @@ src/
 
 - **Repositories**: in memory, hydrated from IndexedDB on first access, written through on
   change. Schema version stored under `meta:version`; `migrate()` runs ordered steps.
-- **Seeding**: on first run (or after "Reset demo data"), deterministic seed data is
-  generated from a fixed PRNG seed, so every visitor gets identical content.
+- **No sample data**: a fresh install has the campus list and nothing else. Every shop, product,
+  order, review and message comes from real accounts. Schema v2 removes the sample accounts and
+  shops that v1 shipped, keeping anything people created themselves.
 - **Latency**: every service call waits 300–900ms (`MOCK_LATENCY`, shorter under tests),
   so loading states are real and designed.
 - **Images**: uploads are stored as `Blob`s in `kiosk-media`; `useObjectUrl` creates and
-  revokes object URLs. Seed images are `ImageRef { kind: "art" }` and render as generated SVG
-  art; `{ kind: "url" }` is for files dropped in `/public/seed/`.
+  revokes object URLs. A product without photos shows a neutral placeholder; a shop without a
+  logo gets its initials, and without a cover a plain tint. No stock photos or stand-in pictures.
 - **Money**: integer kobo everywhere; `formatNaira()` uses `Intl.NumberFormat("en-NG")`.
-- **Orders** progress through a pure state machine (`domain/orders.ts`). Buyer orders to
-  seeded brands auto-advance on a timer schedule computed from `placedAt`, so tracking is live
-  and survives reloads. Orders received by the user's own brand are advanced manually in Studio.
-- **Auth**: demo only. Passwords hashed with PBKDF2-SHA-256 (Web Crypto, 100k iterations,
-  random salt). The session id is stored in IndexedDB. Labelled as demo everywhere.
+- **Orders** progress through a pure state machine (`domain/orders.ts`), moved by the seller in
+  Shop Studio. Buyers pay on delivery or at pickup; the order is marked paid when it's delivered.
+  Online payments are behind `features.onlinePayments` and refused with `UNAVAILABLE` until then.
+- **Analytics** are computed from raw events (product views, adds to bag; the owner's own views
+  are not counted) and orders, by pure functions in `domain/analytics.ts`, for any date range
+  compared with the same number of days before it.
+- **Auth**: passwords hashed with PBKDF2-SHA-256 (Web Crypto, 100k iterations, random salt). The
+  session id is stored in IndexedDB until the backend issues HTTP-only cookies. Password reset by
+  email and changing your email are off until email delivery exists, and say so plainly.
 
 ### Entities
 
 `Campus` (zones, pickup points) · `User` · `Session` · `Brand` · `Product` (options,
 variants with stock) · `Review` (+ seller reply) · `Order` (items, fulfilment, payment,
 timeline) · `Promo` (platform or brand scoped) · `Notification` · `Thread` (messages) ·
-`WalletTransaction` · `SavedPlace` · `Payout` · `BrandMetric` (daily views / add-to-bag /
-orders / revenue).
+`SavedPlace` · `AnalyticsEvent` (view / add to bag).
 
 ## 6. Routes
 
-| Route                                               | Purpose                                                                                             |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `/`                                                 | Landing                                                                                             |
-| `/login`, `/signup`, `/forgot-password`, `/welcome` | Auth + onboarding                                                                                   |
-| `/explore`                                          | Browse with filters (URL-persisted)                                                                 |
-| `/search?q=`                                        | Search results                                                                                      |
-| `/brands/[handle]`                                  | Brand page                                                                                          |
-| `/products/[slug]`                                  | Product page                                                                                        |
-| `/bag`, `/checkout`, `/checkout/success`            | Bag and checkout                                                                                    |
-| `/orders`, `/orders/[id]`                           | Orders + live tracking                                                                              |
-| `/wishlist`, `/notifications`, `/messages`          | Shared buyer surfaces                                                                               |
-| `/account/**`                                       | Buyer dashboard (overview, orders, saved, following, places, wallet, messages, reviews, settings)   |
-| `/open-shop`                                        | Shop onboarding wizard                                                                              |
-| `/studio/**`                                        | Shop Studio (overview, products, orders, customers, reviews, promotions, analytics, brand, payouts) |
-| `/design-system`                                    | Living style guide                                                                                  |
-| `/offline`                                          | Offline fallback                                                                                    |
+| Route                                               | Purpose                                                                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `/`                                                 | Landing (public)                                                                                                 |
+| `/login`, `/signup`, `/forgot-password`, `/welcome` | Auth + onboarding                                                                                                |
+| `/explore`                                          | Browse with filters (URL-persisted)                                                                              |
+| `/search?q=`                                        | Search results                                                                                                   |
+| `/brands/[handle]`                                  | Brand page                                                                                                       |
+| `/products/[slug]`                                  | Product page                                                                                                     |
+| `/bag`, `/checkout`, `/checkout/success`            | Bag and checkout                                                                                                 |
+| `/orders`, `/orders/[id]`                           | Orders + live tracking                                                                                           |
+| `/wishlist`, `/notifications`, `/messages`          | Shared buyer surfaces                                                                                            |
+| `/home`                                             | Buyer dashboard                                                                                                  |
+| `/account/**`                                       | Following, addresses, reviews, settings                                                                          |
+| `/open-shop`                                        | Shop onboarding wizard                                                                                           |
+| `/studio/**`                                        | Shop Studio (performance, analytics, products, orders, customers, reviews, promotions, finance, inbox, settings) |
+| `/design-system`                                    | Living style guide                                                                                               |
+| `/offline`                                          | Offline fallback                                                                                                 |
 
 ## 7. Deviations and judgement calls
 
@@ -252,7 +257,47 @@ locally only because the canonical URL points at `localhost:3000`; it resolves t
 on Vercel.
 
 **Known gap: the 95+ performance target is not met on data pages.** Brand and product pages
-render content that only exists in the visitor's IndexedDB, behind the deliberate 300–900ms demo
+render content that only exists in the visitor's IndexedDB, behind the simulated 300–900ms
 latency, so their LCP is client-rendered by design. A real backend would let these pages
 server-render (the service seam is ready for it), which is the fix. Beyond that, the next
 step would be `LazyMotion` with `m.*` components (~20KB off the shared bundle).
+
+## 9. Product redesign: real flows, five references
+
+The site stopped being a demo. What changed and why:
+
+- **Flow.** `/` is a public landing page. Everything else (market and shop) lives behind sign-in in
+  the `(app)` route group, so the path is landing → sign up → onboarding → `/home`. Signed-out
+  visitors who open an app link go to `/login?next=…` and come back after.
+- **References, mapped.**
+  - Landing follows the Storify page: announcement bar, nav with menus, a two-line headline with
+    tilted callouts, the main call to action with a side line, then a large preview. The preview is
+    the real Shop Studio drawn in code, animated (an order arrives and is accepted), with a caption
+    saying the products in it are examples. No stock photos, people or invented testimonials; the
+    "logo strip" is the campuses the app supports.
+  - The app frame follows Quickle Commerce: a rail to switch workspace (market, your shop, open a
+    shop), a contextual sidebar with sections, coloured category dots and counts, and a white
+    rounded panel for the page. The product analytics page follows its product list with
+    performance gauges and the "Product statistic" strip.
+  - Dashboards follow zentra: date range "compared to" the previous period, a funnel with hatched
+    steps and a solid highlighted step, hatched volume bars, a step-line retention chart, a weekday
+    dot matrix with the peak called out and the gradient insight card. The LoopAI video adds the
+    stat cards with change badges, the to-do list and the daily dot-matrix chart.
+  - Every list (products, shop orders, customers, your orders) follows the Fixoria table: breadcrumb
+    and icon header, filter menus, search, export to PDF (print) and CSV, selection with bulk
+    actions, status pills, a "…" menu per row and numbered pages. Phones get stacked cards.
+  - The inbox follows the LoopAI video: conversation on the left, "All messages" on the right with
+    search, filter, stars and unread counts; the composer opens a grid of tools, a tool becomes a
+    draft card that types itself in, and the draft can be swapped, edited or sent.
+  - Phones use the floating pill navigation from the book app, icons only, with a sliding active
+    disc and a round action button beside it (add a product, or open a shop).
+- **No AI pretence.** zentra's "What would you like to explore next?" box and LoopAI's assistant are
+  AI features we don't have. The box became a search with slash shortcuts (`/new orders`,
+  `/low stock`, a category) that jump to filtered pages. The composer tools are quick replies
+  filled in from the shop's real settings (delivery fee, pickup points, opening hours, the buyer's
+  name). Nothing claims to be generated.
+- **Honest gaps.** Features that need a server are switched off in `config/features.ts` and say so
+  where they appear: online payments ("coming soon" at checkout), password reset by email, payouts
+  (the finance page stores payout details and explains buyers pay sellers directly for now).
+- **Account deletion** checks the password and removes the profile, the shop, its products,
+  promos, addresses, notifications, events and uploaded images.

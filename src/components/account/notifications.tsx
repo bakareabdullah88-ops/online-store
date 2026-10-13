@@ -12,7 +12,7 @@ import { useNow } from "@/lib/hooks";
 import { cn } from "@/lib/cn";
 import { useMarkRead, useNotifications } from "@/queries/inbox";
 import type { AppNotification } from "@/services/types";
-import { DashboardHeader } from "./dashboard-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 const icons = {
   order: Package,
@@ -44,7 +44,7 @@ export function NotificationsView() {
 
   return (
     <div className="max-w-3xl">
-      <DashboardHeader
+      <NavPageHeader
         eyebrow="Notifications"
         title="What's new"
         description={unread ? `${unread} unread` : "You're all caught up."}

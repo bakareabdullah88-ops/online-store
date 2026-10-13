@@ -12,7 +12,6 @@ import { safeNext } from "@/lib/safe-next";
 import { signInSchema } from "@/services/inputs";
 import { useSignIn } from "@/queries/session";
 import { toast } from "@/stores/toast";
-import { DemoPanel } from "./demo-panel";
 
 type Values = z.input<typeof signInSchema>;
 
@@ -32,7 +31,7 @@ export function LoginForm() {
         toast.success(`Welcome back, ${u.name.split(" ")[0]}`);
         router.push(
           u.onboarded
-            ? (next ?? "/explore")
+            ? (next ?? "/home")
             : `/welcome${next ? `?next=${encodeURIComponent(next)}` : ""}`,
         );
       },
@@ -80,10 +79,6 @@ export function LoginForm() {
           Log in
         </Button>
       </form>
-      <div className="my-8 flex items-center gap-4 text-small text-muted">
-        <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
-      </div>
-      <DemoPanel next={next} highlight={params.get("demo")} />
     </div>
   );
 }

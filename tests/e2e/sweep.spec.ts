@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { demoLogin, expectNoAppErrors, trackErrors } from "./helpers";
+import { expectNoAppErrors, trackErrors } from "./helpers";
+import { addProduct, openShop, signUp, uniqueEmail } from "./flows";
 
 /**
  * Page sweep: every key screen must load without console errors, without
@@ -40,33 +41,29 @@ test("public pages", async ({ page }) => {
   const errors = trackErrors(page);
   for (const path of [
     "/",
-    "/explore",
-    "/search?q=jollof",
-    "/brands/adirelab",
-    "/bag",
     "/login",
     "/signup",
-    "/design-system",
+    "/forgot-password",
     "/offline",
     "/this-page-does-not-exist",
   ]) {
     await audit(page, path);
   }
-  await page.goto("/brands/adirelab");
-  const product = await page.locator('a[href^="/products/"]').first().getAttribute("href");
-  expect(product).toBeTruthy();
-  await audit(page, product ?? "/");
   await expectNoAppErrors(page, errors);
 });
 
-test("buyer pages", async ({ page }) => {
+test("buyer pages, new account", async ({ page }) => {
   const errors = trackErrors(page);
-  await demoLogin(page, "buyer");
+  await signUp(page, "Ada Obi", uniqueEmail("sweep"));
   for (const path of [
+    "/home",
+    "/explore",
+    "/search?q=bag",
     "/orders",
-    "/account",
+    "/bag",
     "/account/places",
-    "/account/wallet",
+    "/account/following",
+    "/account/reviews",
     "/account/settings",
     "/wishlist",
     "/notifications",
@@ -77,20 +74,28 @@ test("buyer pages", async ({ page }) => {
   await expectNoAppErrors(page, errors);
 });
 
-test("seller pages", async ({ page }) => {
+test("seller pages, with one product", async ({ page }) => {
+  test.slow();
   const errors = trackErrors(page);
-  await demoLogin(page, "seller", "/studio");
+  await signUp(page, "Tolu Ade", uniqueEmail("sweepseller"));
+  await openShop(page, `Tolu Prints ${Date.now() % 10000}`, "Campus posters and prints");
+  await addProduct(page, {
+    name: "A3 campus print",
+    description: "Matte A3 print of the main gate.",
+    price: "2500",
+  });
   for (const path of [
     "/studio",
+    "/studio/analytics",
     "/studio/products",
     "/studio/products/new",
     "/studio/orders",
     "/studio/customers",
     "/studio/reviews",
     "/studio/promotions",
-    "/studio/analytics",
+    "/studio/finance",
+    "/studio/messages",
     "/studio/brand",
-    "/studio/payouts",
   ]) {
     await audit(page, path);
   }
@@ -101,9 +106,9 @@ test.describe("dark mode", () => {
   test.use({ colorScheme: "dark" });
   test("key pages in dark mode", async ({ page }) => {
     const errors = trackErrors(page);
-    for (const path of ["/", "/explore", "/brands/adirelab", "/login"]) await audit(page, path);
-    await demoLogin(page, "seller", "/studio");
-    for (const path of ["/orders", "/account", "/studio", "/studio/orders", "/studio/analytics"])
+    for (const path of ["/", "/login"]) await audit(page, path);
+    await signUp(page, "Dami Ola", uniqueEmail("dark"));
+    for (const path of ["/home", "/orders", "/messages", "/account/settings"])
       await audit(page, path);
     await expectNoAppErrors(page, errors);
   });

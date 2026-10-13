@@ -266,11 +266,8 @@ export function CommandPalette() {
                             onSelect={() => go(`/explore?category=${c.id}`)}
                             className={itemClass}
                           >
-                            <span className="size-8 shrink-0 overflow-hidden rounded-sm">
-                              <AppImage
-                                image={{ kind: "art", motif: c.motif, palette: c.palette, seed: 7 }}
-                                alt=""
-                              />
+                            <span className="grid size-8 shrink-0 place-items-center rounded-md bg-surface-2 ring-1 ring-line">
+                              <c.icon className="size-4 text-ink-2" />
                             </span>
                             <span className="flex-1">{c.name}</span>
                             <span className="truncate text-small text-muted max-sm:hidden">

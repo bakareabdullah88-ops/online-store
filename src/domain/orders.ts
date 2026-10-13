@@ -113,8 +113,8 @@ export function statusDescription(status: OrderStatus, method: FulfilmentMethod)
 }
 
 /**
- * Auto-progress schedule (seconds after placedAt) used for orders to seeded
- * brands, so tracking is live in the demo. Kept short enough to watch.
+ * Auto-progress schedule (seconds after placedAt) for orders flagged
+ * `autoProgress`. Real orders are moved by the seller, so this is unused today.
  */
 export const AUTO_SCHEDULE: Record<"confirmed" | "preparing" | "dispatch" | "delivered", number> = {
   confirmed: 6,

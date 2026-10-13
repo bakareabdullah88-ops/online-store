@@ -11,7 +11,6 @@ import { applyServiceErrors } from "@/lib/form";
 import { safeNext } from "@/lib/safe-next";
 import { signUpSchema } from "@/services/inputs";
 import { useSignUp } from "@/queries/session";
-import { DemoPanel } from "./demo-panel";
 import { PasswordStrength } from "./password-strength";
 
 type Values = z.input<typeof signUpSchema>;
@@ -80,9 +79,6 @@ export function SignupForm() {
           needed.
         </p>
       </form>
-      <div className="mt-10">
-        <DemoPanel next={next} />
-      </div>
     </div>
   );
 }

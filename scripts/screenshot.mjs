@@ -1,4 +1,5 @@
-// Usage: node scripts/screenshot.mjs <baseUrl> <outDir> <route>[,<route>…] [--dark] [--full] [--widths=390,1280] [--login=buyer|seller]
+// Usage: node scripts/screenshot.mjs <baseUrl> <outDir> <route>[,<route>…] [--dark] [--full] [--widths=390,1280] [--state=screenshots/state/seller.json]
+// Make a state first with scripts/make-state.mjs.
 import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 
@@ -8,7 +9,7 @@ const full = flags.includes("--full");
 const widths = (flags.find((f) => f.startsWith("--widths="))?.split("=")[1] ?? "390,1280")
   .split(",")
   .map(Number);
-const login = flags.find((f) => f.startsWith("--login="))?.split("=")[1];
+const state = flags.find((f) => f.startsWith("--state="))?.split("=")[1];
 const waitMs = Number(flags.find((f) => f.startsWith("--wait="))?.split("=")[1] ?? 1800);
 mkdirSync(out, { recursive: true });
 
@@ -22,6 +23,7 @@ for (const width of widths) {
     reducedMotion: "no-preference",
     isMobile: width < 768,
     hasTouch: width < 768,
+    ...(state ? { storageState: state } : {}),
   });
   const page = await context.newPage();
   page.on("console", (m) => {
@@ -29,15 +31,6 @@ for (const width of widths) {
       errors.push(`[${width}] ${m.type()}: ${m.text()}`);
   });
   page.on("pageerror", (e) => errors.push(`[${width}] pageerror: ${e.message}`));
-  if (login) {
-    await page.goto(`${base}/login`, { waitUntil: "networkidle" });
-    await page
-      .getByRole("button", { name: new RegExp(`demo ${login}`, "i") })
-      .first()
-      .click();
-    await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 20000 });
-    await page.waitForTimeout(800);
-  }
   for (const route of routesArg.split(",")) {
     await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(waitMs);

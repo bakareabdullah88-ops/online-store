@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import { useMounted } from "@/lib/hooks";
 import { useProducts } from "@/queries/catalog";
 import { useMyReviews } from "@/queries/orders";
-import { DashboardHeader } from "./dashboard-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 export function MyReviewsView() {
   const { data, isPending } = useMyReviews();
@@ -18,7 +18,7 @@ export function MyReviewsView() {
   const mounted = useMounted();
   return (
     <div>
-      <DashboardHeader
+      <NavPageHeader
         eyebrow="Reviews"
         title="Reviews you've written"
         description="Thanks for helping other students choose well."

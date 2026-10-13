@@ -7,7 +7,6 @@ import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ProgressBar } from "@/components/ui/misc";
-import { ProductArt } from "@/components/art/product-art";
 import { Celebration } from "@/components/checkout/celebration";
 import { useCurtain } from "@/components/shell/mode-curtain";
 import { categories, categoryById } from "@/config/categories";
@@ -387,7 +386,7 @@ export function OpenShopWizard() {
                     aria-label="Category"
                     className="grid grid-cols-2 gap-3 sm:grid-cols-4"
                   >
-                    {categories.map((c, i) => {
+                    {categories.map((c) => {
                       const active = s.category === c.id;
                       return (
                         <motion.button
@@ -404,12 +403,13 @@ export function OpenShopWizard() {
                               : "hairline hover:shadow-[inset_0_0_0_1px_var(--muted)]",
                           )}
                         >
-                          <div className="aspect-square">
-                            <ProductArt
-                              motif={c.motif}
-                              palette={c.palette}
-                              seed={40 + i}
-                              className="size-full"
+                          <div className="grid aspect-[4/3] place-items-center bg-surface-2">
+                            <c.icon
+                              className={cn(
+                                "size-8 transition-colors",
+                                active ? "text-accent" : "text-ink-2",
+                              )}
+                              strokeWidth={1.5}
                             />
                           </div>
                           <p className="bg-surface px-3 py-2.5 text-small font-medium">{c.name}</p>
@@ -553,7 +553,6 @@ export function OpenShopWizard() {
                   </dl>
                   <p className="text-small text-muted">
                     By opening a shop you agree to sell honestly and fulfil the orders you accept.
-                    (Demo: nothing is binding.)
                   </p>
                 </div>
               )}

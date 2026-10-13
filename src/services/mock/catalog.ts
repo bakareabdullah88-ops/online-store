@@ -2,6 +2,7 @@ import { totalStock } from "@/domain/variants";
 import type { CatalogService } from "../contracts";
 import { ServiceError } from "../errors";
 import type { Brand, Product, ProductWithBrand, RatingBreakdown, Review } from "../types";
+import { newId } from "@/lib/ids";
 import { commit, getDb } from "./db";
 import { clone, currentUser } from "./context";
 import { latency, quick } from "./latency";
@@ -65,26 +66,6 @@ export function breakdown(reviews: Review[]): RatingBreakdown {
 
 function isVisible(db: DbSnapshot, p: Product) {
   return p.status === "published" && db.brands.some((b) => b.id === p.brandId);
-}
-
-function bumpMetric(db: DbSnapshot, brandId: string, field: "views" | "addToBag") {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10);
-  let m = db.metrics.find((x) => x.brandId === brandId && x.date === date);
-  if (!m) {
-    m = {
-      brandId,
-      date,
-      views: 0,
-      addToBag: 0,
-      orders: 0,
-      revenueKobo: 0,
-      hourly: Array.from({ length: 24 }, () => 0),
-    };
-    db.metrics.push(m);
-  }
-  m[field] += 1;
-  if (field === "views") m.hourly[now.getHours()] = (m.hourly[now.getHours()] ?? 0) + 1;
 }
 
 export const mockCatalog: CatalogService = {
@@ -268,9 +249,19 @@ export const mockCatalog: CatalogService = {
     const db = await getDb();
     const p = db.products.find((x) => x.id === event.productId);
     if (!p) return;
+    const user = await currentUser(db);
+    // A shop owner looking at their own products isn't a customer.
+    if (user?.brandIds.includes(p.brandId)) return;
     if (event.type === "view") p.viewCount += 1;
-    bumpMetric(db, p.brandId, event.type === "view" ? "views" : "addToBag");
-    await commit("products", "metrics");
+    db.events.push({
+      id: newId("ev"),
+      type: event.type,
+      productId: p.id,
+      brandId: p.brandId,
+      userId: user?.id ?? null,
+      at: new Date().toISOString(),
+    });
+    await commit("products", "events");
   },
 
   async getPriceRange() {

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { services } from "@/services";
 import { useBag } from "@/stores/bag";
-import { usePrefs } from "@/stores/ui";
+import { usePrefs, useUi } from "@/stores/ui";
 import { modeForPath } from "./mode";
 
 const NOT_REMEMBERED = [
@@ -38,6 +38,8 @@ export function AppSync() {
   }, []);
 
   useEffect(() => {
+    // Signed out and out of the app: the auth gate can redirect again.
+    if (pathname === "/" || pathname.startsWith("/login")) useUi.getState().setLeaving(false);
     const mode = modeForPath(pathname);
     document.documentElement.dataset.mode = mode;
     if (NOT_REMEMBERED.some((p) => pathname.startsWith(p))) return;
@@ -47,7 +49,7 @@ export function AppSync() {
   }, [pathname]);
 
   useEffect(() => {
-    return services.demo.subscribe(() => void qc.invalidateQueries());
+    return services.realtime.subscribe(() => void qc.invalidateQueries());
   }, [qc]);
 
   return null;

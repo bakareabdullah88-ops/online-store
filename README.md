@@ -4,9 +4,11 @@ A campus marketplace for Nigerian students. Buy from the student brands in your 
 a shop and sell. One account has two modes, **Buying** and **Selling**, with an animated switch
 between them.
 
-> **This is a frontend-only demo.** All data lives in your browser (IndexedDB), seeded with 18
-> believable student brands across 8 campuses. Payments, wallet, payouts and auth are simulated
-> and labelled as demo throughout. No real money moves, and nothing you type leaves your device.
+> **The backend isn't connected yet.** Until it is, accounts, shops, orders and messages are saved
+> in your browser (IndexedDB), so each browser has its own data. There is no sample data: what you
+> see is what people create. Buyers pay sellers on delivery or at pickup; online payments, email
+> password resets and payouts are switched off in [`src/config/features.ts`](src/config/features.ts)
+> until the backend can do them.
 
 The product name lives in one place, [`src/config/brand.ts`](src/config/brand.ts).
 
@@ -25,21 +27,13 @@ Production build:
 pnpm build && pnpm start
 ```
 
-### Demo accounts
+### Try the whole flow
 
-The login page has one-tap buttons for both.
-
-| Who    | Email             | Password       | What to try                                                                                       |
-| ------ | ----------------- | -------------- | ------------------------------------------------------------------------------------------------- |
-| Buyer  | `ada@demo.kiosk`  | `kiosk-demo-1` | Explore, add to bag, check out with `FREEDEL` or `KIOSK10`, then watch the order move live        |
-| Seller | `tolu@demo.kiosk` | `kiosk-demo-1` | Owns **Àdìrẹ Lab**. Switch to Selling, accept orders on the board, edit products, check analytics |
-
-You can also sign up as yourself and open a shop from scratch via **Open your shop** (a
-five-step wizard). **Settings → Reset demo data** wipes everything back to the seed.
-
-Orders you place with seeded brands advance on their own (confirmed → preparing → out for
-delivery → delivered, over about a minute), so tracking is live and survives reloads. Orders your
-own shop receives are moved by you in Shop Studio.
+1. Open `/`, choose **Create your account**, pick your campus. You land on **Home**.
+2. Open a shop from the **+** on the left rail (or the round **+** on phones) and add a product.
+3. Sign out (avatar → Sign out), create a second account, find the product and order it.
+4. Sign back in as the seller: the order is in **Orders**; accept it and move it to completed.
+   The buyer is notified at every step, and both dashboards update.
 
 ## Scripts
 
@@ -54,10 +48,11 @@ own shop receives are moved by you in Shop Studio.
 | `pnpm test:e2e`                     | Playwright on a Pixel 7 and a 1280px desktop. Builds nothing itself: run `pnpm build` first; it starts `pnpm start` for you |
 | `pnpm check`                        | typecheck + lint + unit tests                                                                                               |
 
-The e2e suite covers the buyer flow (browse → bag → checkout → live tracking), the seller flow
-(sign up → open a shop → publish a product; accept an order; switch modes) and a **page sweep**:
-29 screens in light mode plus 9 in dark mode, each checked for axe WCAG 2.1 A/AA violations,
-horizontal overflow and console errors.
+The e2e suite runs the real flow with two fresh accounts (sign up → open a shop → add a product →
+second account buys → seller fulfils → buyer sees it paid and messages the shop), the auth gate,
+appearance settings, and a **page sweep** of every screen (signed out, new buyer, seller with a
+product, dark mode), each checked for axe WCAG 2.1 A/AA violations, horizontal overflow and console
+errors.
 
 Point Playwright at an already running server with `PLAYWRIGHT_BASE_URL=http://localhost:3100`.
 
@@ -79,16 +74,20 @@ src/
   app/            routes (thin; compose feature components), metadata routes, error pages
   components/
     ui/           design-system primitives (Button, Field, Chip, Tabs, Sheet, Toaster, …)
-    shell/        header, tab bar, mode switch and curtain, command palette, account sheet
+    app/          signed-in shell: rail, sidebar, phone top bar and pill nav, page header
+    dash/         dashboard cards and charts (funnel, hatched bars, step line, dot matrices)
+    table/        DataTable: filters, search, export, selection, row menus, pagination
+    landing/      landing page sections and the coded app preview
+    shell/        curtain, command palette, auth gate, appearance, global sync
     market/       explore, brand and product pages, cards, rails
     checkout/     bag drawer and page, checkout, success
     orders/       order list, live tracking map and timeline, reviews
-    account/      buyer dashboard
-    studio/       Shop Studio (seller dashboard) and the open-shop wizard
+    account/      buyer home, settings, addresses, saved
+    studio/       Shop Studio pages and the open-shop wizard
     art/          generated product art, brand marks, empty-state illustrations (SVG)
-  config/         brand name, categories, navigation
+  config/         brand name, categories, navigation, feature switches
   design/         tokens and motion presets
-  domain/         pure logic: money (kobo), bag, promos, checkout, order state machine, hours
+  domain/         pure logic: money (kobo), bag, promos, checkout, order state machine, hours, analytics
   services/       typed contracts, mock (IndexedDB) and remote (stub) implementations
   queries/        TanStack Query hooks over the services
   stores/         Zustand: bag, UI prefs, toasts
@@ -118,20 +117,11 @@ There are five font styles (Modern, Clean, Friendly, Editorial, Classic), define
 - **To add a new Google font**, load it in [`src/config/fonts.ts`](src/config/fonts.ts), then add a
   style for it in `font-presets.ts`. Fonts are self-hosted at build time.
 
-## Using real photos
+## Images
 
-Demo photos come from Unsplash (free licence). `python3 scripts/fetch-photos.py` downloads a
-hand-picked list of photo ids (in the script), saves them in `public/seed/` and lists them in
-`src/services/mock/seed/photos.ts` by product type. To swap a photo, change its id and re-run.
-Product types without photos fall back to generated art. To use your own photos instead:
-
-1. Put the files in [`public/seed/`](public/seed) (JPEG or WebP, 4:5 crops work best).
-2. In [`src/services/mock/seed/catalog.ts`](src/services/mock/seed/catalog.ts), add `photos` to a
-   product, for example `photos: ["/seed/adire-tee-1.jpg", "/seed/adire-tee-2.jpg"]`. They become
-   `ImageRef { kind: "url" }` and are served through `next/image`.
-3. Use **Settings → Reset demo data** (or clear site data) so your browser reseeds.
-
-Sellers can also upload their own images in Shop Studio; those are stored as blobs in IndexedDB.
+Sellers upload their own product photos, logos and covers in Shop Studio. Until the backend
+exists they're stored as blobs in the browser. Products without a photo show a neutral
+placeholder; there are no stock or stand-in pictures anywhere.
 
 ## Deploying
 
@@ -150,6 +140,7 @@ other branch get their own preview URL first. Ways to make a change:
   (brand name in `src/config/brand.ts`, fonts in `src/config/fonts.ts`).
 - **Locally**: `pnpm dev`, edit, run `pnpm check`, commit and push.
 
-To regenerate the full screenshot set after a change, start the app (`pnpm build && pnpm start
---port 3100`) and run `node scripts/gallery.mjs phone` and `node scripts/gallery.mjs desktop`.
-Images land in `screenshots/gallery/`.
+To regenerate screenshots after a change, start the app (`pnpm build && pnpm start --port 3100`),
+create real data once with `node scripts/make-state.mjs http://localhost:3100 screenshots/state`
+(two accounts, a shop, products, orders and a message), then run for example
+`node scripts/screenshot.mjs http://localhost:3100 screenshots/out /studio,/studio/orders --state=screenshots/state/seller.json`.

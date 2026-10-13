@@ -21,7 +21,7 @@ import {
   toFulfilment,
   type FulfilmentDraft,
 } from "./fulfilment-fields";
-import { StudioHeaderBlock } from "./studio-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -314,7 +314,7 @@ export function StudioBrandSettings() {
   }
   return (
     <div>
-      <StudioHeaderBlock
+      <NavPageHeader
         eyebrow="Brand"
         title="Brand settings"
         description={`kiosk/${brand.handle}`}

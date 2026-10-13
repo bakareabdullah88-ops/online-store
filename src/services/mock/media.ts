@@ -38,9 +38,9 @@ export const mockMedia: MediaService = {
   },
 };
 
-export async function clearMedia() {
-  memory.clear();
-  if (!hasIdb()) return;
-  const { clear } = await import("idb-keyval");
-  await clear(store());
+export async function removeMedia(ids: string[]) {
+  for (const id of ids) memory.delete(id);
+  if (!hasIdb() || !ids.length) return;
+  const { delMany } = await import("idb-keyval");
+  await delMany(ids, store());
 }

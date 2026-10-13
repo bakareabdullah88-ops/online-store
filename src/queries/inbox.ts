@@ -102,23 +102,6 @@ export function useSendMessage(as: "buyer" | "brand") {
   });
 }
 
-export function useWallet() {
-  const { isSignedIn } = useSession();
-  return useQuery({
-    queryKey: qk.wallet,
-    queryFn: () => services.wallet.getWallet(),
-    enabled: isSignedIn,
-  });
-}
-
-export function useTopUp() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (amountKobo: number) => services.wallet.topUp(amountKobo),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.wallet }),
-  });
-}
-
 export function usePlaces() {
   const { isSignedIn } = useSession();
   return useQuery({

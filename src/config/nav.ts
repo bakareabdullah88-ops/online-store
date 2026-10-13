@@ -1,16 +1,14 @@
 import {
   BarChart3,
   Bell,
-  CircleDollarSign,
+  Compass,
+  Gauge,
   Heart,
-  Home,
   LayoutGrid,
   MapPin,
   MessageCircle,
   Package,
-  Palette,
   Receipt,
-  Search,
   Settings,
   ShoppingBag,
   Star,
@@ -25,72 +23,143 @@ export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Which badge to show next to the item, if any. */
+  badge?: "notifications" | "messages" | "bag" | "activeOrders" | "newOrders" | "shopMessages";
   match?: (path: string) => boolean;
 };
 
+export type NavSection = { title?: string; items: NavItem[] };
+
+const startsWith =
+  (...prefixes: string[]) =>
+  (p: string) =>
+    prefixes.some((x) => p === x || p.startsWith(`${x}/`) || p.startsWith(`${x}?`));
+
+/* --------------------------------- Market --------------------------------- */
+
+export const marketNav: NavSection[] = [
+  {
+    items: [
+      { href: "/home", label: "Home", icon: LayoutGrid, match: startsWith("/home") },
+      {
+        href: "/explore",
+        label: "Discover",
+        icon: Compass,
+        match: startsWith("/explore", "/search", "/brands", "/products"),
+      },
+      {
+        href: "/notifications",
+        label: "Notifications",
+        icon: Bell,
+        badge: "notifications",
+        match: startsWith("/notifications"),
+      },
+      {
+        href: "/orders",
+        label: "Orders",
+        icon: Receipt,
+        badge: "activeOrders",
+        match: startsWith("/orders"),
+      },
+    ],
+  },
+  {
+    title: "Shopping",
+    items: [
+      {
+        href: "/bag",
+        label: "Bag",
+        icon: ShoppingBag,
+        badge: "bag",
+        match: startsWith("/bag", "/checkout"),
+      },
+      { href: "/wishlist", label: "Saved", icon: Heart, match: startsWith("/wishlist") },
+      { href: "/account/following", label: "Following", icon: Store },
+      {
+        href: "/messages",
+        label: "Messages",
+        icon: MessageCircle,
+        badge: "messages",
+        match: startsWith("/messages"),
+      },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      { href: "/account/places", label: "Addresses", icon: MapPin },
+      { href: "/account/reviews", label: "My reviews", icon: Star },
+      { href: "/account/settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
+
+/** Bottom bar on phones while buying. */
 export const marketTabs: NavItem[] = [
-  { href: "/", label: "Home", icon: Home, match: (p) => p === "/" },
+  { href: "/home", label: "Home", icon: LayoutGrid, match: startsWith("/home") },
   {
     href: "/explore",
-    label: "Explore",
-    icon: Search,
-    match: (p) =>
-      p.startsWith("/explore") ||
-      p.startsWith("/search") ||
-      p.startsWith("/brands") ||
-      p.startsWith("/products"),
+    label: "Discover",
+    icon: Compass,
+    match: startsWith("/explore", "/search", "/brands", "/products"),
+  },
+  {
+    href: "/orders",
+    label: "Orders",
+    icon: Receipt,
+    badge: "activeOrders",
+    match: startsWith("/orders"),
   },
   {
     href: "/bag",
     label: "Bag",
     icon: ShoppingBag,
-    match: (p) => p.startsWith("/bag") || p.startsWith("/checkout"),
+    badge: "bag",
+    match: startsWith("/bag", "/checkout"),
   },
-  { href: "/orders", label: "Orders", icon: Receipt, match: (p) => p.startsWith("/orders") },
 ];
 
-export const accountNav: NavItem[] = [
-  { href: "/account", label: "Overview", icon: LayoutGrid, match: (p) => p === "/account" },
-  { href: "/orders", label: "Orders", icon: Receipt, match: (p) => p.startsWith("/orders") },
-  { href: "/wishlist", label: "Saved", icon: Heart, match: (p) => p.startsWith("/wishlist") },
-  { href: "/account/following", label: "Following", icon: Store },
-  { href: "/account/places", label: "Addresses & pickup", icon: MapPin },
-  { href: "/account/wallet", label: "Wallet", icon: Wallet },
+/* ---------------------------------- Shop ---------------------------------- */
+
+export const shopNav: NavSection[] = [
   {
-    href: "/messages",
-    label: "Messages",
-    icon: MessageCircle,
-    match: (p) => p.startsWith("/messages"),
+    items: [
+      { href: "/studio", label: "Performance", icon: Gauge, match: (p) => p === "/studio" },
+      { href: "/studio/analytics", label: "Analytics", icon: BarChart3 },
+      {
+        href: "/notifications",
+        label: "Notifications",
+        icon: Bell,
+        badge: "notifications",
+        match: startsWith("/notifications"),
+      },
+      { href: "/studio/orders", label: "Orders", icon: Receipt, badge: "newOrders" },
+    ],
   },
   {
-    href: "/notifications",
-    label: "Notifications",
-    icon: Bell,
-    match: (p) => p.startsWith("/notifications"),
+    title: "Product",
+    items: [
+      { href: "/studio/products", label: "All products", icon: Package },
+      { href: "/studio/promotions", label: "Promotions", icon: Tag },
+      { href: "/studio/reviews", label: "Reviews", icon: Star },
+    ],
   },
-  { href: "/account/reviews", label: "My reviews", icon: Star },
-  { href: "/account/settings", label: "Settings", icon: Settings },
+  {
+    title: "My store",
+    items: [
+      { href: "/studio/finance", label: "Finance", icon: Wallet },
+      { href: "/studio/customers", label: "Customers", icon: Users },
+      { href: "/studio/messages", label: "Inbox", icon: MessageCircle, badge: "shopMessages" },
+      { href: "/studio/brand", label: "Shop settings", icon: Settings },
+    ],
+  },
 ];
 
-export const studioNav: NavItem[] = [
-  { href: "/studio", label: "Overview", icon: LayoutGrid, match: (p) => p === "/studio" },
-  { href: "/studio/orders", label: "Orders", icon: Receipt },
+export const shopTabs: NavItem[] = [
+  { href: "/studio", label: "Performance", icon: Gauge, match: (p) => p === "/studio" },
+  { href: "/studio/orders", label: "Orders", icon: Receipt, badge: "newOrders" },
   { href: "/studio/products", label: "Products", icon: Package },
-  { href: "/studio/customers", label: "Customers", icon: Users },
-  { href: "/studio/reviews", label: "Reviews", icon: Star },
-  { href: "/studio/promotions", label: "Promotions", icon: Tag },
-  { href: "/studio/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/studio/messages", label: "Messages", icon: MessageCircle },
-  { href: "/studio/brand", label: "Brand", icon: Palette },
-  { href: "/studio/payouts", label: "Payouts", icon: CircleDollarSign },
-];
-
-/** Bottom tabs in Studio on phones (the rest live in "More"). */
-export const studioTabs: NavItem[] = [
-  { href: "/studio", label: "Overview", icon: LayoutGrid, match: (p) => p === "/studio" },
-  { href: "/studio/orders", label: "Orders", icon: Receipt },
-  { href: "/studio/products", label: "Products", icon: Package },
-  { href: "/studio/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/studio/messages", label: "Inbox", icon: MessageCircle, badge: "shopMessages" },
 ];
 
 export function isActive(item: NavItem, path: string) {

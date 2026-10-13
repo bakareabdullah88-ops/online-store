@@ -515,7 +515,7 @@ export function DesignSystemView() {
                 </a>
               }
             >
-              <PasswordInput defaultValue="kiosk-demo-1" />
+              <PasswordInput defaultValue="campus-pass-1" />
             </Field>
             <Field label="Search">
               <SearchInput
@@ -702,7 +702,7 @@ export function DesignSystemView() {
                   Notify when back
                 </MenuItem>
                 <MenuSeparator />
-                <MenuItem icon={<Trash2 />} danger onSelect={() => toast.error("Deleted (demo)")}>
+                <MenuItem icon={<Trash2 />} danger onSelect={() => toast.error("Deleted")}>
                   Delete
                 </MenuItem>
               </MenuContent>
@@ -873,9 +873,9 @@ export function DesignSystemView() {
 
         <Section id="imagery" kicker="11" title="Imagery">
           <p className="mb-5 max-w-prose text-body text-muted">
-            Generated art keeps the catalogue cohesive before real photos arrive. Every image
-            renders through <code className="font-mono text-small">&lt;AppImage&gt;</code>, which
-            handles blobs, URLs and fallbacks.
+            Generated marks stand in for shop logos until one is uploaded. Every image renders
+            through <code className="font-mono text-small">&lt;AppImage&gt;</code>, which handles
+            blobs, URLs and fallbacks.
           </p>
           <div className="mb-5 flex flex-wrap gap-2">
             {(Object.keys(artPalettes) as ArtPalette[]).map((p) => (

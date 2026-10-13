@@ -1,12 +1,5 @@
 import { expect, type Page } from "@playwright/test";
 
-/** Fresh browser storage for each test (IndexedDB is per context already). */
-export async function demoLogin(page: Page, kind: "buyer" | "seller", next?: string) {
-  await page.goto(`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
-  await page.getByRole("button", { name: new RegExp(`try the demo ${kind}`, "i") }).click();
-  await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 30_000 });
-}
-
 export async function expectNoAppErrors(page: Page, errors: string[]) {
   expect(errors, errors.join("\n")).toEqual([]);
 }

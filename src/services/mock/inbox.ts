@@ -1,10 +1,5 @@
 import { newId } from "@/lib/ids";
-import type {
-  MessageService,
-  NotificationService,
-  PlacesService,
-  WalletService,
-} from "../contracts";
+import type { MessageService, NotificationService, PlacesService } from "../contracts";
 import { ServiceError } from "../errors";
 import { schemas } from "./schemas";
 import type { Thread } from "../types";
@@ -12,14 +7,12 @@ import { commit, getDb } from "./db";
 import { clone, requireUser } from "./context";
 import { latency, quick } from "./latency";
 import { pushNotification } from "./notify";
-import { syncOrders } from "./orders";
 
 export const mockNotifications: NotificationService = {
   async list() {
     await latency(0.6);
     const db = await getDb();
     const user = await requireUser(db);
-    if (syncOrders(db)) await commit("orders", "notifications");
     return clone(
       db.notifications
         .filter((n) => n.userId === user.id)
@@ -46,13 +39,6 @@ export const mockNotifications: NotificationService = {
 function canSee(thread: Thread, userId: string, brandIds: string[], as: "buyer" | "brand") {
   return as === "buyer" ? thread.buyerId === userId : brandIds.includes(thread.brandId);
 }
-
-/** Canned seller replies so the demo chat feels alive for seeded brands. */
-const autoReplies = [
-  "Hi! Thanks for reaching out. Yes, that's available. Anything else you'd like to know?",
-  "Great question! We can do that. Just add a note at checkout and we'll sort it.",
-  "Hello 👋 We're open today till evening. Pickup or delivery works.",
-];
 
 export const mockMessages: MessageService = {
   async listThreads(as) {
@@ -126,18 +112,8 @@ export const mockMessages: MessageService = {
 
     const brand = db.brands.find((b) => b.id === t.brandId);
     const owner = brand ? db.users.find((u) => u.id === brand.ownerId) : undefined;
-    // BACKEND-SEAM: realtime messaging (websocket / push) replaces the canned replies below.
-    if (as === "buyer" && owner && !owner.passwordHash) {
-      const reply = autoReplies[t.messages.length % autoReplies.length]!;
-      t.messages.push({
-        id: newId("m"),
-        from: "brand",
-        body: reply,
-        at: new Date(Date.now() + 1500).toISOString(),
-      });
-      t.updatedAt = new Date(Date.now() + 1500).toISOString();
-    }
-    if (as === "buyer" && owner?.passwordHash) {
+    // BACKEND-SEAM: realtime messaging (websocket / push) delivers this instantly.
+    if (as === "buyer" && owner) {
       pushNotification(db, {
         userId: owner.id,
         kind: "message",
@@ -157,43 +133,6 @@ export const mockMessages: MessageService = {
     }
     await commit("threads", "notifications");
     return clone(t);
-  },
-};
-
-export const mockWallet: WalletService = {
-  async getWallet() {
-    await latency();
-    const db = await getDb();
-    const user = await requireUser(db);
-    const transactions = db.wallet
-      .filter((w) => w.userId === user.id)
-      .sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-    return {
-      balanceKobo: transactions.reduce((n, w) => n + w.amountKobo, 0),
-      transactions: clone(transactions),
-    };
-  },
-  async topUp(amountKobo) {
-    const { topUpSchema } = await schemas();
-    topUpSchema.parse({ amountKobo });
-    await latency(1.2);
-    const db = await getDb();
-    const user = await requireUser(db);
-    // BACKEND-SEAM: payment gateway top-up. DEMO: no money moves.
-    db.wallet.push({
-      id: newId("w"),
-      userId: user.id,
-      kind: "topup",
-      amountKobo,
-      label: "Top-up (demo)",
-      at: new Date().toISOString(),
-    });
-    await commit("wallet");
-    return {
-      balanceKobo: db.wallet
-        .filter((w) => w.userId === user.id)
-        .reduce((n, w) => n + w.amountKobo, 0),
-    };
   },
 };
 

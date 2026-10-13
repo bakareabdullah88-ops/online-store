@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { hashString } from "@/lib/random";
 import { artPalettes, type ArtPalette } from "@/design/tokens";
-import { BrandMark, CoverArt, ProductArt } from "@/components/art/product-art";
+import { BrandMark, ProductArt } from "@/components/art/product-art";
 import { useObjectUrl } from "@/queries/media";
 import type { ImageRef } from "@/services/types";
 
@@ -67,11 +68,12 @@ export function AppImage({
         {variant === "logo" ? (
           <BrandMark name={name ?? alt} palette={image.palette} className="size-full" />
         ) : variant === "cover" ? (
-          <CoverArt
-            palette={image.palette}
-            seed={image.seed}
-            motif={image.motif}
-            className="size-full"
+          // Shops without an uploaded cover get a plain tint, never a stand-in picture.
+          <span
+            className="block size-full"
+            style={{
+              background: `linear-gradient(135deg, ${artPalettes[image.palette][4]}, ${artPalettes[image.palette][1]})`,
+            }}
           />
         ) : (
           <ProductArt
@@ -110,12 +112,9 @@ function Fallback({ variant, name }: { variant: Variant; name: string }) {
   const palette = fallbackPalette(name);
   if (variant === "logo") return <BrandMark name={name} palette={palette} className="size-full" />;
   return (
-    <ProductArt
-      motif="monogram"
-      palette={palette}
-      seed={hashString(name)}
-      className="size-full opacity-60"
-    />
+    <span className="grid size-full place-items-center bg-surface-2 text-faint">
+      <ImageIcon className="size-[28%] max-h-10 min-h-4 max-w-10 min-w-4" strokeWidth={1.5} />
+    </span>
   );
 }
 

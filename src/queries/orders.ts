@@ -6,6 +6,7 @@ import { isActive } from "@/domain/orders";
 import { services } from "@/services";
 import type { CheckoutInput, ReviewInput } from "@/services/inputs";
 import type { Order } from "@/services/types";
+import type { DayRange } from "@/domain/analytics";
 import { qk } from "./keys";
 import { useSession } from "./session";
 
@@ -15,9 +16,8 @@ export function useMyOrders() {
     queryKey: qk.orders,
     queryFn: () => services.orders.listMyOrders(),
     enabled: isSignedIn,
-    // Keep the list fresh while anything is moving.
-    refetchInterval: (q) =>
-      q.state.data?.some((o) => o.autoProgress && isActive(o.status)) ? 4000 : false,
+    // Keep the list fresh while anything is moving. BACKEND-SEAM: realtime order events.
+    refetchInterval: (q) => (q.state.data?.some((o) => isActive(o.status)) ? 8000 : false),
   });
 }
 
@@ -32,8 +32,7 @@ export function useOrder(id: string) {
     // BACKEND-SEAM: replace polling with SSE / websocket order events.
     refetchInterval: (q) => {
       const o = q.state.data;
-      if (!o || !isActive(o.status)) return false;
-      return o.autoProgress ? 2000 : 8000;
+      return o && isActive(o.status) ? 8000 : false;
     },
   });
 }
@@ -56,7 +55,6 @@ export function useCreateOrders() {
       for (const o of res.orders) qc.setQueryData(qk.order(o.id), o);
       void qc.invalidateQueries({ queryKey: qk.orders });
       void qc.invalidateQueries({ queryKey: qk.notifications });
-      void qc.invalidateQueries({ queryKey: qk.wallet });
       void qc.invalidateQueries({ queryKey: qk.productsAll });
       void qc.invalidateQueries({ queryKey: ["product"] });
     },
@@ -70,7 +68,6 @@ export function useCancelOrder() {
     onSuccess: (o) => {
       qc.setQueryData(qk.order(o.id), o);
       void qc.invalidateQueries({ queryKey: qk.orders });
-      void qc.invalidateQueries({ queryKey: qk.wallet });
     },
   });
 }
@@ -94,5 +91,15 @@ export function useMyReviews() {
     queryKey: qk.myReviews,
     queryFn: () => services.orders.myReviews(),
     enabled: isSignedIn,
+  });
+}
+
+export function useBuyerDashboard(range: DayRange) {
+  const { isSignedIn } = useSession();
+  return useQuery({
+    queryKey: qk.buyerDashboard(range),
+    queryFn: () => services.orders.getDashboard(range),
+    enabled: isSignedIn,
+    placeholderData: (p) => p,
   });
 }

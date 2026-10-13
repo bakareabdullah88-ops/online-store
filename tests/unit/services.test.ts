@@ -1,8 +1,11 @@
+import { set } from "idb-keyval";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mockServices as s } from "@/services/mock";
-import { __resetMemory, resetDb } from "@/services/mock/db";
-import { DEMO } from "@/services/mock/seed";
+import { __resetMemory, getDb, purgeSampleData, resetDb } from "@/services/mock/db";
+import { generateSeed } from "@/services/mock/seed";
 import { isServiceError } from "@/services/errors";
+import { presetRange } from "@/domain/analytics";
+import type { CheckoutInput } from "@/services/inputs";
 
 beforeEach(async () => {
   __resetMemory();
@@ -20,18 +23,124 @@ async function expectCode(p: Promise<unknown>, code: string) {
   throw new Error(`Expected ${code}`);
 }
 
-describe("seed", () => {
-  it("has enough believable data", async () => {
-    const campuses = await s.catalog.listCampuses();
-    expect(campuses.length).toBeGreaterThanOrEqual(8);
-    const brands = await s.catalog.getBrands();
-    expect(brands.length).toBeGreaterThanOrEqual(16);
-    const page = await s.catalog.getProducts({ pageSize: 48 });
-    expect(page.total).toBeGreaterThanOrEqual(120);
-    for (const p of page.items) {
-      expect(Number.isInteger(p.priceKobo)).toBe(true);
-      expect(p.name).not.toMatch(/product \d|lorem/i);
-    }
+const PASSWORD = "campus123";
+
+/** A seller account with a published product at UNILAG. */
+async function openShop(stock = 10) {
+  await s.auth.signUp({ name: "Kemi Bakes", email: "kemi@shop.com", password: PASSWORD });
+  await s.auth.updateProfile({ name: "Kemi Bakes", campusId: "c_unilag", phone: "08031234567" });
+  const brand = await s.studio.createBrand({
+    name: "Kemi Bakes",
+    handle: "kemibakes",
+    category: "food",
+    tagline: "Small cakes, big love",
+    bio: "Fresh cupcakes baked in Moremi every morning, delivered across campus.",
+    fulfilment: {
+      pickup: true,
+      delivery: true,
+      deliveryFeeKobo: 50_000,
+      prepMinutes: 60,
+      pickupPointIds: ["unilag-pp1"],
+      zoneIds: ["unilag-z1"],
+    },
+  });
+  const product = await s.studio.createProduct({
+    name: "Vanilla Cupcakes (6)",
+    description: "Soft vanilla cupcakes with buttercream.",
+    category: "food",
+    priceKobo: 400_000,
+    options: [],
+    variants: [{ key: "default", stock, priceDeltaKobo: 0 }],
+    status: "published",
+  });
+  await s.auth.signOut();
+  return { brand, product };
+}
+
+async function signUpBuyer() {
+  const u = await s.auth.signUp({
+    name: "Bisi Ade",
+    email: "bisi@example.com",
+    password: PASSWORD,
+  });
+  await s.auth.updateProfile({ name: "Bisi Ade", campusId: "c_unilag", phone: "08030000000" });
+  return u;
+}
+
+const checkout = (
+  brandId: string,
+  productId: string,
+  extra: Partial<CheckoutInput> = {},
+): CheckoutInput => ({
+  campusId: "c_unilag",
+  phone: "08031234567",
+  paymentMethod: "pay_on_delivery",
+  groups: [
+    {
+      brandId,
+      lines: [{ productId, variantKey: "default", quantity: 2 }],
+      fulfilment: { method: "delivery", zoneId: "unilag-z1", addressLine: "Moremi Hall, B214" },
+    },
+  ],
+  ...extra,
+});
+
+describe("fresh install", () => {
+  it("starts with campuses and nothing else", async () => {
+    expect((await s.catalog.listCampuses()).length).toBeGreaterThanOrEqual(8);
+    expect(await s.catalog.getBrands()).toHaveLength(0);
+    expect((await s.catalog.getProducts({ pageSize: 48 })).total).toBe(0);
+    expect(await s.auth.getSession()).toBeNull();
+  });
+
+  it("purges v1 sample accounts but keeps people's own data", async () => {
+    const db = await generateSeed();
+    db.users.push(
+      {
+        id: "u_demo_ada",
+        brandIds: [],
+        followingBrandIds: ["b_real"],
+        wishlistProductIds: [],
+      } as never,
+      {
+        id: "u_real1",
+        brandIds: ["b_real"],
+        followingBrandIds: ["b_sample"],
+        wishlistProductIds: ["p_sample"],
+      } as never,
+    );
+    db.brands.push(
+      { id: "b_real", ownerId: "u_real1" } as never,
+      { id: "b_sample", ownerId: "u_owner_x" } as never,
+    );
+    db.products.push(
+      { id: "p_real", brandId: "b_real" } as never,
+      { id: "p_sample", brandId: "b_sample" } as never,
+    );
+    db.promos.push({ id: "pr_site", brandId: null } as never);
+    purgeSampleData(db);
+    expect(db.users.map((u) => u.id)).toEqual(["u_real1"]);
+    expect(db.brands.map((b) => b.id)).toEqual(["b_real"]);
+    expect(db.products.map((p) => p.id)).toEqual(["p_real"]);
+    expect(db.users[0]!.followingBrandIds).toEqual([]);
+    expect(db.users[0]!.wishlistProductIds).toEqual([]);
+    expect(db.promos).toHaveLength(0);
+  });
+
+  it("migrates a v1 browser database on load", async () => {
+    const { createStore } = await import("idb-keyval");
+    const kv = createStore("kiosk-db", "kv");
+    await set("meta:version", 1, kv);
+    await set(
+      "col:users",
+      [{ id: "u_demo_ada", brandIds: [], followingBrandIds: [], wishlistProductIds: [] }],
+      kv,
+    );
+    await set("session", "u_demo_ada", kv);
+    __resetMemory();
+    const db = await getDb();
+    expect(db.users).toHaveLength(0);
+    expect(await s.auth.getSession()).toBeNull();
   });
 });
 
@@ -40,7 +149,7 @@ describe("auth", () => {
     const u = await s.auth.signUp({
       name: "Bisi Ade",
       email: "Bisi@Example.com",
-      password: "campus123",
+      password: PASSWORD,
     });
     expect(u.email).toBe("bisi@example.com");
     expect(u).not.toHaveProperty("passwordHash");
@@ -50,12 +159,14 @@ describe("auth", () => {
       s.auth.signIn({ email: "bisi@example.com", password: "wrong-pass1" }),
       "UNAUTHORIZED",
     );
-    const again = await s.auth.signIn({ email: "bisi@example.com", password: "campus123" });
-    expect(again.id).toBe(u.id);
+    expect((await s.auth.signIn({ email: "bisi@example.com", password: PASSWORD })).id).toBe(u.id);
   });
+
   it("rejects duplicate emails and weak passwords", async () => {
+    await signUpBuyer();
+    await s.auth.signOut();
     await expectCode(
-      s.auth.signUp({ name: "Ada", email: DEMO.buyer.email, password: "campus123" }),
+      s.auth.signUp({ name: "Ada", email: "bisi@example.com", password: PASSWORD }),
       "CONFLICT",
     );
     await expectCode(
@@ -63,158 +174,107 @@ describe("auth", () => {
       "VALIDATION",
     );
   });
-  it("one-click demo login works for both roles", async () => {
-    expect((await s.auth.signInDemo("buyer")).id).toBe(DEMO.buyer.id);
-    const seller = await s.auth.signInDemo("seller");
-    expect(seller.brandIds.length).toBe(1);
+
+  it("says plainly that email resets are not switched on", async () => {
+    await expectCode(s.auth.requestPasswordReset({ email: "bisi@example.com" }), "UNAVAILABLE");
+  });
+
+  it("deletes an account and its shop after checking the password", async () => {
+    await openShop();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    await expectCode(s.auth.deleteAccount({ password: "nope-nope1" }), "UNAUTHORIZED");
+    await s.auth.deleteAccount({ password: PASSWORD });
+    expect(await s.auth.getSession()).toBeNull();
+    expect(await s.catalog.getBrands()).toHaveLength(0);
+    await expectCode(s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD }), "UNAUTHORIZED");
   });
 });
 
-describe("catalog", () => {
-  it("filters, sorts and searches", async () => {
-    const food = await s.catalog.getProducts({ category: "food", sort: "price_asc", pageSize: 48 });
-    expect(food.items.every((p) => p.category === "food")).toBe(true);
-    const prices = food.items.map((p) => p.priceKobo);
-    expect(prices).toEqual([...prices].sort((a, b) => a - b));
-    const res = await s.catalog.search("jollof");
-    expect(res.products[0]?.name).toMatch(/jollof/i);
-    const brand = await s.catalog.getBrand("adirelab");
-    expect(brand.name).toBe("Àdìrẹ Lab");
-  });
-});
+describe("buying and selling", () => {
+  it("runs a full order between two real accounts", async () => {
+    const { brand, product } = await openShop();
+    await signUpBuyer();
 
-describe("checkout", () => {
-  it("creates one order per brand with promo pricing and decrements stock", async () => {
-    await s.auth.signInDemo("buyer");
-    const { items } = await s.catalog.getProducts({ pageSize: 48, inStock: true });
-    const a = items.find((p) => p.brandId === "b_mamaputexpress")!;
-    const b = items.find((p) => p.brandId === "b_plughub")!;
-    const va = a.variants.find((v) => v.stock > 1)!;
-    const vb = b.variants.find((v) => v.stock > 0)!;
-    const input = {
-      campusId: "c_unilag",
-      phone: "08031234567",
-      paymentMethod: "card" as const,
-      groups: [
-        {
-          brandId: a.brandId,
-          lines: [{ productId: a.id, variantKey: va.key, quantity: 2 }],
-          fulfilment: {
-            method: "delivery" as const,
-            zoneId: "unilag-z1",
-            addressLine: "Room B214",
-          },
-          promoCode: "freedel",
-        },
-        {
-          brandId: b.brandId,
-          lines: [{ productId: b.id, variantKey: vb.key, quantity: 1 }],
-          fulfilment: {
-            method: "pickup" as const,
-            zoneId: "covenant-z6",
-            pickupPointId: "covenant-pp1",
-          },
-        },
-      ],
-    };
+    await s.catalog.recordEvent({ type: "view", productId: product.id });
+    await s.catalog.recordEvent({ type: "add_to_bag", productId: product.id });
+
+    const input = checkout(brand.id, product.id);
     const quote = await s.orders.quote(input);
-    expect(quote.groups[0]!.deliveryFeeKobo).toBe(0);
-    expect(quote.groups[0]!.promo).toMatchObject({ status: "applied" });
+    expect(quote.groups[0]!.deliveryFeeKobo).toBe(50_000);
     const { orders } = await s.orders.createOrders(input);
-    expect(orders).toHaveLength(2);
-    expect(orders[0]!.totalKobo).toBe(quote.groups[0]!.totalKobo);
-    const after = await s.catalog.getProduct(a.slug);
-    expect(after.variants.find((v) => v.key === va.key)!.stock).toBe(va.stock - 2);
-    const mine = await s.orders.listMyOrders();
-    expect(mine.some((o) => o.id === orders[0]!.id)).toBe(true);
+    expect(orders).toHaveLength(1);
+    const order = orders[0]!;
+    expect(order.status).toBe("placed");
+    expect(order.payment.status).toBe("pending");
+    expect(order.autoProgress).toBe(false);
+    expect((await s.catalog.getProduct(product.slug)).variants[0]!.stock).toBe(8);
+
+    // Seller moves it along by hand.
+    await s.auth.signOut();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    const sellerNotes = await s.notifications.list();
+    expect(sellerNotes.some((n) => /order/i.test(n.title))).toBe(true);
+    for (const st of ["confirmed", "preparing", "out_for_delivery", "delivered"] as const)
+      await s.studio.updateOrderStatus(order.id, st);
+    await expectCode(s.studio.updateOrderStatus(order.id, "placed"), "CONFLICT");
+
+    const dash = await s.studio.getDashboard(presetRange("7d"));
+    expect(dash.orders.value).toBe(1);
+    expect(dash.revenue.value).toBe(order.totalKobo);
+    expect(dash.funnel.map((f) => f.value)).toEqual([1, 1, 1, 1, 1]);
+    expect(dash.insight?.value).toBe("100%");
+    const finance = await s.studio.getFinance();
+    expect(finance.earnedKobo).toBe(order.totalKobo);
+
+    // Buyer sees it delivered and paid.
+    await s.auth.signOut();
+    await s.auth.signIn({ email: "bisi@example.com", password: PASSWORD });
+    const mine = await s.orders.getOrder(order.id);
+    expect(mine.status).toBe("delivered");
+    expect(mine.payment.status).toBe("paid");
+    const home = await s.orders.getDashboard(presetRange("30d"));
+    expect(home.spent.value).toBe(order.totalKobo);
+    expect(home.toReview).toBe(1);
+  });
+
+  it("refuses online payments until they are switched on", async () => {
+    const { brand, product } = await openShop();
+    await signUpBuyer();
+    await expectCode(
+      s.orders.createOrders(checkout(brand.id, product.id, { paymentMethod: "card" })),
+      "UNAVAILABLE",
+    );
   });
 
   it("blocks sellers from buying their own products", async () => {
-    await s.auth.signInDemo("seller");
-    const { items } = await s.catalog.getProducts({ brandId: "b_adirelab", inStock: true });
-    const p = items[0]!;
-    const v = p.variants.find((x) => x.stock > 0)!;
-    await expectCode(
-      s.orders.createOrders({
-        campusId: "c_unilag",
-        phone: "08031234567",
-        paymentMethod: "card",
-        groups: [
-          {
-            brandId: p.brandId,
-            lines: [{ productId: p.id, variantKey: v.key, quantity: 1 }],
-            fulfilment: { method: "pickup", zoneId: "unilag-z5", pickupPointId: "unilag-pp1" },
-          },
-        ],
-      }),
-      "CONFLICT",
-    );
+    const { brand, product } = await openShop();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    await expectCode(s.orders.createOrders(checkout(brand.id, product.id)), "CONFLICT");
   });
-});
 
-describe("studio", () => {
-  it("lets a new user open a shop, publish a product and create a working promo", async () => {
-    await s.auth.signUp({ name: "Kemi Shop", email: "kemi@shop.com", password: "campus123" });
-    await s.auth.updateProfile({ name: "Kemi Shop", campusId: "c_ui", phone: "08031234567" });
-    expect(await s.studio.isHandleAvailable("adirelab")).toBe(false);
-    const brand = await s.studio.createBrand({
-      name: "Kemi Bakes",
-      handle: "kemibakes",
-      category: "food",
-      tagline: "Small cakes, big love",
-      bio: "",
-      fulfilment: {
-        pickup: true,
-        delivery: false,
-        deliveryFeeKobo: 0,
-        prepMinutes: 60,
-        pickupPointIds: ["ui-pp1"],
-        zoneIds: [],
-      },
-    });
-    expect(brand.handle).toBe("kemibakes");
-    const product = await s.studio.createProduct({
-      name: "Vanilla Cupcakes (6)",
-      description: "Soft vanilla cupcakes with buttercream.",
-      category: "food",
-      priceKobo: 400_000,
-      options: [],
-      variants: [{ key: "default", stock: 10, priceDeltaKobo: 0 }],
-      status: "published",
-    });
-    expect(product.slug).toContain("kemibakes");
+  it("applies a shop's promo code", async () => {
+    const { brand, product } = await openShop();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
     await s.studio.createPromo({ code: "KEMI20", kind: "percent", value: 20, minSubtotalKobo: 0 });
-    const setup = await s.studio.getSetup();
-    expect(setup.find((x) => x.id === "promo")?.done).toBe(true);
-
-    // A buyer uses the brand code
-    await s.auth.signInDemo("buyer");
-    const q = await s.orders.quote({
-      campusId: "c_ui",
-      phone: "08031234567",
-      paymentMethod: "card",
-      groups: [
-        {
-          brandId: brand.id,
-          lines: [{ productId: product.id, variantKey: "default", quantity: 1 }],
-          fulfilment: { method: "pickup", zoneId: "ui-z5", pickupPointId: "ui-pp1" },
-          promoCode: "KEMI20",
-        },
-      ],
-    });
-    expect(q.groups[0]!.discountKobo).toBe(80_000);
+    await s.auth.signOut();
+    await signUpBuyer();
+    const input = checkout(brand.id, product.id);
+    input.groups[0]!.promoCode = "KEMI20";
+    const q = await s.orders.quote(input);
+    expect(q.groups[0]!.discountKobo).toBe(160_000);
   });
 
-  it("advances orders through the kanban and notifies the buyer", async () => {
-    await s.auth.signInDemo("seller");
-    const orders = await s.studio.listOrders();
-    const live = orders.find((o) => o.id === "o_ada_live_a7b2")!;
-    expect(live.status).toBe("preparing");
-    const next = await s.studio.updateOrderStatus(live.id, "out_for_delivery");
-    expect(next.status).toBe("out_for_delivery");
-    await expectCode(s.studio.updateOrderStatus(live.id, "placed"), "CONFLICT");
-    await s.auth.signInDemo("buyer");
-    const notes = await s.notifications.list();
-    expect(notes[0]!.title).toMatch(/Out for delivery/);
+  it("keeps the bio when other shop settings change", async () => {
+    await openShop();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    const b = await s.studio.updateBrand({
+      payoutAccount: { bankName: "GTBank", accountNumber: "0123456789", accountName: "Kemi Bakes" },
+    });
+    expect(b.bio).toMatch(/cupcakes/);
+    expect(b.payoutAccount).toEqual({
+      bankName: "GTBank",
+      accountLast4: "6789",
+      accountName: "Kemi Bakes",
+    });
   });
 });

@@ -21,7 +21,7 @@ function load(): Promise<Services> {
 type AsyncMethods = Record<string, (...args: unknown[]) => Promise<unknown>>;
 
 /** A stand-in for one service whose methods forward to the loaded implementation. */
-function lazy<K extends Exclude<keyof Services, "demo">>(name: K): Services[K] {
+function lazy<K extends Exclude<keyof Services, "realtime">>(name: K): Services[K] {
   return new Proxy({} as Services[K], {
     get: (_, method) => {
       if (typeof method !== "string" || method === "then") return undefined;
@@ -42,17 +42,15 @@ export const services: Services = {
   orders: lazy("orders"),
   notifications: lazy("notifications"),
   messages: lazy("messages"),
-  wallet: lazy("wallet"),
   places: lazy("places"),
   studio: lazy("studio"),
   media: lazy("media"),
-  demo: {
-    reset: () => load().then((s) => s.demo.reset()),
+  realtime: {
     subscribe(cb) {
       let off: (() => void) | undefined;
       let stopped = false;
       void load().then((s) => {
-        if (!stopped) off = s.demo.subscribe(cb);
+        if (!stopped) off = s.realtime.subscribe(cb);
       });
       return () => {
         stopped = true;

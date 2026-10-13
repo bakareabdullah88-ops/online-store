@@ -47,7 +47,7 @@ import type {
   Variant,
 } from "@/services/types";
 import { toast } from "@/stores/toast";
-import { StudioHeaderBlock } from "./studio-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 import { TableScroll } from "@/components/ui/table-scroll";
 
 type Draft = {
@@ -252,8 +252,8 @@ function ImagesField({
         onChange={(e) => e.target.files && void addFiles(e.target.files)}
       />
       <p className="mt-2 text-small text-muted">
-        Up to 8 images · drag to reorder · the first is the cover. No photo yet? We&apos;ll use
-        generated art.
+        Up to 8 images · drag to reorder · the first is the cover. Real photos sell far better than
+        none.
       </p>
       {images[0] && (
         <div className="mt-5">
@@ -559,7 +559,6 @@ function EditorForm({ product }: { product: Product | undefined }) {
 
   const preview = useMemo<ProductWithBrand | null>(() => {
     if (!brand) return null;
-    const cat = categories.find((c) => c.id === draft.category)!;
     return {
       id: product?.id ?? "preview",
       brandId: brand.id,
@@ -571,9 +570,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
       tags: draft.tags,
       priceKobo: priceKobo ?? 0,
       ...(compareKobo ? { compareAtKobo: compareKobo } : {}),
-      images: draft.images.length
-        ? draft.images.map((i) => i.ref)
-        : [{ kind: "art", motif: cat.motif, palette: cat.palette, seed: draft.name.length + 3 }],
+      images: draft.images.map((i) => i.ref),
       options: draft.options,
       variants: draft.variants,
       status: draft.status,
@@ -660,7 +657,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
       >
         <ArrowLeft className="size-4" /> Products
       </Link>
-      <StudioHeaderBlock
+      <NavPageHeader
         eyebrow={product ? "Edit product" : "New product"}
         title={product ? product.name : "Add a product"}
         actions={

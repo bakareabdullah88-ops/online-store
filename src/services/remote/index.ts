@@ -28,9 +28,8 @@ export const remoteServices: Services = {
   orders: stub("orders"),
   notifications: stub("notifications"),
   messages: stub("messages"),
-  wallet: stub("wallet"),
   places: stub("places"),
   studio: stub("studio"),
   media: stub("media"),
-  demo: { reset: async () => notImplemented("demo.reset"), subscribe: () => () => undefined },
+  realtime: { subscribe: () => () => undefined },
 };

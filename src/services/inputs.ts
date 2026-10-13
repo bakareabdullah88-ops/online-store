@@ -104,6 +104,8 @@ export const updateBrandSchema = createBrandSchema
   .omit({ handle: true })
   .partial()
   .extend({
+    // Without this the create schema's default("") would blank the bio on every update.
+    bio: z.string().trim().max(400).optional(),
     vacation: z.boolean().optional(),
     openHours: z
       .object({
@@ -209,7 +211,7 @@ export const checkoutSchema = z.object({
       }),
     )
     .min(1, "Your bag is empty"),
-  paymentMethod: z.enum(["card", "transfer", "pay_on_pickup", "wallet"]),
+  paymentMethod: z.enum(["pay_on_delivery", "pay_on_pickup", "card", "transfer"]),
 });
 export type CheckoutInput = z.input<typeof checkoutSchema>;
 
@@ -264,10 +266,7 @@ export const messageSchema = z.object({
   body: z.string().trim().min(1, "Write a message").max(1000),
 });
 
-export const topUpSchema = z.object({
-  amountKobo: z
-    .number()
-    .int()
-    .min(50_000, "Minimum top-up is ₦500")
-    .max(20_000_000, "Max ₦200,000 per top-up"),
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, "Enter your password to confirm"),
 });
+export type DeleteAccountInput = z.input<typeof deleteAccountSchema>;

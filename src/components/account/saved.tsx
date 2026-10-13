@@ -8,7 +8,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/market/product-ca
 import { spring } from "@/design/motion";
 import { useSession } from "@/queries/session";
 import { useFollowing, useToggleFollow, useWishlist } from "@/queries/social";
-import { DashboardHeader } from "./dashboard-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 export function WishlistView() {
   const { data, isPending } = useWishlist();
@@ -17,7 +17,7 @@ export function WishlistView() {
   const items = (data ?? []).filter((p) => user?.wishlistProductIds.includes(p.id));
   return (
     <div>
-      <DashboardHeader
+      <NavPageHeader
         eyebrow="Saved"
         title="Saved for later"
         description="Everything you've hearted. Prices and stock are live."
@@ -62,7 +62,7 @@ export function FollowingView() {
   const brands = (data ?? []).filter((b) => user?.followingBrandIds.includes(b.id));
   return (
     <div>
-      <DashboardHeader
+      <NavPageHeader
         eyebrow="Following"
         title="Brands you follow"
         description="New drops from these brands show up in your notifications."

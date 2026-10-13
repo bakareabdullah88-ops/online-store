@@ -1,7 +1,10 @@
 import { brand as appBrand } from "@/config/brand";
 import { purchaseBlock } from "@/domain/bag";
 import { groupTotal, sumQuote, type CheckoutQuote, type GroupQuote } from "@/domain/checkout";
-import { advanceOrder, canBuyerCancel, transition } from "@/domain/orders";
+import { canBuyerCancel, transition } from "@/domain/orders";
+import { buyerDashboard } from "@/domain/analytics";
+import { categories, categoryById } from "@/config/categories";
+import { features } from "@/config/features";
 import { evaluatePromo, normalizeCode } from "@/domain/promos";
 import { findVariant, unitPrice, variantLabel } from "@/domain/variants";
 import { newId, orderCode } from "@/lib/ids";
@@ -131,25 +134,6 @@ function price(
   return { quote: sumQuote(groups.map((g) => g.quote)), groups };
 }
 
-/** Bring auto-progressing orders up to date and emit notifications. */
-export function syncOrders(db: DbSnapshot, now = Date.now()): boolean {
-  let changed = false;
-  for (let i = 0; i < db.orders.length; i++) {
-    const o = db.orders[i]!;
-    if (!o.autoProgress) continue;
-    const { order, reached } = advanceOrder(o, now);
-    if (order !== o) {
-      db.orders[i] = order;
-      changed = true;
-      for (const s of reached) {
-        const at = order.timeline.find((t) => t.status === s)?.at;
-        notifyBuyerOfStatus(db, order, s, at);
-      }
-    }
-  }
-  return changed;
-}
-
 export const mockOrders: OrderService = {
   async quote(input) {
     await latency(0.5);
@@ -177,16 +161,13 @@ export const mockOrders: OrderService = {
     }
 
     const parsed = s.checkoutSchema.parse(input);
-    const total = resolved.quote.totalKobo;
-    if (parsed.paymentMethod === "wallet") {
-      const balance = db.wallet
-        .filter((w) => w.userId === user.id)
-        .reduce((n, w) => n + w.amountKobo, 0);
-      if (balance < total)
-        throw new ServiceError(
-          "CONFLICT",
-          "Your demo wallet balance is too low. Top up or pick another method.",
-        );
+    const online = parsed.paymentMethod === "card" || parsed.paymentMethod === "transfer";
+    // BACKEND-SEAM: online payments create a payment intent (Paystack) before the order exists.
+    if (online && !features.onlinePayments) {
+      throw new ServiceError(
+        "UNAVAILABLE",
+        "Online payment isn't available yet. Choose pay on delivery or pay at pickup.",
+      );
     }
 
     const checkoutId = newId("ck");
@@ -215,9 +196,7 @@ export const mockOrders: OrderService = {
           variantLabel: variantLabel(l.product.options, l.variantKey),
           unitPriceKobo: unitPrice(l.product, l.variantKey),
           quantity: l.quantity,
-          image: clone(
-            l.product.images[0] ?? { kind: "art", motif: "monogram", palette: "sand", seed: 1 },
-          ),
+          image: l.product.images[0] ? clone(l.product.images[0]) : null,
         })),
         fulfilment: {
           method: f.method,
@@ -232,15 +211,11 @@ export const mockOrders: OrderService = {
         discountKobo: g.quote.discountKobo,
         totalKobo: g.quote.totalKobo,
         ...(g.quote.promo?.status === "applied" ? { promoCode: g.quote.promo.code } : {}),
-        // BACKEND-SEAM: payment intent / gateway (Paystack, Flutterwave) confirms before the order is placed.
-        payment: {
-          method: parsed.paymentMethod,
-          status: parsed.paymentMethod === "pay_on_pickup" ? "pending" : "paid",
-        },
+        // Offline payments are collected by the seller on handover and marked paid on delivery.
+        payment: { method: parsed.paymentMethod, status: online ? "paid" : "pending" },
         status: "placed",
         timeline: [{ status: "placed", at: placedAt }],
-        // Seeded brands (owner has no login) progress automatically; real sellers update by hand.
-        autoProgress: !owner?.passwordHash,
+        autoProgress: false,
         placedAt,
         reviewed: false,
       };
@@ -256,43 +231,15 @@ export const mockOrders: OrderService = {
         const promo = db.promos.find((p) => p.code === g.quote.promo!.code);
         if (promo) promo.usageCount += 1;
       }
-      const date = placedAt.slice(0, 10);
-      let m = db.metrics.find((x) => x.brandId === brand.id && x.date === date);
-      if (!m) {
-        m = {
-          brandId: brand.id,
-          date,
-          views: 0,
-          addToBag: 0,
-          orders: 0,
-          revenueKobo: 0,
-          hourly: Array.from({ length: 24 }, () => 0),
-        };
-        db.metrics.push(m);
-      }
-      m.orders += 1;
-      m.revenueKobo += order.subtotalKobo - order.discountKobo;
-
       if (owner) {
         pushNotification(db, {
           userId: owner.id,
           kind: "order",
           title: `New order ${order.code}`,
-          body: `${user.name} ordered ${order.items.length} item${order.items.length > 1 ? "s" : ""}. Accept it in Shop Studio.`,
+          body: `${user.name} ordered ${order.items.length} item${order.items.length > 1 ? "s" : ""}. Accept it to let them know you're on it.`,
           href: "/studio/orders",
         });
       }
-    }
-
-    if (parsed.paymentMethod === "wallet") {
-      db.wallet.push({
-        id: newId("w"),
-        userId: user.id,
-        kind: "payment",
-        amountKobo: -total,
-        label: orders.length > 1 ? `${orders.length} orders` : (orders[0]?.brandName ?? "Order"),
-        at: placedAt,
-      });
     }
 
     pushNotification(db, {
@@ -300,11 +247,11 @@ export const mockOrders: OrderService = {
       kind: "order",
       title:
         orders.length > 1 ? `${orders.length} orders placed` : `Order placed · ${orders[0]?.code}`,
-      body: "We'll keep you posted as each brand updates your order.",
+      body: "We'll let you know as soon as the shop accepts it.",
       href: orders.length > 1 ? "/orders" : `/orders/${orders[0]?.id}`,
     });
 
-    await commit("orders", "products", "promos", "metrics", "notifications", "wallet");
+    await commit("orders", "products", "promos", "notifications");
     return { checkoutId, orders: clone(orders) };
   },
 
@@ -312,7 +259,6 @@ export const mockOrders: OrderService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    if (syncOrders(db)) await commit("orders", "notifications");
     return clone(
       db.orders
         .filter((o) => o.buyerId === user.id)
@@ -324,7 +270,6 @@ export const mockOrders: OrderService = {
     await latency(0.6);
     const db = await getDb();
     const user = await requireUser(db);
-    if (syncOrders(db)) await commit("orders", "notifications");
     const order = db.orders.find((o) => o.id === id);
     if (!order) throw new ServiceError("NOT_FOUND", "We couldn't find that order.");
     if (order.buyerId !== user.id && !user.brandIds.includes(order.brandId)) {
@@ -337,14 +282,13 @@ export const mockOrders: OrderService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    syncOrders(db);
     const idx = db.orders.findIndex((o) => o.id === id && o.buyerId === user.id);
     const order = db.orders[idx];
     if (!order) throw new ServiceError("NOT_FOUND", "We couldn't find that order.");
     if (!canBuyerCancel(order)) {
       throw new ServiceError(
         "CONFLICT",
-        "This order has already been accepted, so it can't be cancelled here. Message the brand instead.",
+        "This order has already been accepted, so it can't be cancelled here. Message the shop instead.",
       );
     }
     const next: Order = {
@@ -363,17 +307,17 @@ export const mockOrders: OrderService = {
       const v = p ? findVariant(p, it.variantKey) : undefined;
       if (v) v.stock += it.quantity;
     }
-    if (order.payment.method === "wallet" && order.payment.status === "paid") {
-      db.wallet.push({
-        id: newId("w"),
-        userId: user.id,
-        kind: "refund",
-        amountKobo: order.totalKobo,
-        label: `Refund · ${order.brandName}`,
-        at: new Date().toISOString(),
+    const brand = db.brands.find((b) => b.id === next.brandId);
+    if (brand) {
+      pushNotification(db, {
+        userId: brand.ownerId,
+        kind: "order",
+        title: `${next.code} was cancelled`,
+        body: `${user.name} cancelled before you accepted it. The stock is back on your shelf.`,
+        href: `/studio/orders?order=${next.id}`,
       });
     }
-    await commit("orders", "products", "wallet");
+    await commit("orders", "products", "notifications");
     return clone(next);
   },
 
@@ -436,6 +380,20 @@ export const mockOrders: OrderService = {
     return clone(review);
   },
 
+  async getDashboard(range) {
+    await latency(0.6);
+    const db = await getDb();
+    const user = await requireUser(db);
+    const productCategory = new Map(db.products.map((p) => [p.id, p.category]));
+    return buyerDashboard({
+      orders: db.orders.filter((o) => o.buyerId === user.id),
+      categoryOf: (id) => productCategory.get(id),
+      categoryName: (id) =>
+        categories.some((c) => c.id === id) ? categoryById(id as never).name : "Other",
+      range,
+    });
+  },
+
   async myReviews() {
     await latency();
     const db = await getDb();
@@ -461,6 +419,9 @@ export function applySellerTransition(db: DbSnapshot, orderId: string, to: Order
   let next: Order;
   try {
     next = transition({ ...order, autoProgress: false }, to, Date.now());
+    if (to === "delivered" && next.payment.status === "pending") {
+      next = { ...next, payment: { ...next.payment, status: "paid" } };
+    }
   } catch (e) {
     throw new ServiceError("CONFLICT", e instanceof Error ? e.message : "Invalid status change");
   }

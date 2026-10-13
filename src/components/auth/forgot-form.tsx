@@ -12,6 +12,7 @@ import { spring } from "@/design/motion";
 import { applyServiceErrors } from "@/lib/form";
 import { resetSchema } from "@/services/inputs";
 import { useRequestReset } from "@/queries/session";
+import { features } from "@/config/features";
 
 type Values = z.input<typeof resetSchema>;
 
@@ -25,6 +26,32 @@ export function ForgotForm() {
     reset.mutateAsync(v.email).catch((e) => applyServiceErrors(e, form.setError, ["email"])),
   );
   const sent = reset.isSuccess;
+
+  if (!features.passwordResetEmail) {
+    return (
+      <div className="w-full max-w-md">
+        <span className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent">
+          <MailCheck className="size-7" />
+        </span>
+        <h1 className="mt-6 font-display text-display-md">Reset your password</h1>
+        <p className="mt-3 text-body text-muted">
+          Password reset by email isn&apos;t switched on yet. It arrives together with account email
+          verification.
+        </p>
+        <p className="mt-3 text-body text-muted">
+          Until then, if you can&apos;t log in, create a new account with a different email.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-2">
+          <ButtonLink href="/login" size="lg">
+            Back to log in
+          </ButtonLink>
+          <ButtonLink href="/signup" size="lg" variant="secondary">
+            Create an account
+          </ButtonLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -45,10 +72,6 @@ export function ForgotForm() {
               If an account exists for{" "}
               <strong className="font-medium text-ink">{form.getValues("email")}</strong>, a reset
               link is on its way.
-            </p>
-            <p className="mt-4 rounded-md bg-warning-soft px-4 py-3 text-small text-warning">
-              Demo: no email is actually sent. Use “Try the demo” on the login page, or create a new
-              account.
             </p>
             <ButtonLink href="/login" className="mt-8" size="lg">
               Back to log in

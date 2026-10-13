@@ -19,7 +19,7 @@ import { promoInputSchema, type PromoInput } from "@/services/inputs";
 import { errorMessage } from "@/services/errors";
 import type { Promo, PromoKind } from "@/services/types";
 import { toast } from "@/stores/toast";
-import { StudioHeaderBlock } from "./studio-shell";
+import { NavPageHeader } from "@/components/app/nav-header";
 
 type Draft = {
   id?: string;
@@ -232,7 +232,7 @@ export function StudioPromotions() {
 
   return (
     <div>
-      <StudioHeaderBlock
+      <NavPageHeader
         eyebrow="Promotions"
         title="Promo codes"
         description="Codes you create here work at checkout immediately, for your shop only."

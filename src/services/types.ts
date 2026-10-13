@@ -86,8 +86,6 @@ export type User = {
   onboarded: boolean;
   notificationPrefs: NotificationPrefs;
   createdAt: ISODate;
-  /** True for the seeded "Try the demo" accounts. */
-  isDemo: boolean;
 };
 
 /** Never leaves the service layer. */
@@ -218,7 +216,11 @@ export type OrderStatus =
   | "declined";
 
 export type FulfilmentMethod = "pickup" | "delivery";
-export type PaymentMethod = "card" | "transfer" | "pay_on_pickup" | "wallet";
+/**
+ * Offline methods work today. "card" and "transfer" are online payments and
+ * need the payments backend (BACKEND-SEAM: Paystack); see config/features.ts.
+ */
+export type PaymentMethod = "pay_on_delivery" | "pay_on_pickup" | "card" | "transfer";
 
 export type OrderItem = {
   productId: ID;
@@ -227,7 +229,7 @@ export type OrderItem = {
   variantLabel: string;
   unitPriceKobo: Kobo;
   quantity: number;
-  image: ImageRef;
+  image: ImageRef | null;
 };
 
 export type OrderFulfilment = {
@@ -263,7 +265,7 @@ export type Order = {
   payment: { method: PaymentMethod; status: "paid" | "pending" | "refunded" };
   status: OrderStatus;
   timeline: TimelineEntry[];
-  /** Seeded brands progress automatically; the user's own brand is advanced by hand. */
+  /** Sellers move orders along by hand. Kept for a future courier integration. */
   autoProgress: boolean;
   placedAt: ISODate;
   reviewed: boolean;
@@ -325,24 +327,16 @@ export type Thread = {
   unreadForBrand: number;
 };
 
-/* ------------------------------ Wallet & payouts -------------------------- */
+/* -------------------------------- Analytics ------------------------------- */
 
-export type WalletTransaction = {
+/** One shopper action. Shop owners' own views are not recorded. */
+export type AnalyticsEvent = {
   id: ID;
-  userId: ID;
-  kind: "topup" | "payment" | "refund";
-  amountKobo: Kobo;
-  label: string;
-  at: ISODate;
-};
-
-export type Payout = {
-  id: ID;
+  type: "view" | "add_to_bag";
+  productId: ID;
   brandId: ID;
-  amountKobo: Kobo;
-  status: "paid" | "processing";
+  userId: ID | null;
   at: ISODate;
-  reference: string;
 };
 
 /* ------------------------------ Saved places ------------------------------ */
@@ -356,20 +350,6 @@ export type SavedPlace = {
   pickupPointId?: ID;
   addressLine: string;
   isDefault: boolean;
-};
-
-/* -------------------------------- Analytics ------------------------------- */
-
-export type BrandMetric = {
-  brandId: ID;
-  /** YYYY-MM-DD */
-  date: string;
-  views: number;
-  addToBag: number;
-  orders: number;
-  revenueKobo: Kobo;
-  /** 24 buckets of views by hour */
-  hourly: number[];
 };
 
 /* ---------------------------------- Lists --------------------------------- */

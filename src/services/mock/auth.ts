@@ -7,7 +7,8 @@ import type { UserRecord } from "../types";
 import { commit, getDb, setSessionUserId } from "./db";
 import { currentUser, publicUser, requireUser } from "./context";
 import { latency } from "./latency";
-import { DEMO } from "./seed";
+import { features } from "@/config/features";
+import { removeMedia } from "./media";
 
 function validation(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
@@ -56,7 +57,6 @@ export const mockAuth: AuthService = {
         newFromFollowed: true,
       },
       createdAt: new Date().toISOString(),
-      isDemo: false,
       passwordHash: await hashPassword(input.password, salt),
       passwordSalt: salt,
     };
@@ -66,7 +66,7 @@ export const mockAuth: AuthService = {
       userId: user.id,
       kind: "system",
       title: `Welcome, ${input.name.split(" ")[0]}`,
-      body: "Finish setting up your profile to see brands on your campus.",
+      body: "Finish setting up your profile to see shops on your campus.",
       href: "/welcome",
       read: false,
       createdAt: new Date().toISOString(),
@@ -97,17 +97,6 @@ export const mockAuth: AuthService = {
     return publicUser(user);
   },
 
-  async signInDemo(kind) {
-    await latency(0.6);
-    const db = await getDb();
-    const id = kind === "buyer" ? DEMO.buyer.id : DEMO.seller.id;
-    const user = db.users.find((u) => u.id === id);
-    if (!user)
-      throw new ServiceError("NOT_FOUND", "Demo data is missing. Reset demo data in settings.");
-    await setSessionUserId(user.id);
-    return publicUser(user);
-  },
-
   async signOut() {
     await latency(0.4);
     await setSessionUserId(null);
@@ -118,8 +107,48 @@ export const mockAuth: AuthService = {
     const parsed = resetSchema.safeParse(raw);
     if (!parsed.success) validation(parsed.error);
     await latency();
-    // BACKEND-SEAM: send a reset email. The demo never reveals whether the email exists.
+    // BACKEND-SEAM: send a reset email (never reveal whether the email exists).
+    if (!features.passwordResetEmail) {
+      throw new ServiceError(
+        "UNAVAILABLE",
+        "Password reset by email isn't switched on yet. If you remember your password, log in to change it in Settings.",
+      );
+    }
     return { sent: true };
+  },
+
+  async deleteAccount(raw) {
+    const { deleteAccountSchema } = await schemas();
+    const parsed = deleteAccountSchema.safeParse(raw);
+    if (!parsed.success) validation(parsed.error);
+    await latency();
+    const db = await getDb();
+    const user = await requireUser(db);
+    const ok = await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash);
+    if (!ok) {
+      throw new ServiceError("UNAUTHORIZED", "That password isn't right.", {
+        password: "That password isn't right",
+      });
+    }
+    const brandIds = new Set(user.brandIds);
+    const images = [
+      ...db.products.filter((p) => brandIds.has(p.brandId)).flatMap((p) => p.images),
+      ...db.brands.filter((b) => brandIds.has(b.id)).flatMap((b) => [b.logo, b.cover]),
+      ...(user.avatar ? [user.avatar] : []),
+    ];
+    db.users = db.users.filter((u) => u.id !== user.id);
+    db.brands = db.brands.filter((b) => !brandIds.has(b.id));
+    db.products = db.products.filter((p) => !brandIds.has(p.brandId));
+    db.promos = db.promos.filter((p) => !(p.brandId && brandIds.has(p.brandId)));
+    db.places = db.places.filter((p) => p.userId !== user.id);
+    db.notifications = db.notifications.filter((n) => n.userId !== user.id);
+    db.events = db.events.filter((e) => !brandIds.has(e.brandId));
+    for (const u of db.users) {
+      u.followingBrandIds = u.followingBrandIds.filter((id) => !brandIds.has(id));
+    }
+    await removeMedia(images.flatMap((i) => (i.kind === "blob" ? [i.id] : [])));
+    await commit("users", "brands", "products", "promos", "places", "notifications", "events");
+    await setSessionUserId(null);
   },
 
   async updateProfile(raw) {

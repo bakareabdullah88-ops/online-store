@@ -5,6 +5,7 @@ import { useQuery } from "./use-query";
 import { services } from "@/services";
 import type { ProfileInput, SignInInput, SignUpInput } from "@/services/inputs";
 import type { User } from "@/services/types";
+import { useUi } from "@/stores/ui";
 import { qk } from "./keys";
 
 /**
@@ -43,17 +44,15 @@ export function useSignUp() {
   return useMutation({ mutationFn: (i: SignUpInput) => services.auth.signUp(i), onSuccess: done });
 }
 
-export function useSignInDemo() {
-  const done = useOnIdentityChange();
-  return useMutation({
-    mutationFn: (k: "buyer" | "seller") => services.auth.signInDemo(k),
-    onSuccess: done,
-  });
-}
-
 export function useSignOut() {
   const done = useOnIdentityChange();
-  return useMutation({ mutationFn: () => services.auth.signOut(), onSuccess: () => done(null) });
+  return useMutation({
+    mutationFn: () => services.auth.signOut(),
+    onSuccess: () => {
+      useUi.getState().setLeaving(true);
+      done(null);
+    },
+  });
 }
 
 export function useRequestReset() {
@@ -88,11 +87,12 @@ export function useUpdateNotificationPrefs() {
   });
 }
 
-export function useResetDemo() {
+export function useDeleteAccount() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => services.demo.reset(),
+    mutationFn: (password: string) => services.auth.deleteAccount({ password }),
     onSuccess: () => {
+      useUi.getState().setLeaving(true);
       qc.clear();
       qc.setQueryData(qk.session, null);
     },
