@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Page } from "@/components/shell/page";
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { OrderDetail, OrderDetailSkeleton } from "@/components/orders/order-detail";
 
 export const metadata: Metadata = { title: "Order", robots: { index: false } };

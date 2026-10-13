@@ -47,12 +47,12 @@ export function ProductCard({
     </div>
   );
   return (
-    <article className={cn("group relative", className)}>
+    <article className={cn("group card relative lift p-2.5", className)}>
       <Link
         href={`/products/${p.slug}`}
         className="block rounded-md focus-visible:outline-offset-4"
       >
-        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-sand">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-[16px] bg-surface-2">
           {morph ? (
             <ViewTransition name={productTransitionName(p.id)} share="morph" default="none">
               {image}
@@ -83,7 +83,7 @@ export function ProductCard({
             )}
           </div>
         </div>
-        <div className={cn("mt-3 flex flex-col", size === "lg" ? "gap-1" : "gap-0.5")}>
+        <div className={cn("mt-2.5 flex flex-col px-1 pb-1", size === "lg" ? "gap-1" : "gap-0.5")}>
           {showBrand && <p className="truncate eyebrow text-muted">{p.brand.name}</p>}
           <h3
             className={cn(
@@ -122,7 +122,7 @@ export function ProductCard({
         productId={p.id}
         productName={p.name}
         size="sm"
-        className="absolute top-2 right-2"
+        className="absolute top-4 right-4"
       />
     </article>
   );

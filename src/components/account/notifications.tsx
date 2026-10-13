@@ -79,7 +79,7 @@ export function NotificationsView() {
           {[...groups.entries()].map(([day, items]) => (
             <section key={day} aria-label={day}>
               <h2 className="mb-2 eyebrow text-muted">{day}</h2>
-              <ul className="divide-y divide-line overflow-hidden rounded-lg bg-surface hairline">
+              <ul className="card divide-y divide-line overflow-hidden">
                 <AnimatePresence initial={false}>
                   {items.map((n) => {
                     const Icon = icons[n.kind] ?? Bell;

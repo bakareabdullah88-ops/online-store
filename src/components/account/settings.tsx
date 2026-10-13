@@ -2,7 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Camera, LogOut, Trash2 } from "lucide-react";
+import {
+  BellRing,
+  Camera,
+  Globe,
+  LogOut,
+  Palette,
+  ShieldAlert,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/controls";
 import { Field, Input, PasswordInput } from "@/components/ui/input";
@@ -32,17 +41,31 @@ import { NavPageHeader } from "@/components/app/nav-header";
 function Section({
   title,
   description,
+  icon,
+  tone = "var(--chart-blue)",
   children,
 }: {
   title: string;
   description?: string;
+  icon?: React.ReactNode;
+  tone?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid grid-cols-1 gap-6 border-t border-line py-8 md:grid-cols-[240px_1fr]">
-      <div>
-        <h2 className="text-title font-semibold">{title}</h2>
-        {description && <p className="mt-1 text-small text-muted">{description}</p>}
+    <section className="card mb-4 grid lift grid-cols-1 gap-6 p-5 md:grid-cols-[240px_1fr] md:p-6">
+      <div className="flex items-start gap-3">
+        {icon && (
+          <span
+            className="grid size-10 shrink-0 place-items-center rounded-xl tone-tile [&_svg]:size-5"
+            style={{ ["--tone" as string]: tone }}
+          >
+            {icon}
+          </span>
+        )}
+        <div>
+          <h2 className="text-title font-semibold">{title}</h2>
+          {description && <p className="mt-1 text-small text-muted">{description}</p>}
+        </div>
       </div>
       <div className="min-w-0">{children}</div>
     </section>
@@ -206,13 +229,28 @@ export function SettingsView() {
   return (
     <div>
       <NavPageHeader eyebrow="Settings" title="Settings" />
-      <Section title="Profile" description="How sellers and riders see you.">
+      <Section
+        title="Profile"
+        icon={<UserRound />}
+        tone="var(--chart-blue)"
+        description="How sellers and riders see you."
+      >
         <ProfileForm user={user} />
       </Section>
-      <Section title="Notifications" description="Choose what we tell you about.">
+      <Section
+        title="Notifications"
+        icon={<BellRing />}
+        tone="#f59e0b"
+        description="Choose what we tell you about."
+      >
         <NotificationPrefs user={user} />
       </Section>
-      <Section title="Appearance" description="Theme and font style. Saved on this device.">
+      <Section
+        title="Appearance"
+        icon={<Palette />}
+        tone="var(--chart-violet)"
+        description="Theme and font style. Saved on this device."
+      >
         <div className="flex flex-col gap-6">
           <div>
             <p className="mb-2 text-small font-medium">Theme</p>
@@ -233,7 +271,12 @@ export function SettingsView() {
           </div>
         </div>
       </Section>
-      <Section title="Language" description="More languages will be added later.">
+      <Section
+        title="Language"
+        icon={<Globe />}
+        tone="#14b8a6"
+        description="More languages will be added later."
+      >
         <p className="flex items-center gap-3 text-body">
           English (Nigeria)
           <span className="rounded-full bg-ink/[0.06] px-2.5 py-1 font-mono text-[10px] tracking-wider text-muted uppercase">
@@ -242,6 +285,8 @@ export function SettingsView() {
         </p>
       </Section>
       <Section
+        icon={<ShieldAlert />}
+        tone="#f43f5e"
         title="Account"
         description="Sign out of this device, or delete your account for good."
       >

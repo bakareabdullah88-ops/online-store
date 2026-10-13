@@ -108,7 +108,7 @@ export function LandingNav() {
                 href="/signup"
                 className="flex h-10 items-center rounded-xl bg-mint-cta px-4 text-[14px] font-semibold text-on-mint-cta shadow-sm transition-[filter] hover:brightness-95"
               >
-                Get started free
+                Get access
               </Link>
             </>
           )}

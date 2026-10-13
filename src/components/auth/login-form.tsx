@@ -12,6 +12,7 @@ import { safeNext } from "@/lib/safe-next";
 import { signInSchema } from "@/services/inputs";
 import { useSignIn } from "@/queries/session";
 import { toast } from "@/stores/toast";
+import { features } from "@/config/features";
 
 type Values = z.input<typeof signInSchema>;
 
@@ -43,12 +44,12 @@ export function LoginForm() {
     <div className="w-full max-w-md">
       <h1 className="font-display text-display-md">Welcome back</h1>
       <p className="mt-2 text-body text-muted">
-        New here?{" "}
+        {features.inviteOnly ? "No login yet? " : "New here? "}
         <Link
           href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
           className="font-medium text-ink underline underline-offset-4"
         >
-          Create an account
+          {features.inviteOnly ? "How to get access" : "Create an account"}
         </Link>
       </p>
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">

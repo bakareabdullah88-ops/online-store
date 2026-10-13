@@ -39,14 +39,12 @@ export function ForgotForm() {
           verification.
         </p>
         <p className="mt-3 text-body text-muted">
-          Until then, if you can&apos;t log in, create a new account with a different email.
+          Until then, if you can&apos;t log in, ask the person who gave you your login for a new
+          password.
         </p>
         <div className="mt-8 flex flex-wrap gap-2">
           <ButtonLink href="/login" size="lg">
             Back to log in
-          </ButtonLink>
-          <ButtonLink href="/signup" size="lg" variant="secondary">
-            Create an account
           </ButtonLink>
         </div>
       </div>

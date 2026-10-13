@@ -264,7 +264,7 @@ export function StudioPromotions() {
                 layout
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={spring.smooth}
-                className="relative overflow-hidden rounded-lg bg-surface hairline"
+                className="card relative overflow-hidden"
               >
                 <div className="flex items-start justify-between gap-3 border-b border-dashed border-line-strong p-5">
                   <div>

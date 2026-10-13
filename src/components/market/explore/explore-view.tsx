@@ -1,6 +1,6 @@
 "use client";
 
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
 import { keepPreviousData } from "@tanstack/react-query";
@@ -173,7 +173,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
       />
 
       {/* Sticky category rail + tools */}
-      <div className="sticky top-[calc(var(--header-h)+env(safe-area-inset-top))] z-(--z-sticky) -mx-4 mt-5 bg-surface/90 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6 lg:top-0 lg:-mx-8 lg:px-8">
+      <div className="card sticky top-[calc(env(safe-area-inset-top)+76px)] z-(--z-sticky) mt-5 rounded-2xl px-3 py-2.5 md:top-[88px]">
         <div className="flex items-center gap-3">
           <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
             <ChipGroup

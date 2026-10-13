@@ -36,16 +36,16 @@ export function MobileNav() {
   return (
     <>
       <div
-        className="h-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] lg:hidden"
+        className="h-[calc(var(--tabbar-h)+env(safe-area-inset-bottom))] md:hidden"
         aria-hidden
       />
       <div
         style={{ viewTransitionName: "tab-bar" }}
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-(--z-header) flex items-center justify-center gap-3 px-4 pb-[calc(env(safe-area-inset-bottom)+14px)] lg:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-(--z-header) flex items-center justify-center gap-3 px-4 pb-[calc(env(safe-area-inset-bottom)+14px)] md:hidden"
       >
         <nav
           aria-label={mode === "selling" ? "Shop" : "Main"}
-          className="pointer-events-auto flex h-16 items-center gap-1 rounded-full glass p-2 shadow-[0_12px_40px_-12px_rgb(0_0_0/0.35)] ring-1 ring-line"
+          className="pointer-events-auto flex h-16 items-center gap-1 rounded-full glass-bar p-2"
         >
           {tabs.map((item) => {
             const active = isActive(item, pathname);

@@ -1,16 +1,21 @@
 "use client";
 
 import {
+  Activity,
+  CalendarDays,
   Compass,
+  Filter,
   Heart,
   LayoutGrid,
   MapPin,
+  PieChart,
   Receipt,
   ShoppingBag,
   Store,
   Wallet,
 } from "lucide-react";
-import { PageHeader, pagePad } from "@/components/app/page-header";
+import { PageHeader } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { Stagger, StaggerItem } from "@/components/app/stagger";
 import { useNavBadges } from "@/components/app/nav-badges";
 import { HatchedBars } from "@/components/dash/bars";
@@ -140,7 +145,7 @@ export function BuyerHome() {
         </div>
       ) : (
         <Stagger className="mt-6 grid grid-cols-1 gap-4">
-          <StaggerItem className="overflow-hidden rounded-[24px] ring-1 ring-line">
+          <StaggerItem className="card overflow-hidden">
             <QuickJump
               prompt="What are you looking for today?"
               placeholder="Search products and shops, or type / for a category"
@@ -156,28 +161,40 @@ export function BuyerHome() {
             <StatCard
               icon={<Wallet />}
               label="Spent"
-              value={formatNaira(kobo(d.spent.value))}
+              value={d.spent.value}
+              format={(n) => formatNaira(Math.round(n))}
+              tone="var(--chart-blue)"
+              spark={d.daily.map((p) => p.amountKobo)}
               change={d.spent.change}
               compare={`vs ${formatNairaCompact(kobo(d.spent.prev))} before`}
             />
             <StatCard
               icon={<Receipt />}
               label="Orders"
-              value={formatNumber(d.orders.value)}
+              value={d.orders.value}
+              format={(n) => formatNumber(Math.round(n))}
+              tone="var(--chart-orange)"
+              spark={d.daily.map((p) => p.orders)}
               change={d.orders.change}
               compare={`vs ${formatNumber(d.orders.prev)} before`}
             />
             <StatCard
               icon={<ShoppingBag />}
               label="Average order"
-              value={formatNaira(kobo(d.avgOrder.value))}
+              value={d.avgOrder.value}
+              format={(n) => formatNaira(Math.round(n))}
+              tone="var(--chart-violet)"
+              spark={d.daily.map((p) => (p.orders ? p.amountKobo / p.orders : 0))}
               change={d.avgOrder.change}
               compare={`vs ${formatNairaCompact(kobo(d.avgOrder.prev))} before`}
             />
             <StatCard
               icon={<Store />}
               label="Shops"
-              value={formatNumber(d.shops.value)}
+              value={d.shops.value}
+              format={(n) => formatNumber(Math.round(n))}
+              tone="var(--chart-green)"
+              spark={d.weekdays.map((w) => w.orders)}
               change={d.shops.change}
               compare={`vs ${formatNumber(d.shops.prev)} before`}
             />
@@ -186,6 +203,8 @@ export function BuyerHome() {
           <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
             <DashCard
               title="Your orders"
+              icon={<Filter />}
+              tone="var(--chart-blue)"
               actions={[{ label: "All orders", href: "/orders", icon: <Receipt /> }]}
             >
               <div className="relative">
@@ -210,6 +229,8 @@ export function BuyerHome() {
             </DashCard>
             <DashCard
               title="Spending by category"
+              icon={<PieChart />}
+              tone="var(--chart-green)"
               actions={[{ label: "Discover", href: "/explore", icon: <Compass /> }]}
             >
               <p className="text-[40px] leading-none font-medium tracking-[-0.04em] tabular md:text-[52px]">
@@ -232,6 +253,8 @@ export function BuyerHome() {
           <StaggerItem className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.9fr)]">
             <DashCard
               title="When you order"
+              icon={<CalendarDays />}
+              tone="var(--chart-orange)"
               actions={[{ label: "All orders", href: "/orders", icon: <Receipt /> }]}
             >
               <div className="mt-auto flex flex-wrap items-end justify-between gap-4">
@@ -263,6 +286,8 @@ export function BuyerHome() {
           <StaggerItem>
             <DashCard
               title="Spending by day"
+              icon={<Activity />}
+              tone="var(--chart-violet)"
               actions={[
                 { label: "Saved items", href: "/wishlist", icon: <Heart /> },
                 { label: "Addresses", href: "/account/places", icon: <MapPin /> },

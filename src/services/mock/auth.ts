@@ -9,11 +9,52 @@ import { currentUser, publicUser, requireUser } from "./context";
 import { latency } from "./latency";
 import { features } from "@/config/features";
 import { removeMedia } from "./media";
+import { accessList, userIdFor } from "@/config/access";
+import { emailHash, normaliseEmail } from "@/lib/access-hash";
 
 function validation(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
   for (const i of error.issues) fields[String(i.path[0] ?? "form")] ??= i.message;
   throw new ServiceError("VALIDATION", Object.values(fields)[0] ?? "Check the form", fields);
+}
+
+function newUserRecord(p: {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  passwordSalt: string;
+}): UserRecord {
+  return {
+    ...p,
+    phone: "",
+    campusId: null,
+    avatar: null,
+    brandIds: [],
+    followingBrandIds: [],
+    wishlistProductIds: [],
+    onboarded: false,
+    notificationPrefs: {
+      orderUpdates: true,
+      messages: true,
+      promotions: false,
+      newFromFollowed: true,
+    },
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function welcomeNote(user: UserRecord) {
+  return {
+    id: newId("n"),
+    userId: user.id,
+    kind: "system" as const,
+    title: `Welcome, ${user.name.split(" ")[0]}`,
+    body: "Finish setting up your profile to see shops on your campus.",
+    href: "/welcome",
+    read: false,
+    createdAt: new Date().toISOString(),
+  };
 }
 
 export const mockAuth: AuthService = {
@@ -28,6 +69,12 @@ export const mockAuth: AuthService = {
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;
     await latency();
+    if (features.inviteOnly) {
+      throw new ServiceError(
+        "FORBIDDEN",
+        "Kiosk is invite-only for now. Ask the Kiosk team for a login.",
+      );
+    }
     const db = await getDb();
     if (db.users.some((u) => u.email === input.email)) {
       throw new ServiceError(
@@ -39,38 +86,15 @@ export const mockAuth: AuthService = {
       );
     }
     const salt = randomSalt();
-    const user: UserRecord = {
+    const user = newUserRecord({
       id: newId("u"),
       email: input.email,
       name: input.name,
-      phone: "",
-      campusId: null,
-      avatar: null,
-      brandIds: [],
-      followingBrandIds: [],
-      wishlistProductIds: [],
-      onboarded: false,
-      notificationPrefs: {
-        orderUpdates: true,
-        messages: true,
-        promotions: false,
-        newFromFollowed: true,
-      },
-      createdAt: new Date().toISOString(),
       passwordHash: await hashPassword(input.password, salt),
       passwordSalt: salt,
-    };
-    db.users.push(user);
-    db.notifications.push({
-      id: newId("n"),
-      userId: user.id,
-      kind: "system",
-      title: `Welcome, ${input.name.split(" ")[0]}`,
-      body: "Finish setting up your profile to see shops on your campus.",
-      href: "/welcome",
-      read: false,
-      createdAt: new Date().toISOString(),
     });
+    db.users.push(user);
+    db.notifications.push(welcomeNote(user));
     await commit("users", "notifications");
     await setSessionUserId(user.id);
     return publicUser(user);
@@ -83,13 +107,36 @@ export const mockAuth: AuthService = {
     const input = parsed.data;
     await latency();
     const db = await getDb();
-    const user = db.users.find((u) => u.email === input.email);
     // Same message for unknown email and wrong password (no account enumeration).
     const fail = () => {
       throw new ServiceError("UNAUTHORIZED", "That email and password don't match.", {
         password: "That email and password don't match",
       });
     };
+    if (features.inviteOnly) {
+      const hash = await emailHash(input.email);
+      const entry = accessList.find((e) => e.emailHash === hash);
+      if (!entry || !(await verifyPassword(input.password, entry.salt, entry.passwordHash)))
+        return fail();
+      const id = userIdFor(entry);
+      let member = db.users.find((u) => u.id === id);
+      // First login on this device: create the account from the invite.
+      if (!member) {
+        member = newUserRecord({
+          id,
+          email: normaliseEmail(input.email),
+          name: entry.name,
+          passwordHash: entry.passwordHash,
+          passwordSalt: entry.salt,
+        });
+        db.users.push(member);
+        db.notifications.push(welcomeNote(member));
+        await commit("users", "notifications");
+      }
+      await setSessionUserId(member.id);
+      return publicUser(member);
+    }
+    const user = db.users.find((u) => u.email === input.email);
     if (!user || !user.passwordHash) return fail();
     const ok = await verifyPassword(input.password, user.passwordSalt, user.passwordHash);
     if (!ok) return fail();

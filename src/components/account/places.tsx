@@ -177,7 +177,7 @@ export function PlacesView() {
                   layout
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={spring.smooth}
-                  className="flex flex-col rounded-lg bg-surface p-5 hairline"
+                  className="card flex flex-col p-5"
                 >
                   <div className="flex items-start gap-3">
                     <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-ink">

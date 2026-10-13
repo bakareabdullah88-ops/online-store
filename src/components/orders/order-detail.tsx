@@ -195,10 +195,7 @@ export function OrderDetail() {
             </section>
           )}
 
-          <section
-            aria-labelledby="progress-title"
-            className="rounded-lg bg-surface p-5 hairline md:p-6"
-          >
+          <section aria-labelledby="progress-title" className="card p-5 md:p-6">
             <h2 id="progress-title" className="mb-5 text-title font-semibold">
               Progress
             </h2>
@@ -207,7 +204,7 @@ export function OrderDetail() {
         </div>
 
         <div className="flex flex-col gap-6 lg:col-span-5">
-          <section aria-labelledby="items-title" className="rounded-lg bg-surface hairline">
+          <section aria-labelledby="items-title" className="card">
             <header className="flex items-center gap-3 border-b border-line p-5">
               <span className="size-9 overflow-hidden rounded-full">
                 <AppImage image={order.brandLogo} alt="" variant="logo" name={order.brandName} />
@@ -279,7 +276,7 @@ export function OrderDetail() {
             </dl>
           </section>
 
-          <section className="rounded-lg bg-surface p-5 text-small hairline">
+          <section className="card p-5 text-small">
             <h2 className="mb-3 text-body font-semibold">
               {order.fulfilment.method === "delivery" ? "Delivery details" : "Pickup details"}
             </h2>

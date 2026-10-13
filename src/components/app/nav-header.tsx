@@ -9,7 +9,7 @@ import { useMyBrand } from "@/queries/studio";
 import { PageHeader, type Crumb } from "./page-header";
 
 /** Finds the nav entry for the current page, for its icon and breadcrumb. */
-function useNavContext(): { icon: LucideIcon; crumbs: Crumb[] } {
+function useNavContext(): { icon: LucideIcon; tone: string; crumbs: Crumb[] } {
   const path = usePathname() ?? "/";
   const mode = useMode();
   const { data: brand } = useMyBrand();
@@ -24,9 +24,9 @@ function useNavContext(): { icon: LucideIcon; crumbs: Crumb[] } {
         const crumbs: Crumb[] = [root];
         if (s.title) crumbs.push({ label: s.title });
         if (path !== item.href) crumbs.push({ label: item.label, href: item.href });
-        return { icon: item.icon, crumbs };
+        return { icon: item.icon, tone: item.tone, crumbs };
       }
-  return { icon: FileText, crumbs: [root] };
+  return { icon: FileText, tone: "var(--chart-blue)", crumbs: [root] };
 }
 
 /**
@@ -60,6 +60,7 @@ export function NavPageHeader({
   return (
     <PageHeader
       icon={icon ?? ctx.icon}
+      tone={ctx.tone}
       crumbs={crumbs}
       title={title}
       description={description}

@@ -96,7 +96,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 rounded-lg bg-surface p-5 hairline md:p-6">
+    <section id={id} className="card scroll-mt-24 p-5 md:p-6">
       <h2 className="text-title font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-muted">{description}</p>}
       <div className="mt-5">{children}</div>

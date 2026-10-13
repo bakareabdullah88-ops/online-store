@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
     optimizePackageImports: ["lucide-react", "motion", "radix-ui"],
+    // The Tailwind loader scans every source file for class names, but the build
+    // cache only notices changes to the CSS file itself. With it on, builds
+    // (including on Vercel, which restores .next/cache) shipped stale styles.
+    turbopackFileSystemCacheForBuild: false,
   },
   turbopack: {
     rules: {

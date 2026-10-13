@@ -41,7 +41,7 @@ export function MyReviewsView() {
           {data.map((r) => {
             const p = products.data?.items.find((x) => x.id === r.productId);
             return (
-              <li key={r.id} className="rounded-lg bg-surface p-5 hairline">
+              <li key={r.id} className="card p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     {p ? (

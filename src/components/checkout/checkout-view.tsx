@@ -1,6 +1,6 @@
 "use client";
 
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -118,7 +118,7 @@ function GroupSection({
   ];
 
   return (
-    <section aria-labelledby={`g-${group.brandId}`} className="rounded-lg bg-surface hairline">
+    <section aria-labelledby={`g-${group.brandId}`} className="card">
       <header className="flex items-center gap-3 border-b border-line p-4 md:p-5">
         <span className="font-mono text-label text-muted">0{index + 2}</span>
         <span className="size-9 shrink-0 overflow-hidden rounded-full">
@@ -500,7 +500,7 @@ export function CheckoutView() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="flex min-w-0 flex-col gap-5 lg:col-span-7">
-          <section aria-labelledby="contact" className="rounded-lg bg-surface p-4 hairline md:p-5">
+          <section aria-labelledby="contact" className="card p-4 md:p-5">
             <div className="mb-4 flex items-center gap-3">
               <span className="font-mono text-label text-muted">01</span>
               <h2 id="contact" className="text-body font-semibold">
@@ -541,7 +541,7 @@ export function CheckoutView() {
             />
           ))}
 
-          <section aria-labelledby="pay" className="rounded-lg bg-surface p-4 hairline md:p-5">
+          <section aria-labelledby="pay" className="card p-4 md:p-5">
             <div className="mb-4 flex items-center gap-3">
               <span className="font-mono text-label text-muted">0{groups.length + 2}</span>
               <h2 id="pay" className="text-body font-semibold">
@@ -558,7 +558,7 @@ export function CheckoutView() {
         </div>
 
         <aside className="min-w-0 lg:col-span-5">
-          <div className="rounded-lg bg-surface p-5 hairline md:p-6 lg:sticky lg:top-24">
+          <div className="card p-5 md:p-6 lg:sticky lg:top-24">
             <div className="flex items-center justify-between">
               <h2 className="text-title font-semibold">Order summary</h2>
               {quote.isFetching && (

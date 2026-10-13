@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Page } from "@/components/shell/page";
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { InboxView } from "@/components/messages/inbox-view";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { Skeleton } from "@/components/ui/skeleton";

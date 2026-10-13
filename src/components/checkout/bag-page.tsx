@@ -1,6 +1,6 @@
 "use client";
 
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export function BagPage() {
         </div>
         {!isEmpty && (
           <aside className="lg:col-span-5">
-            <div className="rounded-lg bg-surface p-6 hairline lg:sticky lg:top-24">
+            <div className="card p-6 lg:sticky lg:top-24">
               <h2 className="text-title font-semibold">Summary</h2>
               <BagSummary className="mt-4" />
               <ButtonLink

@@ -3,56 +3,46 @@
 import { Suspense, type ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequireAuth } from "@/components/shell/require-auth";
+import { AppBackdrop } from "./backdrop";
 import { MobileNav } from "./mobile-nav";
 import { MobileTopBar } from "./mobile-top-bar";
-import { Rail } from "./rail";
-import { Sidebar } from "./sidebar";
+import { TopNav } from "./top-nav";
 
 /** Neutral frame shown while the session loads. */
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-dvh" aria-busy="true" aria-label="Loading">
-      <div className="hidden w-(--rail-w) flex-col items-center gap-4 py-4 lg:flex">
-        <Skeleton className="size-12" rounded="lg" />
-        <Skeleton className="size-12" rounded="lg" />
-        <Skeleton className="size-12" rounded="lg" />
+    <div className="min-h-dvh" aria-busy="true" aria-label="Loading">
+      <AppBackdrop />
+      <div className="px-3 pt-3 md:px-6">
+        <Skeleton className="mx-auto h-14 max-w-[1400px] md:h-16" rounded="lg" />
       </div>
-      <div className="hidden w-(--sidebar-w) flex-col gap-2 py-5 pr-3 lg:flex">
-        <Skeleton className="mb-4 h-10 w-40" />
-        {Array.from({ length: 8 }, (_, i) => (
-          <Skeleton key={i} className="h-9 w-full" />
-        ))}
-      </div>
-      <div className="flex-1 lg:py-3 lg:pr-3">
-        <div className="h-full min-h-dvh bg-surface p-6 lg:min-h-0 lg:rounded-[28px] lg:ring-1 lg:ring-line">
-          <Skeleton className="h-8 w-56" />
-          <Skeleton className="mt-6 h-40 w-full" />
+      <div className="mx-auto max-w-[1400px] px-4 pt-8 md:px-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-28" rounded="lg" />
+          ))}
         </div>
+        <Skeleton className="mt-4 h-72 w-full" rounded="lg" />
       </div>
     </div>
   );
 }
 
 /**
- * Signed-in app frame (image 2): workspace rail, contextual sidebar and a
- * rounded white panel for the page. On phones: top bar and floating nav.
+ * Signed-in frame: a tinted, drifting backdrop, a floating glass top bar on
+ * tablets and up, and a top bar plus floating pill nav on phones.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<ShellSkeleton />}>
       <RequireAuth fallback={<ShellSkeleton />}>
-        <div className="flex min-h-dvh">
-          <Rail />
-          <Suspense fallback={<div className="hidden w-(--sidebar-w) shrink-0 lg:block" />}>
-            <Sidebar />
-          </Suspense>
-          <div className="flex min-w-0 flex-1 flex-col lg:py-3 lg:pr-3">
-            <MobileTopBar />
-            <div className="relative flex-1 bg-surface lg:min-h-[calc(100dvh-24px)] lg:rounded-[28px] lg:shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_30px_-12px_rgb(0_0_0/0.08)] lg:ring-1 lg:ring-line">
-              {children}
-            </div>
-            <MobileNav />
-          </div>
+        <div className="relative min-h-dvh">
+          <AppBackdrop />
+          <TopNav />
+          <MobileTopBar />
+          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+          <MobileNav />
         </div>
       </RequireAuth>
     </Suspense>

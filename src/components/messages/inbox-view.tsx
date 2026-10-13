@@ -209,7 +209,7 @@ export function InboxView({
       <section
         aria-label="Conversation"
         className={cn(
-          "flex min-h-[70dvh] flex-col overflow-hidden rounded-[24px] bg-surface ring-1 ring-line lg:min-h-0",
+          "card flex min-h-[70dvh] flex-col overflow-hidden lg:min-h-0",
           !selected && "max-lg:hidden",
         )}
       >
@@ -231,10 +231,7 @@ export function InboxView({
 
       <section
         aria-label="All messages"
-        className={cn(
-          "flex min-h-0 flex-col overflow-hidden rounded-[24px] bg-surface ring-1 ring-line",
-          selected && "max-lg:hidden",
-        )}
+        className={cn("card flex min-h-0 flex-col overflow-hidden", selected && "max-lg:hidden")}
       >
         <header className="flex h-14 items-center gap-2 border-b border-line px-4">
           <AnimatePresence mode="wait" initial={false}>

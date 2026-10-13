@@ -301,3 +301,27 @@ The site stopped being a demo. What changed and why:
   (the finance page stores payout details and explains buyers pay sellers directly for now).
 - **Account deletion** checks the password and removes the profile, the shop, its products,
   promos, addresses, notifications, events and uploaded images.
+
+## 10. Glass redesign and invite-only access
+
+- **Navigation.** The left rail and sidebar took about 320px, which squeezed every page on 1280–1366px
+  laptops (tables scrolled sideways, labels truncated). They're replaced by a floating liquid-glass
+  top bar like zentra's and LoopAI's: logo, a Market ⇄ shop switch, the workspace's main pages as
+  pills (the active one is a dark pill that slides), a **More** grid for the rest, search,
+  notifications, bag and account. Phones keep the floating pill nav, plus a top bar with an
+  "all pages" grid.
+- **Look.** Signed-in pages sit on a tinted, slowly drifting colour field (slightly different
+  from the white landing page). Cards are translucent glass with a light top edge and soft depth,
+  lift on hover and press in on tap. Every page and card has a coloured icon tile; stat cards count
+  up and draw a sparkline; sections fade up as they scroll into view.
+- **A build-cache bug.** Turbopack's build cache (on by default since Next 16.3, and restored by
+  Vercel) didn't notice new Tailwind class names in components, so deployed builds could ship
+  stale styles: missing colours and badges. It's switched off in `next.config.ts`.
+- **A layout bug.** `pagePad` was exported from a client component and imported by server pages,
+  which turned the class string into a reference, so many pages lost their padding. It now lives
+  in a plain module (`components/app/layout.ts`).
+- **Invite-only.** Accounts come from a list in `config/access.ts` with hashed emails and
+  passwords; sign-up is closed. Admins create logins on the Members page, which generates a password
+  and the list entry; the login works after the entry is pushed. This gates the front door only:
+  with data still in each browser it isn't a security boundary, and the real version (invite-only
+  sign-up on the backend) replaces it.

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowDownUp, Boxes, Eye, Search, ShoppingBag, Star } from "lucide-react";
+import { ArrowDownUp, Boxes, Clock, Eye, MapPin, Search, ShoppingBag, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { Stagger, StaggerItem } from "@/components/app/stagger";
@@ -209,7 +209,7 @@ export function StudioAnalytics() {
         <DashboardSkeleton />
       ) : (
         <Stagger className="grid grid-cols-1 gap-4">
-          <StaggerItem className="rounded-[24px] bg-surface-2/70 p-5 ring-1 ring-line md:p-6">
+          <StaggerItem className="card p-5 md:p-6">
             <h2 className="text-[19px] font-semibold">Product statistic</h2>
             <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line">
               <div className="lg:pr-6">
@@ -262,7 +262,7 @@ export function StudioAnalytics() {
             </dl>
           </StaggerItem>
 
-          <StaggerItem className="rounded-[24px] p-1 ring-1 ring-line md:p-2">
+          <StaggerItem className="card p-1 md:p-2">
             <div className="flex flex-col gap-3 px-4 pt-4 md:flex-row md:items-center md:px-4">
               <h2 className="flex-1 text-[19px] font-semibold">All product list</h2>
               <label className="flex h-10 items-center gap-2 rounded-xl bg-surface px-3 ring-1 ring-line focus-within:ring-2 focus-within:ring-accent/40 md:w-72">
@@ -307,12 +307,16 @@ export function StudioAnalytics() {
           <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <DashCard
               title="Views by hour"
+              icon={<Clock />}
+              tone="#0ea5e9"
               actions={[{ label: "All products", href: "/studio/products" }]}
             >
               <HourlyBars hours={data.hourly} />
             </DashCard>
             <DashCard
               title="Orders by campus"
+              icon={<MapPin />}
+              tone="var(--chart-violet)"
               actions={[{ label: "See customers", href: "/studio/customers" }]}
             >
               {data.campuses.length === 0 ? (

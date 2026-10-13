@@ -377,7 +377,7 @@ export function ProductView() {
           </div>
 
           {fulfilment && (
-            <div className="mt-8 divide-y divide-line rounded-lg bg-surface hairline">
+            <div className="card mt-8 divide-y divide-line">
               {fulfilment.delivery && (
                 <div className="flex gap-3 p-4">
                   <Bike className="mt-0.5 size-5 shrink-0" />

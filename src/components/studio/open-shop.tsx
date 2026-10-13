@@ -60,7 +60,7 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
   };
   return (
     <div
-      className="overflow-hidden rounded-lg bg-surface shadow-lg hairline"
+      className="card overflow-hidden shadow-lg"
       aria-label="Live preview of your shop"
       role="img"
     >
@@ -532,7 +532,7 @@ export function OpenShopWizard() {
                   <div className="lg:hidden">
                     <Preview s={{ ...s, fulfilment }} campusName={campusName} />
                   </div>
-                  <dl className="grid grid-cols-[120px_1fr] gap-y-2 rounded-lg bg-surface p-5 text-small hairline">
+                  <dl className="card grid grid-cols-[120px_1fr] gap-y-2 p-5 text-small">
                     <dt className="text-muted">Name</dt>
                     <dd>{s.name}</dd>
                     <dt className="text-muted">Link</dt>

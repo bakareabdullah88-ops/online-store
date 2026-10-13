@@ -159,7 +159,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
         </p>
       </div>
       <dl className="flex flex-col gap-6 md:col-span-5">
-        <div className="rounded-lg bg-surface p-5 hairline">
+        <div className="card p-5">
           <dt className="flex items-center gap-2 text-small font-semibold">
             <Clock className="size-4" /> Opening hours
           </dt>
@@ -169,7 +169,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
           </dd>
         </div>
         {brand.fulfilment.pickup && (
-          <div className="rounded-lg bg-surface p-5 hairline">
+          <div className="card p-5">
             <dt className="flex items-center gap-2 text-small font-semibold">
               <MapPin className="size-4" /> Pickup points · free
             </dt>
@@ -186,7 +186,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
           </div>
         )}
         {brand.fulfilment.delivery && (
-          <div className="rounded-lg bg-surface p-5 hairline">
+          <div className="card p-5">
             <dt className="flex items-center gap-2 text-small font-semibold">
               <Bike className="size-4" /> Delivery · {formatNaira(brand.fulfilment.deliveryFeeKobo)}
             </dt>

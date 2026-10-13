@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import {
+  Activity,
   BarChart3,
+  CalendarDays,
   Download,
+  Filter,
   Gauge,
+  ListChecks,
   Package,
   Receipt,
+  Repeat,
   ShoppingBag,
   Sparkles,
+  Trophy,
   Users,
+  Wallet,
 } from "lucide-react";
-import { PageHeader, pagePad } from "@/components/app/page-header";
+import { PageHeader } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { Stagger, StaggerItem } from "@/components/app/stagger";
 import { DashCard, StatCard } from "@/components/dash/card";
 import { DateRangeControl, useRangeParam } from "@/components/dash/date-range";
@@ -84,28 +92,40 @@ export function ShopPerformance() {
             <StatCard
               icon={<Receipt />}
               label="Revenue"
-              value={formatNaira(kobo(d.revenue.value))}
+              value={d.revenue.value}
+              format={(n) => formatNaira(Math.round(n))}
+              tone="var(--chart-blue)"
+              spark={d.daily.map((p) => p.amountKobo)}
               change={d.revenue.change}
               compare={compare(formatNairaCompact(kobo(d.revenue.prev)))}
             />
             <StatCard
               icon={<ShoppingBag />}
               label="Orders"
-              value={formatNumber(d.orders.value)}
+              value={d.orders.value}
+              format={(n) => formatNumber(Math.round(n))}
+              tone="var(--chart-orange)"
+              spark={d.daily.map((p) => p.orders)}
               change={d.orders.change}
               compare={compare(formatNumber(d.orders.prev))}
             />
             <StatCard
               icon={<Users />}
               label="Customers"
-              value={formatNumber(d.customers.value)}
+              value={d.customers.value}
+              format={(n) => formatNumber(Math.round(n))}
+              tone="var(--chart-pink)"
+              spark={d.weekdays.map((w) => w.orders)}
               change={d.customers.change}
               compare={compare(formatNumber(d.customers.prev))}
             />
             <StatCard
               icon={<BarChart3 />}
               label="Conversion"
-              value={`${d.conversion.value.toFixed(1)}%`}
+              value={d.conversion.value}
+              format={(n) => `${n.toFixed(1)}%`}
+              tone="var(--chart-violet)"
+              spark={d.funnel.map((f) => f.value)}
               change={d.conversion.change}
               compare={compare(`${d.conversion.prev.toFixed(1)}%`)}
             />
@@ -114,6 +134,8 @@ export function ShopPerformance() {
           <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
             <DashCard
               title="Sales funnel"
+              icon={<Filter />}
+              tone="var(--chart-blue)"
               bodyClassName="px-0 pb-0 md:px-0 md:pb-0"
               actions={[
                 {
@@ -161,6 +183,8 @@ export function ShopPerformance() {
             </DashCard>
             <DashCard
               title="Gross volume"
+              icon={<Wallet />}
+              tone="var(--chart-green)"
               actions={[{ label: "Finance", href: "/studio/finance", icon: <Receipt /> }]}
             >
               <p className="text-[40px] leading-none font-medium tracking-[-0.04em] tabular md:text-[52px]">
@@ -175,6 +199,8 @@ export function ShopPerformance() {
           <StaggerItem className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.9fr)]">
             <DashCard
               title="Repeat buyers"
+              icon={<Repeat />}
+              tone="var(--chart-pink)"
               actions={[{ label: "See customers", href: "/studio/customers", icon: <Users /> }]}
             >
               <p className="text-small text-muted">
@@ -188,6 +214,8 @@ export function ShopPerformance() {
             </DashCard>
             <DashCard
               title="Orders by day"
+              icon={<CalendarDays />}
+              tone="var(--chart-orange)"
               actions={[{ label: "Open orders", href: "/studio/orders", icon: <Receipt /> }]}
             >
               <div className="mt-auto flex flex-wrap items-end justify-between gap-4">
@@ -223,6 +251,8 @@ export function ShopPerformance() {
           <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <DashCard
               title="Revenue by day"
+              icon={<Activity />}
+              tone="var(--chart-violet)"
               actions={[
                 { label: "Download CSV", onSelect: () => downloadCsv(d), icon: <Download /> },
               ]}
@@ -234,6 +264,8 @@ export function ShopPerformance() {
             </DashCard>
             <DashCard
               title="To do"
+              icon={<ListChecks />}
+              tone="#f59e0b"
               aside={
                 <Link
                   href="/studio/orders"
@@ -250,6 +282,8 @@ export function ShopPerformance() {
           <StaggerItem>
             <DashCard
               title="Top products"
+              icon={<Trophy />}
+              tone="#f59e0b"
               actions={[{ label: "All products", href: "/studio/products", icon: <Package /> }]}
             >
               {d.topProducts.length === 0 ? (

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Page } from "@/components/shell/page";
-import { pagePad } from "@/components/app/page-header";
+import { pagePad } from "@/components/app/layout";
 import { StudioReviews } from "@/components/studio/reviews";
 
 export const metadata: Metadata = { title: "Reviews" };

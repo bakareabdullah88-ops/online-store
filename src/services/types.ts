@@ -86,6 +86,8 @@ export type User = {
   onboarded: boolean;
   notificationPrefs: NotificationPrefs;
   createdAt: ISODate;
+  /** Admins can create logins for other people (invite-only mode). */
+  role?: "admin" | "member";
 };
 
 /** Never leaves the service layer. */

@@ -23,13 +23,30 @@ export function EmptyState({
     <div
       className={cn(
         "flex flex-col items-center text-center",
-        compact ? "gap-3 py-8" : "gap-4 py-14 md:py-20",
+        compact ? "gap-3 py-8" : "card gap-4 px-6 py-14 md:py-16",
         className,
       )}
     >
-      <Illustration name={illustration} className={compact ? "w-32" : "w-44"} />
+      <span className="relative">
+        <span
+          className="absolute inset-x-4 inset-y-2 rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--chart-blue)_22%,transparent),transparent)] blur-xl"
+          aria-hidden
+        />
+        <Illustration
+          name={illustration}
+          className={cn(
+            "relative animate-[float_5s_ease-in-out_infinite]",
+            compact ? "w-32" : "w-44",
+          )}
+        />
+      </span>
       <div className="max-w-sm">
-        <h2 className={cn("font-display text-ink", compact ? "text-title-lg" : "text-display-sm")}>
+        <h2
+          className={cn(
+            "font-bold tracking-[-0.02em] text-ink",
+            compact ? "text-title-lg" : "text-[22px] md:text-[24px]",
+          )}
+        >
           {title}
         </h2>
         {body && <p className="mt-2 text-body text-muted">{body}</p>}

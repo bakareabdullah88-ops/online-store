@@ -129,7 +129,7 @@ export function StudioReviews() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-[280px_1fr]">
-          <div className="rounded-lg bg-surface p-5 hairline xl:sticky xl:top-24 xl:self-start">
+          <div className="card p-5 xl:sticky xl:top-24 xl:self-start">
             {breakdown && <RatingSummary breakdown={breakdown} />}
           </div>
           <div>
@@ -157,7 +157,7 @@ export function StudioReviews() {
                 {list.map((r) => {
                   const p = products.data?.find((x) => x.id === r.productId);
                   return (
-                    <li key={r.id} className="rounded-lg bg-surface p-5 hairline">
+                    <li key={r.id} className="card p-5">
                       <div className="flex items-start gap-3">
                         <Avatar name={r.authorName} size={36} />
                         <div className="min-w-0 flex-1">

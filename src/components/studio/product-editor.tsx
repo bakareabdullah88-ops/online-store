@@ -524,7 +524,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg bg-surface p-5 hairline md:p-6">
+    <section className="card p-5 md:p-6">
       <h2 className="text-title font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-muted">{description}</p>}
       <div className="mt-5">{children}</div>
@@ -816,7 +816,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
         </div>
         <aside className="min-w-0">
           <div className="sticky top-24 flex flex-col gap-4">
-            <div className="rounded-lg bg-surface p-5 hairline">
+            <div className="card p-5">
               <p className="mb-4 eyebrow text-muted">Live preview</p>
               {preview ? (
                 <div className="pointer-events-none mx-auto max-w-56" aria-hidden inert>
@@ -829,7 +829,7 @@ function EditorForm({ product }: { product: Product | undefined }) {
                 This is exactly how buyers see it in Explore and search.
               </p>
             </div>
-            <div className="rounded-lg bg-surface p-5 hairline">
+            <div className="card p-5">
               <p className="mb-3 text-small font-medium">Visibility</p>
               <SegmentedControl
                 label="Visibility"

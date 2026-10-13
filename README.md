@@ -27,26 +27,42 @@ Production build:
 pnpm build && pnpm start
 ```
 
-### Try the whole flow
+### Invite-only access
 
-1. Open `/`, choose **Create your account**, pick your campus. You land on **Home**.
-2. Open a shop from the **+** on the left rail (or the round **+** on phones) and add a product.
-3. Sign out (avatar → Sign out), create a second account, find the product and order it.
-4. Sign back in as the seller: the order is in **Orders**; accept it and move it to completed.
-   The buyer is notified at every step, and both dashboards update.
+Kiosk is invite-only. Sign-up is closed and only people on the list in
+[`src/config/access.ts`](src/config/access.ts) can log in. The list stores a SHA-256 of each
+email and a PBKDF2 hash of each password, never the address or password itself.
+
+To let someone in:
+
+1. Log in as an admin and open **More → Members** (or `/account/members`), enter their name and
+   email, and choose **Create login**. You get a generated password, a ready-to-send message, and
+   an entry for the list. (Or run `node scripts/add-member.mjs "Full Name" email@example.com`.)
+2. Add the entry to `accessList` in `src/config/access.ts` (ask Claude, or edit the file on
+   GitHub) and push. Vercel redeploys in about a minute and the login works.
+3. Send them their email and password privately.
+
+To remove someone, delete their entry and push; they are signed out on their next visit.
+
+For local development and the end-to-end tests, set `NEXT_PUBLIC_OPEN_SIGNUP=1` to let anyone
+sign up (`pnpm build:open` does this for a production build).
+
+Until the backend is connected, each person's shop, orders and messages are saved in their own
+browser, so two people on different phones won't see each other's shops yet.
 
 ## Scripts
 
-| Command                             | What it does                                                                                                                |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`                          | Dev server (Turbopack)                                                                                                      |
-| `pnpm build` / `pnpm start`         | Production build and server                                                                                                 |
-| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`                                                                                          |
-| `pnpm lint`                         | ESLint, zero warnings allowed                                                                                               |
-| `pnpm format` / `pnpm format:check` | Prettier (with Tailwind class sorting)                                                                                      |
-| `pnpm test`                         | Vitest unit tests (domain logic and the mock service layer on `fake-indexeddb`)                                             |
-| `pnpm test:e2e`                     | Playwright on a Pixel 7 and a 1280px desktop. Builds nothing itself: run `pnpm build` first; it starts `pnpm start` for you |
-| `pnpm check`                        | typecheck + lint + unit tests                                                                                               |
+| Command                             | What it does                                                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                          | Dev server (Turbopack)                                                                                                 |
+| `pnpm build` / `pnpm start`         | Production build and server                                                                                            |
+| `pnpm build:open`                   | Production build with open sign-up, for the end-to-end tests                                                           |
+| `pnpm typecheck`                    | `next typegen` then `tsc --noEmit`                                                                                     |
+| `pnpm lint`                         | ESLint, zero warnings allowed                                                                                          |
+| `pnpm format` / `pnpm format:check` | Prettier (with Tailwind class sorting)                                                                                 |
+| `pnpm test`                         | Vitest unit tests (domain logic and the mock service layer on `fake-indexeddb`)                                        |
+| `pnpm test:e2e`                     | Playwright on a Pixel 7 and a 1280px desktop. Builds nothing itself: run `pnpm build:open` first; it starts the server |
+| `pnpm check`                        | typecheck + lint + unit tests                                                                                          |
 
 The e2e suite runs the real flow with two fresh accounts (sign up → open a shop → add a product →
 second account buys → seller fulfils → buyer sees it paid and messages the shop), the auth gate,
@@ -74,7 +90,7 @@ src/
   app/            routes (thin; compose feature components), metadata routes, error pages
   components/
     ui/           design-system primitives (Button, Field, Chip, Tabs, Sheet, Toaster, …)
-    app/          signed-in shell: rail, sidebar, phone top bar and pill nav, page header
+    app/          signed-in shell: glass top bar, workspace switch, phone top bar and pill nav, page header
     dash/         dashboard cards and charts (funnel, hatched bars, step line, dot matrices)
     table/        DataTable: filters, search, export, selection, row menus, pagination
     landing/      landing page sections and the coded app preview
@@ -142,5 +158,8 @@ other branch get their own preview URL first. Ways to make a change:
 
 To regenerate screenshots after a change, start the app (`pnpm build && pnpm start --port 3100`),
 create real data once with `node scripts/make-state.mjs http://localhost:3100 screenshots/state`
+(against a `pnpm build:open` build)
 (two accounts, a shop, products, orders and a message), then run for example
 `node scripts/screenshot.mjs http://localhost:3100 screenshots/out /studio,/studio/orders --state=screenshots/state/seller.json`.
+`node scripts/fit-check.mjs http://localhost:3100` visits every page at seven widths and reports
+anything wider than the screen.

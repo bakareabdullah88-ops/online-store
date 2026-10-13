@@ -455,7 +455,7 @@ export function DataTable<T>({
           {/* table */}
           <div
             className={cn(
-              "overflow-x-auto rounded-2xl ring-1 ring-line print:overflow-visible print:ring-0",
+              "card overflow-x-auto print:overflow-visible print:shadow-none",
               card && "max-md:hidden print:block",
             )}
           >

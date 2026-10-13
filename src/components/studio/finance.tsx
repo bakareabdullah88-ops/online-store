@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
-import { Banknote, CheckCircle2, Clock, Landmark, Receipt } from "lucide-react";
+import { Banknote, CheckCircle2, Clock, Landmark, Receipt, TrendingUp } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { NavPageHeader } from "@/components/app/nav-header";
@@ -158,7 +158,7 @@ export function StudioFinance() {
                 note: "All time",
               },
             ].map((s) => (
-              <section key={s.label} className="rounded-[20px] bg-surface p-5 ring-1 ring-line">
+              <section key={s.label} className="card lift p-5">
                 <p className="flex items-center gap-2 text-[13.5px] font-medium text-ink-2 [&_svg]:size-4 [&_svg]:text-muted">
                   {s.icon}
                   {s.label}
@@ -173,11 +173,13 @@ export function StudioFinance() {
           <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             <DashCard
               title="Earnings by month"
+              icon={<TrendingUp />}
+              tone="var(--chart-green)"
               actions={[{ label: "Open orders", href: "/studio/orders", icon: <Receipt /> }]}
             >
               <MonthBars months={data.byMonth} />
             </DashCard>
-            <DashCard title="Payout details" aside={<Landmark className="size-5 text-muted" />}>
+            <DashCard title="Payout details" icon={<Landmark />} tone="#6366f1">
               <p className="mb-4 text-small text-muted">
                 {features.payouts
                   ? "Online payments are paid out to this account."

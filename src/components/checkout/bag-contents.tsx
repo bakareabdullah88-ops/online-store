@@ -204,7 +204,7 @@ export function BagSkeleton() {
   return (
     <div className="flex flex-col gap-4" aria-hidden>
       {[0, 1].map((g) => (
-        <div key={g} className="rounded-lg bg-surface px-4 pt-3 pb-3 hairline">
+        <div key={g} className="card px-4 pt-3 pb-3">
           <div className="flex items-center gap-3 border-b border-line pb-3">
             <Skeleton className="size-8" rounded="full" />
             <Skeleton className="h-4 w-32" />

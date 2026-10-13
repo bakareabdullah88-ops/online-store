@@ -13,10 +13,7 @@ export function SetupStrip() {
   if (!data || data.every((s) => s.done)) return null;
   const done = data.filter((s) => s.done).length;
   return (
-    <section
-      aria-labelledby="setup-title"
-      className="rounded-[24px] bg-surface-2/70 p-5 ring-1 ring-line md:p-6"
-    >
+    <section aria-labelledby="setup-title" className="card p-5 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="setup-title" className="text-[17px] font-semibold">

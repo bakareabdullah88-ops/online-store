@@ -85,7 +85,11 @@ const benefits = [
 ];
 
 const steps = [
-  { n: "01", title: "Create your account", body: "Sign up with your email and pick your campus." },
+  {
+    n: "01",
+    title: "Get your login",
+    body: "The Kiosk team creates one for you. Log in and pick your campus.",
+  },
   {
     n: "02",
     title: "Shop or open a shop",
@@ -99,7 +103,11 @@ const steps = [
 ];
 
 const faqs = [
-  { q: "Does it cost anything?", a: "No. Creating an account and opening a shop are free." },
+  {
+    q: "How do I join?",
+    a: "Kiosk is invite-only for now. The Kiosk team creates your login and sends you your email and password.",
+  },
+  { q: "Does it cost anything?", a: "No. Using Kiosk and opening a shop are free." },
   {
     q: "How do buyers pay?",
     a: "On delivery or at pickup, straight to the seller. Online payments are coming later.",
@@ -128,11 +136,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-surface">
       <Link
-        href="/signup"
+        href="/login"
         className="block bg-[linear-gradient(90deg,#ffe9d6,#fff3e6,#ffe9d6)] px-4 py-2.5 text-center text-[13px] text-[#4a2b14] dark:bg-[linear-gradient(90deg,#2b1d12,#33251a,#2b1d12)] dark:text-[#f3d9c2]"
       >
-        {brand.name} is free for students. Open a shop on your campus in minutes.{" "}
-        <b className="font-semibold underline-offset-2 hover:underline">Sign up now</b>
+        {brand.name} is invite-only while we open campus by campus. Have a login?{" "}
+        <b className="font-semibold underline-offset-2 hover:underline">Log in</b>
       </Link>
       <div className="relative">
         <div
@@ -180,10 +188,10 @@ export default function LandingPage() {
                 <circle cx="54" cy="14" r="3.5" fill="currentColor" />
               </svg>
               <Link
-                href="/signup"
+                href="/login"
                 className="flex h-13 items-center gap-2 rounded-xl bg-[#2f45d8] px-7 text-[16px] font-semibold text-white shadow-[0_12px_30px_-10px_#2f45d8] transition-transform hover:-translate-y-0.5"
               >
-                Create your account <ArrowRight className="size-4" />
+                Log in to {brand.name} <ArrowRight className="size-4" />
               </Link>
               <p className="max-w-xs text-left text-[15px] text-ink-2">
                 Student-run food, fashion, thrift and more, from people in your hostel.
@@ -327,20 +335,20 @@ export default function LandingPage() {
                 Your campus is already shopping.
               </h2>
               <p className="relative mt-3 text-[16px] opacity-75">
-                Make an account, then buy or sell from the same place.
+                Got your invite? Log in, then buy or sell from the same place.
               </p>
               <div className="relative mt-8 flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/signup"
+                  href="/login"
                   className="flex h-12 items-center gap-2 rounded-xl bg-mint-cta px-6 text-[15px] font-semibold text-on-mint-cta"
                 >
-                  <Zap className="size-4" /> Get started free
+                  <Zap className="size-4" /> Log in
                 </Link>
                 <Link
-                  href="/open-shop"
+                  href="/signup"
                   className="flex h-12 items-center gap-2 rounded-xl px-6 text-[15px] font-semibold ring-1 ring-white/30 hover:bg-white/10"
                 >
-                  <Store className="size-4" /> Open a shop
+                  <Store className="size-4" /> How to get access
                 </Link>
               </div>
             </div>
@@ -374,7 +382,7 @@ export default function LandingPage() {
                 links: [
                   ["How it works", "/#how"],
                   ["Log in", "/login"],
-                  ["Sign up", "/signup"],
+                  ["Get access", "/signup"],
                 ],
               },
             ].map((c) => (

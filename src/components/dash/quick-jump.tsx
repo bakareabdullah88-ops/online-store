@@ -116,13 +116,13 @@ export function QuickJump({
                 <ArrowUp className="size-4" />
               </button>
             </form>
-            <div className="mt-2.5 flex flex-wrap gap-1.5 px-1">
+            <div className="-mx-1 mt-2.5 scrollbar-none flex gap-1.5 overflow-x-auto px-2 pb-1 md:flex-wrap md:overflow-visible">
               {(slash !== null ? matches : shortcuts).map((s) => (
                 <button
                   key={s.token}
                   type="button"
                   onClick={() => pick(s)}
-                  className="rounded-full bg-surface/80 px-2.5 py-1 text-[12.5px] font-medium text-ink-2 ring-1 ring-line transition-colors hover:text-ink hover:ring-line-strong"
+                  className="shrink-0 pressable rounded-full bg-surface/80 px-2.5 py-1 text-[12.5px] font-medium whitespace-nowrap text-ink-2 ring-1 ring-line transition-colors hover:text-ink hover:ring-line-strong"
                 >
                   /{s.token}
                 </button>
