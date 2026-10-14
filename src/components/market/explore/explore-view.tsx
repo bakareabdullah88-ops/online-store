@@ -91,7 +91,7 @@ function BrandMatches({ q }: { q: string }) {
   const { data } = useSearch(q);
   if (!data?.brands.length) return null;
   return (
-    <section aria-label="Matching brands" className="mb-10">
+    <section aria-label="Matching brands" className="mb-6">
       <p className="mb-3 eyebrow text-muted">Brands</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {data.brands.map((b) => (
@@ -156,21 +156,25 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
       "Everything on campus"
     );
 
+  const summary = (
+    <span aria-live="polite">
+      {list.isPending ? "Loading…" : `${formatNumber(total)} ${total === 1 ? "item" : "items"}`}
+      {category && !list.isPending && ` · ${category.blurb}`}
+    </span>
+  );
+
   return (
     <div className={pagePad}>
-      <NavPageHeader
-        title={title}
-        current={mode === "search" ? "Search" : category ? category.name : "Discover"}
-        className="mb-0"
-        description={
-          <span aria-live="polite">
-            {list.isPending
-              ? "Loading…"
-              : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
-            {category && !list.isPending && ` · ${category.blurb}`}
-          </span>
-        }
-      />
+      {/* On large screens the title sits at the top of the results column instead,
+          level with the sidebar. */}
+      <div className="lg:hidden">
+        <NavPageHeader
+          title={title}
+          current={mode === "search" ? "Search" : category ? category.name : "Discover"}
+          className="mb-0"
+          description={summary}
+        />
+      </div>
 
       {/* Phones and tablets have no sidebar, so categories scroll sideways here. */}
       <div className="-mx-4 mt-5 scrollbar-none overflow-x-auto px-4 py-1 md:-mx-6 md:px-6 lg:hidden">
@@ -188,7 +192,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
         </ChipGroup>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-8 lg:mt-7 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="mt-5 grid grid-cols-1 gap-8 lg:mt-0 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="hidden lg:block" aria-label="Categories and filters">
           <div className="sticky top-24 scrollbar-none flex max-h-[calc(100dvh-7rem)] flex-col gap-4 overflow-y-auto pb-4">
             <div className="card p-3">
@@ -213,17 +217,14 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
         </aside>
 
         <div className="min-w-0">
-          {mode === "search" && params.q && <BrandMatches q={params.q} />}
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <div className="min-w-0">
-              <h2 className="text-[24px] leading-tight font-bold tracking-[-0.03em] md:text-[28px]">
-                Results
-              </h2>
-              <p className="mt-0.5 text-small text-muted">
-                Check each product page for sizes, colours and delivery details.
-              </p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:min-h-[52px]">
+            <div className="hidden min-w-0 lg:block">
+              <h1 className="text-[26px] leading-tight font-semibold tracking-[-0.03em]">
+                {title}
+              </h1>
+              <p className="mt-0.5 text-small text-muted">{summary}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
               {(pending || (list.isFetching && !list.isFetchingNextPage)) && (
                 <Spinner className="size-4 text-muted" label="Updating results" />
               )}
@@ -255,6 +256,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
           <div className="mb-4 empty:hidden">
             <ActivePills params={params} update={update} />
           </div>
+          {mode === "search" && params.q && <BrandMatches q={params.q} />}
           {list.isError ? (
             <EmptyState
               illustration="error"

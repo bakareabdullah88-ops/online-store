@@ -8,13 +8,13 @@ import {
   Globe2,
   HandCoins,
   LogIn,
-  MessageCircle,
-  Search,
   ShieldCheck,
-  ShoppingBag,
   UserPlus,
 } from "lucide-react";
+import { StaggerItem } from "@/components/app/stagger";
+import { ChatComposite, FoundComposite, OrderComposite } from "@/components/landing/composites";
 import { LandingNav } from "@/components/landing/nav";
+import { StudioPreview } from "@/components/landing/studio-preview";
 import { Logo } from "@/components/shell/logo";
 import { Page } from "@/components/shell/page";
 import { brand } from "@/config/brand";
@@ -30,7 +30,6 @@ const campuses = seedCampuses();
 
 const features = [
   {
-    icon: Search,
     title: "Get found by students nearby",
     body: "Your products show up when students on your campus search or browse by category. They see how far you are and whether you deliver to their hall.",
     points: [
@@ -38,9 +37,9 @@ const features = [
       "Delivery zones and pickup points",
       "Follow a shop to get its new drops",
     ],
+    art: <FoundComposite />,
   },
   {
-    icon: ShoppingBag,
     title: "Turn views into orders",
     body: "A short checkout with pay on delivery or at pickup. Each shop gets its own order, so you only handle what's yours.",
     points: [
@@ -48,12 +47,13 @@ const features = [
       "Promo codes and free delivery",
       "Live order status for the buyer",
     ],
+    art: <OrderComposite />,
   },
   {
-    icon: MessageCircle,
     title: "Talk to your buyers",
     body: "Questions about sizes, times and delivery happen in one inbox, next to the order. Buyers are notified as soon as you reply.",
     points: ["One inbox for every conversation", "Notifications on new messages"],
+    art: <ChatComposite />,
   },
 ];
 
@@ -126,7 +126,7 @@ export default function LandingPage() {
         <Page className="relative">
           {/* hero */}
           <section className="relative mx-auto max-w-6xl px-4 pt-14 text-center md:px-6 md:pt-20">
-            <h1 className="mx-auto max-w-4xl text-[clamp(40px,6.4vw,76px)] leading-[1.02] font-bold tracking-[-0.045em] text-balance">
+            <h1 className="mx-auto max-w-4xl text-[clamp(40px,6.4vw,76px)] leading-[1.02] font-semibold tracking-[-0.045em] text-balance">
               Buy from your campus,
               <br />
               sell to your campus
@@ -134,12 +134,18 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-8">
               <Link
                 href="/signup"
-                className="flex h-13 items-center gap-2 rounded-xl bg-[#2f45d8] px-7 text-[16px] font-semibold text-white transition-[filter] hover:brightness-110"
+                className="flex h-12 items-center gap-2 rounded-lg bg-accent px-6 text-[15px] font-semibold text-on-accent transition-colors duration-150 hover:bg-accent-hover"
               >
                 Create your account <ArrowRight className="size-4" />
               </Link>
               <p className="max-w-xs text-left text-[15px] text-ink-2">
                 Student-run food, fashion, thrift and more, from people in your hostel.
+              </p>
+            </div>
+            <div className="mt-14 md:mt-16">
+              <StudioPreview />
+              <p className="mt-4 text-[12.5px] text-muted">
+                Shop Studio, where sellers run their shop. Names and amounts are examples.
               </p>
             </div>
           </section>
@@ -171,7 +177,7 @@ export default function LandingPage() {
           {/* features */}
           <section id="features" className="mx-auto max-w-6xl px-4 pt-28 md:px-6">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-bold tracking-[-0.035em]">
+              <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
                 Everything you need to sell on campus
               </h2>
               <p className="mt-3 text-[16px] text-muted">
@@ -179,22 +185,29 @@ export default function LandingPage() {
                 tap.
               </p>
             </div>
-            <div className="mt-14 grid gap-4 md:grid-cols-3">
-              {features.map((f) => (
-                <div key={f.title} className="rounded-[12px] bg-surface p-6 ring-1 ring-line">
-                  <f.icon className="size-6" aria-hidden />
-                  <h3 className="mt-5 text-[20px] leading-tight font-semibold tracking-[-0.02em]">
-                    {f.title}
-                  </h3>
-                  <p className="mt-2 text-[14.5px] text-ink-2">{f.body}</p>
-                  <ul className="mt-4 flex flex-col gap-2">
-                    {f.points.map((p) => (
-                      <li key={p} className="flex items-center gap-2 text-[14px]">
-                        <BadgeCheck className="size-4 shrink-0 text-chart-green" /> {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <div className="mt-16 flex flex-col gap-20 md:gap-24">
+              {features.map((f, i) => (
+                <StaggerItem
+                  key={f.title}
+                  className="grid items-center gap-10 md:grid-cols-2 md:gap-16"
+                >
+                  <div className={i % 2 ? "md:order-2" : ""}>{f.art}</div>
+                  <div className={i % 2 ? "md:order-1" : ""}>
+                    <h3 className="text-[26px] leading-tight font-semibold tracking-[-0.03em] md:text-[30px]">
+                      {f.title}
+                    </h3>
+                    <p className="mt-3 max-w-prose text-[15.5px] leading-relaxed text-ink-2">
+                      {f.body}
+                    </p>
+                    <ul className="mt-5 flex flex-col gap-2.5">
+                      {f.points.map((p) => (
+                        <li key={p} className="flex items-center gap-2.5 text-[14.5px]">
+                          <BadgeCheck className="size-4 shrink-0 text-success" aria-hidden /> {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </StaggerItem>
               ))}
             </div>
           </section>
@@ -203,7 +216,7 @@ export default function LandingPage() {
           <section id="benefits" className="mt-28 bg-canvas py-24">
             <div className="mx-auto max-w-6xl px-4 md:px-6">
               <div className="mx-auto max-w-2xl text-center">
-                <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-bold tracking-[-0.035em]">
+                <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
                   Open your shop and start selling with benefits
                 </h2>
                 <p className="mt-3 text-[16px] text-muted">
@@ -212,11 +225,9 @@ export default function LandingPage() {
               </div>
               <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" id="pricing">
                 {benefits.map((b) => (
-                  <div key={b.title} className="rounded-[12px] bg-surface p-6 ring-1 ring-line">
-                    <span className="grid size-11 place-items-center rounded-2xl bg-surface-2 ring-1 ring-line">
-                      <b.icon className="size-5" />
-                    </span>
-                    <h3 className="mt-5 text-[17px] font-semibold">{b.title}</h3>
+                  <div key={b.title} className="rounded-xl bg-surface p-6 ring-1 ring-line">
+                    <b.icon className="size-5 text-muted" aria-hidden />
+                    <h3 className="mt-4 text-[16px] font-semibold">{b.title}</h3>
                     <p className="mt-1.5 text-[14px] text-muted">{b.body}</p>
                   </div>
                 ))}
@@ -226,12 +237,12 @@ export default function LandingPage() {
 
           {/* how it works */}
           <section id="how" className="mx-auto max-w-6xl px-4 py-24 md:px-6">
-            <h2 className="text-center text-[clamp(30px,4.4vw,48px)] font-bold tracking-[-0.035em]">
+            <h2 className="text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
               How it works
             </h2>
             <ol className="mt-12 grid gap-4 md:grid-cols-3">
               {steps.map((s) => (
-                <li key={s.n} className="rounded-[12px] bg-surface p-6 ring-1 ring-line">
+                <li key={s.n} className="rounded-xl bg-surface p-6 ring-1 ring-line">
                   <span className="text-[13px] font-semibold text-muted tabular">{s.n}</span>
                   <h3 className="mt-6 text-[20px] font-semibold tracking-[-0.02em]">{s.title}</h3>
                   <p className="mt-2 text-[14.5px] text-muted">{s.body}</p>
@@ -250,8 +261,8 @@ export default function LandingPage() {
 
           {/* cta */}
           <section className="mx-auto max-w-6xl px-4 pb-20 md:px-6">
-            <div className="relative overflow-hidden rounded-[16px] bg-primary px-6 py-14 text-center text-on-primary md:px-16 md:py-20">
-              <h2 className="relative text-[clamp(28px,4vw,44px)] leading-tight font-bold tracking-[-0.035em]">
+            <div className="relative overflow-hidden rounded-2xl bg-primary px-6 py-14 text-center text-on-primary md:px-16 md:py-20">
+              <h2 className="relative text-[clamp(28px,4vw,44px)] leading-tight font-semibold tracking-[-0.035em]">
                 Buy and sell on your campus.
               </h2>
               <p className="relative mt-3 text-[16px] opacity-75">
@@ -260,13 +271,13 @@ export default function LandingPage() {
               <div className="relative mt-8 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/signup"
-                  className="flex h-12 items-center gap-2 rounded-xl bg-mint-cta px-6 text-[15px] font-semibold text-on-mint-cta"
+                  className="flex h-12 items-center gap-2 rounded-lg bg-surface px-6 text-[15px] font-semibold text-ink transition-colors duration-150 hover:bg-surface-2"
                 >
                   <UserPlus className="size-4" /> Create your account
                 </Link>
                 <Link
                   href="/login"
-                  className="flex h-12 items-center gap-2 rounded-xl px-6 text-[15px] font-semibold ring-1 ring-white/30 hover:bg-white/10"
+                  className="flex h-12 items-center gap-2 rounded-lg px-6 text-[15px] font-semibold ring-1 ring-white/30 transition-colors duration-150 hover:bg-white/10"
                 >
                   <LogIn className="size-4" /> Log in
                 </Link>

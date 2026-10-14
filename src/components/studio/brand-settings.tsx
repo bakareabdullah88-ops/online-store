@@ -32,6 +32,7 @@ export function ImagePicker({
   onUploaded,
   label,
   className,
+  withButton = false,
 }: {
   image: ImageRef | null;
   name: string;
@@ -39,10 +40,12 @@ export function ImagePicker({
   onUploaded: (id: string, ref: ImageRef) => void;
   label: string;
   className?: string;
+  /** Show a visible "Change" button under the image (touch screens can't hover). */
+  withButton?: boolean;
 }) {
   const upload = useUploadImage();
   const input = useRef<HTMLInputElement>(null);
-  return (
+  const box = (
     <div
       className={cn(
         "relative overflow-hidden bg-sand",
@@ -56,8 +59,7 @@ export function ImagePicker({
         type="button"
         onClick={() => input.current?.click()}
         className={cn(
-          "absolute flex items-center justify-center gap-2 bg-primary/70 text-small font-medium text-on-primary opacity-0 backdrop-blur-sm transition-opacity hover:opacity-100 focus-visible:opacity-100",
-          "inset-0",
+          "absolute inset-0 flex items-center justify-center gap-2 bg-primary/60 text-small font-medium text-on-primary opacity-0 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100",
         )}
         aria-label={label}
       >
@@ -80,6 +82,21 @@ export function ImagePicker({
             });
         }}
       />
+    </div>
+  );
+  if (!withButton) return box;
+  return (
+    <div className="flex flex-col items-start gap-3">
+      {box}
+      <Button
+        variant="secondary"
+        size="sm"
+        loading={upload.isPending}
+        leadingIcon={<Camera className="size-4" />}
+        onClick={() => input.current?.click()}
+      >
+        {variant === "logo" ? "Change logo" : "Change cover"}
+      </Button>
     </div>
   );
 }
@@ -164,26 +181,34 @@ function BrandForm({ brand }: { brand: Brand }) {
         title="Look"
         description="Your logo and cover appear on your shop page, in search and on every order."
       >
-        <ImagePicker
-          image={cover.ref}
-          name={name}
-          variant="cover"
-          label="Upload a cover image"
-          onUploaded={(id, ref) => setCover({ id, ref })}
-        />
-        <div className="-mt-12 ml-5 flex items-end gap-4">
-          <ImagePicker
-            image={logo.ref}
-            name={name}
-            variant="logo"
-            label="Upload a logo"
-            onUploaded={(id, ref) => setLogo({ id, ref })}
-            className="ring-4 ring-surface"
-          />
-          <p className="pb-2 text-small text-muted">
-            Hover or focus an image to change it. Square logos work best.
-          </p>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
+          <div>
+            <p className="mb-2 text-small font-medium">Logo</p>
+            <ImagePicker
+              image={logo.ref}
+              name={name}
+              variant="logo"
+              label="Upload a logo"
+              onUploaded={(id, ref) => setLogo({ id, ref })}
+              withButton
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="mb-2 text-small font-medium">Cover</p>
+            <ImagePicker
+              image={cover.ref}
+              name={name}
+              variant="cover"
+              label="Upload a cover image"
+              onUploaded={(id, ref) => setCover({ id, ref })}
+              className="max-w-md"
+              withButton
+            />
+          </div>
         </div>
+        <p className="mt-4 text-small text-muted">
+          Square logos work best. Covers are wide (16:6). PNG, JPG or WebP.
+        </p>
       </Section>
       <Section id="bio" title="Story">
         <div className="flex flex-col gap-5">
@@ -256,14 +281,8 @@ function BrandForm({ brand }: { brand: Brand }) {
           errors={errors}
         />
       </Section>
-      <div className="sticky bottom-[calc(var(--tabbar-h)+12px)] z-(--z-sticky) flex justify-end lg:bottom-4">
-        <Button
-          size="lg"
-          className="shadow-lg"
-          loading={update.isPending}
-          success={saved}
-          onClick={save}
-        >
+      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 flex items-center justify-end gap-3 border-t border-line bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 py-3 backdrop-blur">
+        <Button loading={update.isPending} success={saved} onClick={save}>
           Save changes
         </Button>
       </div>

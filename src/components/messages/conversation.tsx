@@ -50,11 +50,11 @@ function DraftCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
       transition={spring.smooth}
-      className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,color-mix(in_oklab,var(--chart-blue)_10%,var(--surface)),color-mix(in_oklab,var(--chart-violet)_14%,var(--surface)))] p-4 ring-1 ring-line"
+      className="relative overflow-hidden rounded-xl bg-surface-2 p-4 ring-1 ring-line"
     >
       <div className="flex items-center gap-2 text-[13px] font-medium">
         <span
@@ -227,7 +227,7 @@ export function Conversation({
                     key={m.id}
                     layout={!reduce}
                     initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={spring.smooth}
                     className={cn("flex flex-col", mine ? "items-end" : "items-start")}
                   >
@@ -270,7 +270,7 @@ export function Conversation({
             <motion.div
               key="tools"
               initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6, filter: "blur(6px)" }}
               transition={spring.smooth}
               className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-2/80 p-1.5 ring-1 ring-line sm:grid-cols-3"

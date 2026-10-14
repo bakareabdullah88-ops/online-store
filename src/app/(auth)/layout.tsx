@@ -22,12 +22,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         className="relative hidden overflow-hidden bg-canvas lg:flex lg:flex-col lg:justify-center lg:p-10"
         aria-label="About Kamplug"
       >
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,color-mix(in_oklab,var(--chart-mint)_40%,transparent),transparent_70%),radial-gradient(50%_45%_at_100%_100%,#ffe6cc,transparent_70%)] opacity-70 dark:opacity-20"
-          aria-hidden
-        />
         <div className="relative">
-          <h2 className="max-w-md text-[34px] leading-tight font-bold tracking-[-0.035em]">
+          <h2 className="max-w-md text-[32px] leading-tight font-semibold tracking-[-0.035em]">
             The campus marketplace, run by students.
           </h2>
           <ul className="mt-5 flex flex-col gap-2">

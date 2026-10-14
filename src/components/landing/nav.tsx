@@ -92,7 +92,7 @@ export function LandingNav() {
           {isReady && user ? (
             <Link
               href="/home"
-              className="flex h-10 items-center gap-1.5 rounded-xl bg-mint-cta px-4 text-[14px] font-semibold text-on-mint-cta shadow-sm transition-[filter] hover:brightness-95"
+              className="flex h-10 items-center gap-1.5 rounded-lg bg-primary px-4 text-[14px] font-semibold text-on-primary transition-colors duration-150 hover:bg-primary-hover"
             >
               Open {user.name.split(" ")[0]}&apos;s Kamplug <ArrowRight className="size-4" />
             </Link>
@@ -106,7 +106,7 @@ export function LandingNav() {
               </Link>
               <Link
                 href="/signup"
-                className="flex h-10 items-center rounded-xl bg-mint-cta px-4 text-[14px] font-semibold text-on-mint-cta shadow-sm transition-[filter] hover:brightness-95"
+                className="flex h-10 items-center rounded-lg bg-primary px-4 text-[14px] font-semibold text-on-primary transition-colors duration-150 hover:bg-primary-hover"
               >
                 Sign up
               </Link>
