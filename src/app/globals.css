@@ -77,18 +77,14 @@
   --on-buy: #0f1111;
 
   /* App backdrop (signed-in pages sit on this, slightly tinted vs the landing page) */
-  --app-bg: #f3f4f6;
-  /* Liquid glass */
-  --glass-fill: rgb(255 255 255 / 0.72);
-  --glass-fill-strong: rgb(255 255 255 / 0.86);
-  --glass-border: rgb(255 255 255 / 0.85);
+  --app-bg: #f7f7f8;
+  /* Cards sit close to the background: a near-white fill and a hairline edge, no big drop shadow. */
+  --glass-fill: rgb(255 255 255 / 0.82);
+  --glass-fill-strong: rgb(255 255 255 / 0.9);
+  --glass-border: transparent;
   --glass-edge: rgb(15 23 42 / 0.07);
-  --shadow-card:
-    0 0 0 1px var(--glass-edge), inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 1px 2px rgb(16 24 40 / 0.04), 0 14px 34px -18px rgb(30 41 82 / 0.28);
-  --shadow-card-hover:
-    0 0 0 1px rgb(15 23 42 / 0.09), inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 2px 4px rgb(16 24 40 / 0.05), 0 24px 48px -20px rgb(30 41 82 / 0.38);
+  --shadow-card: 0 0 0 1px var(--glass-edge), 0 1px 2px rgb(16 24 40 / 0.03);
+  --shadow-card-hover: 0 0 0 1px rgb(15 23 42 / 0.1), 0 6px 18px -12px rgb(16 24 40 / 0.18);
 
   --overlay: rgb(17 18 20 / 0.42);
   --skeleton: #eceef1;
@@ -188,17 +184,13 @@
   --info-soft: #11263a;
   --badge: #ff5a5a;
 
-  --app-bg: #0c0d10;
-  --glass-fill: rgb(22 24 30 / 0.66);
-  --glass-fill-strong: rgb(24 26 33 / 0.86);
-  --glass-border: rgb(255 255 255 / 0.08);
-  --glass-edge: rgb(255 255 255 / 0.06);
-  --shadow-card:
-    0 0 0 1px var(--glass-edge), inset 0 1px 0 rgb(255 255 255 / 0.05),
-    0 14px 34px -18px rgb(0 0 0 / 0.7);
-  --shadow-card-hover:
-    0 0 0 1px rgb(255 255 255 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 24px 48px -20px rgb(0 0 0 / 0.8);
+  --app-bg: #111215;
+  --glass-fill: rgb(23 25 29 / 0.82);
+  --glass-fill-strong: rgb(24 26 31 / 0.9);
+  --glass-border: transparent;
+  --glass-edge: rgb(255 255 255 / 0.07);
+  --shadow-card: 0 0 0 1px var(--glass-edge);
+  --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.11), 0 8px 20px -14px rgb(0 0 0 / 0.7);
 
   --overlay: rgb(0 0 0 / 0.6);
   --skeleton: #1d2025;

@@ -23,7 +23,7 @@ import { productTransitionName } from "./product-card";
 import { WishlistButton } from "./wishlist-button";
 
 const pill =
-  "inline-flex h-10 w-full max-w-[300px] pressable items-center justify-center gap-2 rounded-full px-3 text-[14px] font-semibold sm:h-11 sm:px-5 sm:text-[15px] transition-[background-color,filter,box-shadow]";
+  "inline-flex h-9 w-full max-w-[300px] pressable items-center justify-center gap-2 rounded-full px-3 text-[13.5px] font-semibold sm:h-11 sm:px-5 sm:text-[15px] transition-[background-color,filter,box-shadow]";
 
 /** "₦" small and raised, the amount large: easy to scan down a list. */
 function BigPrice({ kobo, compareAt }: { kobo: number; compareAt?: number | undefined }) {
@@ -33,7 +33,7 @@ function BigPrice({ kobo, compareAt }: { kobo: number; compareAt?: number | unde
     <div className="flex flex-wrap items-end gap-x-2.5 gap-y-1">
       <p className="flex items-start leading-none font-semibold tracking-[-0.02em] tabular">
         <span className="mt-1 mr-0.5 text-[13px] sm:text-[14px]">₦</span>
-        <span className="text-[22px] sm:text-[30px]">{naira}</span>
+        <span className="text-[20px] sm:text-[30px]">{naira}</span>
       </p>
       {off && compareAt && (
         <p className="flex items-center gap-2 pb-0.5 text-[13px]">
@@ -112,13 +112,16 @@ export function ProductRow({
   return (
     <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
       <div className="relative bg-surface-2">
+        {/* Sets the row's minimum height from the photo's shape (4:5 on phones, square
+            above). When the details run longer, the photo grows with the row instead. */}
+        <div className="aspect-[4/5] sm:aspect-square" aria-hidden />
         <Link
           href={href}
-          className="block h-full focus-visible:outline-offset-[-4px]"
+          className="absolute inset-0 block focus-visible:outline-offset-[-4px]"
           tabIndex={-1}
           aria-hidden
         >
-          <div ref={imageRef} className="aspect-square h-full w-full">
+          <div ref={imageRef} className="size-full">
             {morph ? (
               <ViewTransition name={productTransitionName(p.id)} share="morph" default="none">
                 {image}
@@ -136,7 +139,7 @@ export function ProductRow({
         />
       </div>
 
-      <div className="flex min-w-0 flex-col items-start gap-1 py-3 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
+      <div className="flex min-w-0 flex-col items-start justify-center gap-1 py-2.5 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
         <Link
           href={`/brands/${p.brand.handle}`}
           className="inline-flex max-w-full items-center gap-1 text-[12px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
@@ -165,7 +168,7 @@ export function ProductRow({
           <p className="text-[13px] text-muted">No reviews yet</p>
         )}
 
-        <div className="mt-1">
+        <div className="mt-0.5 sm:mt-1">
           <BigPrice kobo={p.priceKobo} compareAt={p.compareAtKobo} />
         </div>
 
@@ -219,7 +222,7 @@ export function ProductRow({
           </p>
         ) : null}
 
-        <div className="mt-1.5 w-full sm:mt-2">
+        <div className="mt-1 w-full sm:mt-2">
           {own ? (
             <Link
               href={`/studio/products/${p.id}`}
@@ -276,7 +279,7 @@ export function ProductRowSkeleton() {
       className="grid grid-cols-[44%_1fr] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
       aria-hidden
     >
-      <Skeleton className="aspect-square w-full" rounded="none" />
+      <Skeleton className="aspect-[4/5] w-full sm:aspect-square" rounded="none" />
       <div className="flex flex-col gap-2.5 py-5 pr-6">
         <Skeleton className="h-3.5 w-28" />
         <Skeleton className="h-5 w-[85%]" />
