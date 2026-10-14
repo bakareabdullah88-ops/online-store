@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { ChevronRight, LayoutGrid, type LucideIcon } from "lucide-react";
 import { Chip } from "@/components/ui/chip";
 import { RangeSlider, Switch } from "@/components/ui/controls";
 import { Select } from "@/components/ui/overlay";
 import { Skeleton } from "@/components/ui/skeleton";
+import { categories } from "@/config/categories";
+import { spring } from "@/design/motion";
+import { cn } from "@/lib/cn";
 import { formatNaira } from "@/domain/money";
 import { useCampuses, usePriceRange } from "@/queries/catalog";
 import { useSession } from "@/queries/session";
@@ -178,5 +183,62 @@ export function ExploreFilters({
         />
       </FilterGroup>
     </div>
+  );
+}
+
+/** The category list for the sidebar: everything, then one row per category. */
+export function CategoryNav({
+  value,
+  onChange,
+}: {
+  value: ExploreParams["category"];
+  onChange: (v: ExploreParams["category"]) => void;
+}) {
+  const items: { id: ExploreParams["category"]; name: string; icon: LucideIcon }[] = [
+    { id: "all", name: "Everything", icon: LayoutGrid },
+    ...categories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })),
+  ];
+  return (
+    <nav aria-label="Categories">
+      <p className="mb-2 px-1 eyebrow text-muted">Categories</p>
+      <ul className="flex flex-col gap-0.5">
+        {items.map((c) => {
+          const active = value === c.id;
+          const Icon = c.icon;
+          return (
+            <li key={c.id}>
+              <button
+                type="button"
+                aria-pressed={active}
+                onClick={() => onChange(c.id)}
+                className={cn(
+                  "relative flex h-11 w-full pressable items-center gap-3 rounded-xl px-2 text-left text-[14.5px] font-medium transition-colors",
+                  active ? "text-ink" : "text-ink-2 hover:bg-ink/[0.04] hover:text-ink",
+                )}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="category-active"
+                    transition={spring.snappy}
+                    className="absolute inset-0 rounded-xl bg-accent-soft"
+                    aria-hidden
+                  />
+                )}
+                <span
+                  className={cn(
+                    "relative grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
+                    active ? "bg-accent text-on-accent" : "bg-surface-2 text-muted",
+                  )}
+                >
+                  <Icon className="size-4" />
+                </span>
+                <span className="relative min-w-0 flex-1 truncate">{c.name}</span>
+                {active && <ChevronRight className="relative size-4 text-accent-ink" />}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }

@@ -22,6 +22,12 @@ export function withBrand(db: DbSnapshot, p: Product): ProductWithBrand {
       vacation: b.vacation,
       rating: b.rating,
       verified: b.verified,
+      fulfilment: {
+        pickup: b.fulfilment.pickup,
+        delivery: b.fulfilment.delivery,
+        deliveryFeeKobo: b.fulfilment.deliveryFeeKobo,
+        prepMinutes: b.fulfilment.prepMinutes,
+      },
     },
   };
 }

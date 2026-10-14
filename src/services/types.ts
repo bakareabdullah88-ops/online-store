@@ -181,7 +181,10 @@ export type ProductWithBrand = Product & {
   brand: Pick<
     Brand,
     "id" | "handle" | "name" | "logo" | "campusId" | "vacation" | "rating" | "verified"
-  >;
+  > & {
+    /** How the shop gets orders to buyers, for list rows. */
+    fulfilment?: Pick<Fulfilment, "pickup" | "delivery" | "deliveryFeeKobo" | "prepMinutes">;
+  };
 };
 
 /* -------------------------------- Reviews --------------------------------- */
