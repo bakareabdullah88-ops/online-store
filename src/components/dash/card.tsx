@@ -10,7 +10,7 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/overlay";
 import { cn } from "@/lib/cn";
 
@@ -142,98 +142,5 @@ export function CountUp({ value, format }: { value: number; format: (n: number) 
       </motion.span>
       <span className="sr-only">{format(value)}</span>
     </span>
-  );
-}
-
-/** Tiny area chart for a stat card. */
-export function Sparkline({ data, tone }: { data: number[]; tone: string }) {
-  const id = useId().replace(/:/g, "");
-  if (data.length < 2 || data.every((d) => d === 0)) {
-    return (
-      <span
-        className="block h-9 w-full rounded-lg bg-[repeating-linear-gradient(90deg,var(--line)_0_6px,transparent_6px_10px)] opacity-60"
-        aria-hidden
-      />
-    );
-  }
-  const max = Math.max(...data);
-  const W = 120;
-  const H = 36;
-  const pts = data.map(
-    (d, i) => [(i / (data.length - 1)) * W, H - 3 - (d / max) * (H - 8)] as const,
-  );
-  const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
-      className="block h-9 w-full overflow-visible"
-      aria-hidden
-    >
-      <defs>
-        <linearGradient id={`${id}-g`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={tone} stopOpacity="0.32" />
-          <stop offset="1" stopColor={tone} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <motion.path
-        d={`${line} L${W},${H} L0,${H} Z`}
-        fill={`url(#${id}-g)`}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-      />
-      <motion.path
-        d={line}
-        fill="none"
-        stroke={tone}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-      />
-    </svg>
-  );
-}
-
-/** Headline number card: label, change badge, count-up value and a sparkline. */
-export function StatCard({
-  label,
-  value,
-  format,
-  change,
-  compare,
-  tone = "var(--chart-blue)",
-  spark,
-}: {
-  label: string;
-  value: number;
-  format: (n: number) => string;
-  change: number | null;
-  compare: string;
-  /** Accepted for older call sites; not drawn. */
-  icon?: ReactNode;
-  tone?: string;
-  spark?: number[];
-}) {
-  return (
-    <section className="card flex min-w-0 flex-col gap-3 p-4 md:p-5">
-      <div className="flex items-start gap-2.5">
-        <h2 className="min-w-0 flex-1 pt-0.5 text-[13px] leading-tight font-medium break-words text-ink-2">
-          {label}
-        </h2>
-        <DeltaBadge change={change} />
-      </div>
-      <p className="truncate text-[19px] leading-none font-bold tracking-[-0.03em] sm:text-[22px] md:text-[26px]">
-        <CountUp value={value} format={format} />
-      </p>
-      {spark && <Sparkline data={spark} tone={tone} />}
-      <p className="text-[11.5px] text-muted">{compare}</p>
-    </section>
   );
 }

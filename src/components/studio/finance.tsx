@@ -48,8 +48,8 @@ function MonthBars({ months }: { months: { month: string; amountKobo: number }[]
             transition={{ ...spring.smooth, delay: i * 0.05 }}
             className={
               i === last
-                ? "w-full origin-bottom rounded-t-xl bg-[linear-gradient(180deg,var(--chart-green),color-mix(in_oklab,var(--chart-green)_70%,black))]"
-                : "w-full origin-bottom rounded-t-xl bg-[color-mix(in_oklab,var(--chart-green)_14%,transparent)] hatch [--hatch:var(--chart-green)]"
+                ? "w-full origin-bottom rounded-t-md bg-chart-green"
+                : "w-full origin-bottom rounded-t-md bg-[color-mix(in_oklab,var(--chart-green)_14%,transparent)] hatch [--hatch:var(--chart-green)]"
             }
             style={{ height: `${Math.max((m.amountKobo / max) * 78, m.amountKobo ? 4 : 1.5)}%` }}
           />

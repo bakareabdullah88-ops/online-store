@@ -42,7 +42,7 @@ export function useRangeParam(fallback: RangePreset = "30d") {
 }
 
 const chip =
-  "flex h-9 items-center gap-2 rounded-xl bg-surface px-3 text-[13px] font-medium shadow-xs ring-1 ring-line";
+  "flex h-9 items-center gap-2 rounded-lg bg-surface px-3 text-[13px] font-medium shadow-xs ring-1 ring-line";
 
 /** "Jan 01 – Jul 31 ⌄  compared to  Dec 03 – Dec 31" (image 3). */
 export function DateRangeControl({
@@ -60,7 +60,10 @@ export function DateRangeControl({
   const current = RANGE_PRESETS.find((p) => p.value === preset);
   return (
     <div
-      className={cn("flex items-center rounded-2xl bg-surface-2 p-1 ring-1 ring-line", className)}
+      className={cn(
+        "flex items-center sm:rounded-xl sm:bg-surface-2 sm:p-1 sm:ring-1 sm:ring-line",
+        className,
+      )}
     >
       <Menu>
         <MenuTrigger asChild>

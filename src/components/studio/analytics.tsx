@@ -10,6 +10,7 @@ import { DashCard } from "@/components/dash/card";
 import { DateRangeControl, useRangeParam } from "@/components/dash/date-range";
 import { Gauge } from "@/components/dash/gauge";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
+import { ShopTrends } from "./trends";
 import { AppImage } from "@/components/ui/app-image";
 import { ButtonLink } from "@/components/ui/button";
 import { Select } from "@/components/ui/overlay";
@@ -190,9 +191,9 @@ export function StudioAnalytics() {
   const avgLabel = !scored.length
     ? "No data"
     : avg >= 70
-      ? "Excellent!"
+      ? "Excellent"
       : avg >= 40
-        ? "Good!"
+        ? "Good"
         : avg >= 15
           ? "Fair"
           : "Low";
@@ -202,15 +203,18 @@ export function StudioAnalytics() {
     <>
       <NavPageHeader
         title="Analytics"
-        description="How each product turns views into sales."
+        description="How visits turn into orders, and how each product sells."
         actions={<DateRangeControl preset={preset} range={range} onChange={setPreset} />}
       />
       {!data || !products ? (
         <DashboardSkeleton />
       ) : (
         <Stagger className="grid grid-cols-1 gap-4">
+          <StaggerItem>
+            <ShopTrends range={range} />
+          </StaggerItem>
           <StaggerItem className="card p-5 md:p-6">
-            <h2 className="text-[19px] font-semibold">Product statistic</h2>
+            <h2 className="text-[19px] font-semibold">Products</h2>
             <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line">
               <div className="lg:pr-6">
                 <dt className="text-small text-muted">Active products</dt>

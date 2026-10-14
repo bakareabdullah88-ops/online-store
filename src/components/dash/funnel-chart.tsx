@@ -88,7 +88,7 @@ export function FunnelChart({
                   <motion.span
                     layoutId={`${gid}-glow`}
                     transition={spring.smooth}
-                    className="absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,color-mix(in_oklab,var(--chart-blue)_9%,transparent)_100%)]"
+                    className="absolute inset-0 bg-accent-soft/40"
                     aria-hidden
                   />
                 )}
