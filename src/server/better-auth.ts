@@ -9,16 +9,47 @@ import { getPool } from "./pg";
  * takes the verified email and signs the person in with its own session
  * (see google.ts). Email and password stay with Kamplug's own sign-in.
  */
+function hostOf(url: string | undefined) {
+  if (!url) return null;
+  try {
+    return new URL(url.includes("://") ? url : `https://${url}`).host;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Every address this site answers on: the configured one, plus the ones
+ * Vercel gives each deployment (production domain, branch link, deployment
+ * link). Sign-in works from whichever of them the person opened; Google
+ * still has to list that address's /api/auth/callback/google.
+ */
+export function siteHosts(): string[] {
+  const e = process.env;
+  const hosts = [
+    e.BETTER_AUTH_URL,
+    e.NEXT_PUBLIC_APP_URL,
+    e.VERCEL_PROJECT_PRODUCTION_URL,
+    e.VERCEL_BRANCH_URL,
+    e.VERCEL_URL,
+  ].map(hostOf);
+  return [...new Set(hosts.filter((h): h is string => !!h))];
+}
+
 function options() {
-  const appUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  const fallback = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  const hosts = siteHosts();
+  const local = (h: string) => /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(h);
   return {
     appName: "Kamplug",
     advanced: { cookiePrefix: "kamplug-auth" },
     database: getPool(),
-    ...(appUrl ? { baseURL: appUrl } : {}),
-    trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL, process.env.BETTER_AUTH_URL].filter(
-      (x): x is string => !!x,
-    ),
+    baseURL: {
+      allowedHosts: hosts,
+      ...(fallback ? { fallback } : {}),
+      protocol: "auto" as const,
+    },
+    trustedOrigins: hosts.map((h) => `${local(h) ? "http" : "https"}://${h}`),
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID ?? "",

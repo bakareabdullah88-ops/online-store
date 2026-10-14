@@ -8,7 +8,7 @@ import { toast } from "@/stores/toast";
 /** A plain reason for a failed start, from Better Auth's or our own message. */
 function explain(status: number, message: string | undefined) {
   if (message && /origin/i.test(message))
-    return "This site's address doesn't match BETTER_AUTH_URL. Open the site at that address, or update the setting.";
+    return "Google sign-in isn't allowed from this address. Open the site at its main address.";
   if (message) return message;
   return `Something went wrong on our side (${status}). Try again, or use your email and password.`;
 }
