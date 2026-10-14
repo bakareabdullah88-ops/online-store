@@ -1,7 +1,8 @@
-import { clear, createStore, del, get, getMany, set, setMany, type UseStore } from "idb-keyval";
+import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
 import { features } from "@/config/features";
 import { generateSeed, type DbSnapshot } from "./seed";
 import { hasSample, refreshSample, SAMPLE_TTL_MS, stripSample } from "./sample-sync";
+import { SAMPLE_VERSION } from "./seed/sample";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
@@ -130,12 +131,22 @@ async function loadFromIdb(): Promise<DbSnapshot> {
  * or takes it out once features.sampleData is off.
  */
 async function syncSample(db: DbSnapshot) {
-  const at = (await get("meta:sampleAt", store())) as number | undefined;
+  const [at, version] = (await getMany(["meta:sampleAt", "meta:sampleVersion"], store())) as [
+    number | undefined,
+    number | undefined,
+  ];
   if (features.sampleData) {
-    if (at !== undefined && Date.now() - at < SAMPLE_TTL_MS && hasSample(db)) return;
+    const fresh = at !== undefined && Date.now() - at < SAMPLE_TTL_MS;
+    if (fresh && version === SAMPLE_VERSION && hasSample(db)) return;
     refreshSample(db);
     await writeAll(db);
-    await set("meta:sampleAt", Date.now(), store());
+    await setMany(
+      [
+        ["meta:sampleAt", Date.now()],
+        ["meta:sampleVersion", SAMPLE_VERSION],
+      ],
+      store(),
+    );
   } else if (at !== undefined || hasSample(db)) {
     stripSample(db, "remove");
     if (sessionUserId && !db.users.some((u) => u.id === sessionUserId)) {
@@ -143,7 +154,7 @@ async function syncSample(db: DbSnapshot) {
       await del("session", store());
     }
     await writeAll(db);
-    await del("meta:sampleAt", store());
+    await Promise.all([del("meta:sampleAt", store()), del("meta:sampleVersion", store())]);
   }
 }
 

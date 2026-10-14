@@ -9,6 +9,7 @@ import { useMode } from "@/components/shell/mode";
 import { useCurtain } from "@/components/shell/mode-curtain";
 import { isActive as orderIsActive } from "@/domain/orders";
 import { formatCompact } from "@/lib/format";
+import { greet } from "@/lib/greeting";
 import { useCampus } from "@/queries/catalog";
 import { useMyOrders } from "@/queries/orders";
 import { useSession } from "@/queries/session";
@@ -34,9 +35,16 @@ export function ArrivalBanner() {
   const myOrders = useMyOrders().data;
   const bag = useBagCount();
   const [paused, setPaused] = useState(false);
+  const firstName = user?.name.split(" ")[0] ?? "there";
+  // A fresh greeting for each arrival, picked when the card appears.
+  const [greeting, setGreeting] = useState(() => `Hi, ${firstName}`);
 
   const show = !!arrival && arrival.mode === mode && !!user;
   const id = arrival?.id;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a new greeting per arrival
+    if (id) setGreeting(greet(firstName));
+  }, [id, firstName]);
   useEffect(() => {
     if (!show || paused) return;
     const t = window.setTimeout(() => useCurtain.setState({ arrival: null }), SHOW_MS);
@@ -128,9 +136,7 @@ export function ArrivalBanner() {
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   transition={{ delay: 0.2, duration: 0.4 }}
                 >
-                  {selling
-                    ? (brand?.name ?? "Your shop")
-                    : `Hi, ${user?.name.split(" ")[0] ?? "there"}`}
+                  {selling ? (brand?.name ?? "Your shop") : greeting}
                 </motion.h2>
                 {details.length > 0 && (
                   <motion.p

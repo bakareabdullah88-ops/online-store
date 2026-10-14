@@ -35,10 +35,16 @@ import { coverFor, photosFor } from "./photos";
 export const SAMPLE_MARK = "_demo_";
 export const isSampleId = (id: string) => id.includes(SAMPLE_MARK);
 
+/**
+ * Bump when the sample data changes shape or content, so browsers holding an
+ * older set rebuild it on their next visit instead of waiting for it to expire.
+ */
+export const SAMPLE_VERSION = 2;
+
 /** The account anyone can look around with, no sign-up needed. */
 export const PREVIEW = {
   userId: "u_demo_preview",
-  name: "Ada Okafor",
+  name: "Temi Adebisi",
   email: "preview@kiosk.demo",
   shopHandle: "adirelab",
 } as const;
@@ -188,7 +194,7 @@ function person(p: {
 
 /**
  * Twenty student shops with photos and reviews, customers, and one preview
- * account (Ada) that shops around and runs Àdìrẹ Lab, so every page of the
+ * account (Temi) that shops around and runs Àdìrẹ Lab, so every page of the
  * app, buyer and seller side, has something to show.
  */
 export function generateSample(campuses: Campus[], now: number = Date.now()): SampleData {
@@ -494,8 +500,8 @@ export function generateSample(campuses: Campus[], now: number = Date.now()): Sa
     };
   };
 
-  // Ada's own shopping: about two orders a week for five months.
-  const shopsAdaUses = [
+  // Temi's own shopping: about two orders a week for five months.
+  const shopsTemiUses = [
     "b_demo_mamaputexpress",
     "b_demo_mamaputexpress",
     "b_demo_choplife",
@@ -515,7 +521,7 @@ export function generateSample(campuses: Campus[], now: number = Date.now()): Sa
     orders.push(
       makeOrder({
         buyer: preview,
-        brand: rng.pick(shopsAdaUses),
+        brand: rng.pick(shopsTemiUses),
         placedAt: now - d * DAY - rng.int(1, 10) * HOUR,
         status: rng.chance(0.07) ? "cancelled" : "delivered",
       }),

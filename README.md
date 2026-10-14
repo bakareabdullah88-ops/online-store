@@ -53,8 +53,8 @@ browser, so two people on different phones won't see each other's shops yet.
 ### Sample data (preview)
 
 While Kiosk is being built, the app ships with **sample data**: twenty student shops with photos,
-reviews and five months of orders, plus a shared **preview account** (Ada, who shops around and
-runs Àdìrẹ Lab). Anyone who opens the app without logging in looks around as Ada, no sign-up
+reviews and five months of orders, plus a shared **preview account** (Temi, who shops around and
+runs Àdìrẹ Lab). Anyone who opens the app without logging in looks around as Temi, no sign-up
 needed, and a notice at the top of every page says the app is still being built.
 
 - The data lives in [`src/services/mock/seed/sample.ts`](src/services/mock/seed/sample.ts) and the

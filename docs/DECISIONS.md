@@ -357,7 +357,7 @@ The site stopped being a demo. What changed and why:
   into the new page's logo. The cover has its own view-transition layer so the page cross-fade under
   it never makes it see-through. Reduced motion: a quick crossfade.
 - **Arriving.** After the circle shrinks away, a welcome card slides in under the header in the
-  side's colour: your shop's logo and name (or "Hi, Ada" when buying), a line of live details
+  side's colour: your shop's logo and name (or a greeting by name when buying), a line of live details
   (rating, followers and new orders; or campus, orders on the way and bag), and one next step
   (review orders or add a product; track orders or discover). A soft light sweeps across it once.
   It tucks away after 6.5s, pausing while the pointer is on it, and can be dismissed.

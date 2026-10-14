@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Activity,
   CalendarDays,
@@ -32,6 +33,7 @@ import { categories } from "@/config/categories";
 import { rangeLabel } from "@/domain/analytics";
 import { formatNaira, formatNairaCompact } from "@/domain/money";
 import { formatNumber } from "@/lib/format";
+import { greet } from "@/lib/greeting";
 import { useMounted } from "@/lib/hooks";
 import { useCampus } from "@/queries/catalog";
 import { usePlaces } from "@/queries/inbox";
@@ -41,8 +43,10 @@ import { useFollowing } from "@/queries/social";
 
 const kobo = (n: number) => Math.round(n);
 
-function greeting(h: number) {
-  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+/** A greeting picked once per visit: it changes with the time, the day and the mood. */
+function Greeting({ name }: { name: string }) {
+  const [text] = useState(() => greet(name));
+  return <>{text}</>;
 }
 
 /** First steps for a new account, replaced by live tasks once they order. */
@@ -134,7 +138,7 @@ export function BuyerHome() {
       <PageHeader
         icon={LayoutGrid}
         crumbs={[{ label: "Market", href: "/home" }, { label: "Home" }]}
-        title={mounted && firstName ? `${greeting(new Date().getHours())}, ${firstName}` : "Home"}
+        title={mounted && firstName ? <Greeting name={firstName} /> : "Home"}
         description={campus ? `Shopping at ${campus.name}` : "Your orders and spending at a glance"}
         actions={<DateRangeControl preset={preset} range={range} onChange={setPreset} />}
       />
