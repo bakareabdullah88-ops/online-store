@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 import { toast } from "@/stores/toast";
 
+/** A plain reason for a failed start, from Better Auth's or our own message. */
+function explain(status: number, message: string | undefined) {
+  if (message && /origin/i.test(message))
+    return "This site's address doesn't match BETTER_AUTH_URL. Open the site at that address, or update the setting.";
+  if (message) return message;
+  return `Something went wrong on our side (${status}). Try again, or use your email and password.`;
+}
+
 /** Google's "G", in its own colours. */
 function GoogleMark() {
   return (
@@ -50,13 +58,19 @@ export function GoogleButton({ next }: { next: string | null }) {
           errorCallbackURL: "/login?error=google",
         }),
       });
-      const body = (await res.json().catch(() => null)) as { url?: string } | null;
-      if (!res.ok || !body?.url) throw new Error("no url");
-      window.location.assign(body.url);
+      const body = (await res.json().catch(() => null)) as {
+        url?: string;
+        message?: string;
+      } | null;
+      if (res.ok && body?.url) return window.location.assign(body.url);
+      setBusy(false);
+      toast.error("Google sign-in didn't start", {
+        description: explain(res.status, body?.message),
+      });
     } catch {
       setBusy(false);
-      toast.error("Google sign-in isn't available right now", {
-        description: "Try again in a moment, or use your email and password.",
+      toast.error("Google sign-in didn't start", {
+        description: "We couldn't reach Kamplug. Check your connection and try again.",
       });
     }
   };

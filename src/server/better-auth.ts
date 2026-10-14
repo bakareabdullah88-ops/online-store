@@ -30,12 +30,23 @@ function options() {
   };
 }
 
-export function googleConfigured() {
-  return !!(
-    process.env.GOOGLE_CLIENT_ID &&
-    process.env.GOOGLE_CLIENT_SECRET &&
-    process.env.BETTER_AUTH_SECRET
+const REQUIRED = [
+  "DATABASE_URL",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "BETTER_AUTH_SECRET",
+  "BETTER_AUTH_URL",
+] as const;
+
+/** Settings Google sign-in needs that this deployment doesn't have (names only). */
+export function missingGoogleSettings(): string[] {
+  return REQUIRED.filter(
+    (k) => !process.env[k] && !(k === "DATABASE_URL" && process.env.POSTGRES_URL),
   );
+}
+
+export function googleConfigured() {
+  return missingGoogleSettings().length === 0;
 }
 
 type Auth = ReturnType<typeof betterAuth<ReturnType<typeof options>>>;
