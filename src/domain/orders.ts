@@ -104,7 +104,7 @@ export function statusDescription(status: OrderStatus, method: FulfilmentMethod)
     case "out_for_delivery":
       return "It's on the way to you.";
     case "delivered":
-      return method === "pickup" ? "Collected. Enjoy!" : "Delivered. Enjoy!";
+      return method === "pickup" ? "Collected. Enjoy." : "Delivered. Enjoy.";
     case "cancelled":
       return "This order was cancelled.";
     case "declined":

@@ -135,7 +135,7 @@ function Receipt({ o, campusName }: { o: Order; campusName: string }) {
           </>
         )}
       </p>
-      <p className="mt-3 text-center">Thank you!</p>
+      <p className="mt-3 text-center">Thank you.</p>
     </div>
   );
 }

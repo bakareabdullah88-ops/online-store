@@ -31,8 +31,8 @@ export function notifyBuyerOfStatus(
     out_for_delivery: "It's on the way. Keep your phone close.",
     delivered:
       order.fulfilment.method === "pickup"
-        ? "Picked up. Enjoy! Tap to leave a review."
-        : "Delivered. Enjoy! Tap to leave a review.",
+        ? "Picked up. Tap to leave a review."
+        : "Delivered. Tap to leave a review.",
     declined: `${order.brandName} couldn't take this order. You haven't been charged.`,
     cancelled: "Your order was cancelled.",
   };

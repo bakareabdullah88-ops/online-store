@@ -23,7 +23,7 @@ const AFTERNOON: Line[] = [
   (n) => `Good afternoon, ${n}`,
   (n) => `Welcome back, ${n}`,
   (n) => `Hey ${n}, lunch break?`,
-  (n) => `Afternoon, ${n} 👋`,
+  (n) => `Afternoon, ${n}`,
   (n) => `Hope the lectures are kind today, ${n}`,
 ];
 
@@ -32,12 +32,12 @@ const EVENING: Line[] = [
   (n) => `Hey ${n}, good to see you`,
   (n) => `Evening, ${n}. Winding down?`,
   (n) => `Hey ${n}, how did today go?`,
-  (n) => `Welcome back, ${n} ✨`,
+  (n) => `Welcome back, ${n}`,
 ];
 
 const NIGHT: Line[] = [
   (n) => `Late one, ${n}?`,
-  (n) => `One more look before bed, ${n}? 🌙`,
+  (n) => `One more look before bed, ${n}?`,
   (n) => `Evening, ${n}. Take it easy`,
 ];
 
@@ -45,7 +45,7 @@ const NIGHT: Line[] = [
 const DAYS: Record<number, Line[]> = {
   0: [(n) => `Easy Sunday, ${n}`],
   1: [(n) => `New week, ${n}. Let's go`],
-  5: [(n) => `Happy Friday, ${n} 🎉`, (n) => `TGIF, ${n}!`],
+  5: [(n) => `Happy Friday, ${n}`, (n) => `Nearly the weekend, ${n}`],
   6: [(n) => `Happy weekend, ${n}`],
 };
 

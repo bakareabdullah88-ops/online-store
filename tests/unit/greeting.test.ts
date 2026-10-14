@@ -16,8 +16,8 @@ describe("greeting", () => {
   });
 
   it("adds a line for special days", () => {
-    expect(greetingOptions("Temi", at(5, 10))).toContain("Happy Friday, Temi 🎉");
-    expect(greetingOptions("Temi", at(3, 10))).not.toContain("Happy Friday, Temi 🎉");
+    expect(greetingOptions("Temi", at(5, 10))).toContain("Happy Friday, Temi");
+    expect(greetingOptions("Temi", at(3, 10))).not.toContain("Happy Friday, Temi");
   });
 
   it("always names the person and avoids repeating the last one", () => {
