@@ -110,7 +110,7 @@ export function ProductRow({
   );
 
   return (
-    <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
+    <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 overflow-hidden rounded-[6px] border border-line/70 bg-surface/55 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
       <div className="relative bg-surface-2">
         {/* Sets the row's minimum height from the photo's shape (4:5 on phones, square
             above). When the details run longer, the photo grows with the row instead. */}
@@ -276,7 +276,7 @@ export function ProductRow({
 export function ProductRowSkeleton() {
   return (
     <div
-      className="grid grid-cols-[44%_1fr] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
+      className="grid grid-cols-[44%_1fr] gap-3 overflow-hidden rounded-[6px] border border-line/70 bg-surface/55 sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
       aria-hidden
     >
       <Skeleton className="aspect-[4/5] w-full sm:aspect-square" rounded="none" />

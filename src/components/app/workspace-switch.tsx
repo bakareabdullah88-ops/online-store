@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Plus, ShoppingBag } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { useMode, type Mode } from "@/components/shell/mode";
@@ -23,10 +23,19 @@ export function WorkspaceSwitch({
   const { data: brand } = useMyBrand();
   const badges = useNavBadges();
   const go = useSwitchWorkspace();
-  const options: { value: Mode; label: string; icon: React.ReactNode; count?: number }[] = [
+  const options: {
+    value: Mode;
+    /** What the side is for, always shown in words. */
+    label: string;
+    /** Longer description for screen readers and the hover tooltip. */
+    title: string;
+    icon: React.ReactNode;
+    count?: number;
+  }[] = [
     {
       value: "buying",
-      label: "Market",
+      label: "Buying",
+      title: "Buying: the market",
       icon: (
         <span className="grid size-6 place-items-center rounded-lg bg-[linear-gradient(140deg,var(--chart-blue),var(--chart-violet))] text-white shadow-sm">
           <ShoppingBag className="size-3.5" />
@@ -35,7 +44,8 @@ export function WorkspaceSwitch({
     },
     {
       value: "selling",
-      label: brand ? brand.name : "Open a shop",
+      label: "Selling",
+      title: brand ? `Selling: ${brand.name}` : "Selling: open a shop",
       icon: brand ? (
         <span className="block size-6 overflow-hidden rounded-lg shadow-sm">
           <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
@@ -65,7 +75,8 @@ export function WorkspaceSwitch({
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={o.label}
+            aria-label={o.title}
+            title={o.title}
             onClick={(e) =>
               // Keyboard clicks have no pointer position; grow from the button instead.
               go(
@@ -88,7 +99,21 @@ export function WorkspaceSwitch({
               />
             )}
             <span className="relative">{o.icon}</span>
-            {!compact && <span className="relative max-w-28 truncate">{o.label}</span>}
+            {/* Compact (phones, narrow headers): only the active side shows its word. */}
+            <AnimatePresence initial={false}>
+              {(!compact || active) && (
+                <motion.span
+                  key="label"
+                  className="relative overflow-hidden whitespace-nowrap"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={spring.snappy}
+                >
+                  {o.label}
+                </motion.span>
+              )}
+            </AnimatePresence>
             {!!o.count && (
               <span className="relative grid h-4 min-w-4 place-items-center rounded-full bg-badge px-1 text-[10px] font-bold text-white">
                 {o.count}
