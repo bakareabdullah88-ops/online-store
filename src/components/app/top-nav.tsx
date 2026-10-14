@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { Bell, ChevronDown, Grid2X2, Search, ShoppingBag } from "lucide-react";
 import { useState } from "react";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
 import { KamplugMark } from "./kamplug-mark";
+import { MessagesButton } from "./messages-button";
 import { ModeLine } from "./mode-line";
 import { NavGrid } from "./more-menu";
 import { useNavBadges } from "./nav-badges";
@@ -85,25 +86,22 @@ export function TopNav() {
   const badges = useNavBadges();
   const setCommandOpen = useUi((s) => s.setCommandOpen);
   const [more, setMore] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
 
   const sections = mode === "selling" ? shopNav : marketNav;
   const primary = sections.flatMap((s) => s.items).filter((i) => i.primary);
   const secondary = sections.flatMap((s) => s.items).filter((i) => !i.primary);
   const moreActive = secondary.some((i) => isActive(i, path));
-  // Notifications already have the bell.
+  // Notifications and messages already have their own buttons.
+  const own = new Set(["notifications", "messages", "shopMessages"]);
   const moreCount = secondary.reduce(
-    (n, i) => n + (i.badge && i.badge !== "notifications" ? badges[i.badge] : 0),
+    (n, i) => n + (i.badge && !own.has(i.badge) ? badges[i.badge] : 0),
     0,
   );
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-(--z-header) hidden border-b border-line bg-surface/95 backdrop-blur-md transition-shadow duration-300 md:block",
-        scrolled && "shadow-[0_6px_20px_-14px_rgb(16_24_40/0.35)]",
+        "sticky top-0 z-(--z-header) hidden border-b border-line bg-surface/95 backdrop-blur-md md:block",
       )}
       style={{ viewTransitionName: "site-header" }}
     >
@@ -170,6 +168,7 @@ export function TopNav() {
           <span className="hidden text-[13px] text-muted 2xl:inline">Search Kamplug</span>
           <Kbd className="ml-auto hidden 2xl:inline-flex">⌘K</Kbd>
         </button>
+        <MessagesButton />
         <Link
           href="/notifications"
           aria-label={

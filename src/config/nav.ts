@@ -88,7 +88,6 @@ export const marketNav: NavSection[] = [
         label: "Messages",
         icon: MessageCircle,
         tone: T.teal,
-        primary: true,
         badge: "messages",
         match: startsWith("/messages"),
       },
@@ -134,12 +133,6 @@ export const marketNav: NavSection[] = [
   },
 ];
 
-/** Bottom bar on phones while buying. */
-export const marketTabs: NavItem[] = marketNav[0]!.items
-  .filter((i) => i.href !== "/wishlist")
-  .concat(marketNav[1]!.items.filter((i) => i.href === "/bag"))
-  .filter((i) => i.href !== "/messages");
-
 /* ---------------------------------- Shop ---------------------------------- */
 
 export const shopNav: NavSection[] = [
@@ -174,7 +167,6 @@ export const shopNav: NavSection[] = [
         label: "Inbox",
         icon: MessageCircle,
         tone: T.teal,
-        primary: true,
         badge: "shopMessages",
       },
       { href: "/studio/customers", label: "Customers", icon: Users, tone: T.pink, primary: true },
@@ -202,13 +194,6 @@ export const shopNav: NavSection[] = [
       { href: "/studio/brand", label: "Shop settings", icon: Settings, tone: T.slate },
     ],
   },
-];
-
-export const shopTabs: NavItem[] = [
-  shopNav[0]!.items[0]!,
-  shopNav[0]!.items[2]!,
-  shopNav[0]!.items[3]!,
-  shopNav[0]!.items[4]!,
 ];
 
 export function isActive(item: NavItem, path: string) {

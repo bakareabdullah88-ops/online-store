@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RequireAuth } from "@/components/shell/require-auth";
 import { ArrivalBanner } from "./arrival";
 import { AppBackdrop } from "./backdrop";
-import { MobileNav } from "./mobile-nav";
 import { MobileTopBar } from "./mobile-top-bar";
 import { TopNav } from "./top-nav";
 
@@ -30,7 +29,7 @@ function ShellSkeleton() {
 
 /**
  * Signed-in frame: a plain background, a full-width top bar on tablets and
- * up, and a top bar plus floating pill nav on phones.
+ * up, and on phones a top bar whose menu opens a sidebar.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -44,7 +43,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <ArrivalBanner />
             {children}
           </div>
-          <MobileNav />
         </div>
       </RequireAuth>
     </Suspense>
