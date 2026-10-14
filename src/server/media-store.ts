@@ -55,14 +55,20 @@ export async function saveMedia(id: string, ownerId: string, type: string, bytes
   const pool = await db();
   if (store) {
     const key = `images/${id}.${EXT[type] ?? "bin"}`;
-    const res = await store.client.fetch(`${store.endpoint}/${key}`, {
+    const body = new Uint8Array(bytes);
+    // Sign, then send the bytes ourselves: a signed Request carries its body as
+    // a stream, and R2 refuses streamed uploads without a Content-Length.
+    const signed = await store.client.sign(`${store.endpoint}/${key}`, {
       method: "PUT",
-      body: new Uint8Array(bytes),
+      body,
       headers: {
         "content-type": type,
         "cache-control": "public, max-age=31536000, immutable",
       },
     });
+    const headers = new Headers(signed.headers);
+    headers.set("content-length", String(body.byteLength));
+    const res = await fetch(signed.url, { method: "PUT", headers, body });
     if (!res.ok) throw new Error(`R2 upload failed: ${res.status} ${await res.text()}`);
     await pool.query(
       "insert into kamplug_media (id, owner_id, content_type, location) values ($1, $2, $3, $4)",
