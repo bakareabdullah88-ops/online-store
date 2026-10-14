@@ -1,7 +1,6 @@
 /**
- * A greeting that changes with the time of day and the day itself, with a bit
- * of home in it (Yoruba, Hausa and Igbo hellos), so the app feels like it is
- * glad to see you rather than reading out the clock.
+ * A greeting that changes with the time of day and the day itself, so the app
+ * feels like it is glad to see you rather than reading out the clock.
  */
 
 type Line = (name: string) => string;
@@ -14,16 +13,15 @@ const LATE: Line[] = [
 
 const MORNING: Line[] = [
   (n) => `Good morning, ${n} ☀️`,
-  (n) => `Ẹ káàárọ̀, ${n}`,
-  (n) => `Ina kwana, ${n}`,
-  (n) => `Ụtụtụ ọma, ${n}`,
+  (n) => `Morning, ${n}. Fresh start today`,
+  (n) => `Hey ${n}, early bird today?`,
   (n) => `Rise and shine, ${n}`,
   (n) => `Morning, ${n}. Breakfast sorted?`,
 ];
 
 const AFTERNOON: Line[] = [
   (n) => `Good afternoon, ${n}`,
-  (n) => `Ẹ káàsán, ${n}`,
+  (n) => `Welcome back, ${n}`,
   (n) => `Hey ${n}, lunch break?`,
   (n) => `Afternoon, ${n} 👋`,
   (n) => `Hope the lectures are kind today, ${n}`,
@@ -31,7 +29,7 @@ const AFTERNOON: Line[] = [
 
 const EVENING: Line[] = [
   (n) => `Good evening, ${n}`,
-  (n) => `Ẹ káalẹ́, ${n}`,
+  (n) => `Hey ${n}, good to see you`,
   (n) => `Evening, ${n}. Winding down?`,
   (n) => `Hey ${n}, how did today go?`,
   (n) => `Welcome back, ${n} ✨`,
