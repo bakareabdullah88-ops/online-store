@@ -111,7 +111,7 @@ export function CommandPalette() {
                 </VisuallyHidden.Root>
                 <Command
                   shouldFilter={false}
-                  label="Search Kiosk"
+                  label="Search Kamplug"
                   className="flex min-h-0 flex-1 flex-col"
                 >
                   <div className="flex items-center gap-3 border-b border-line px-4">

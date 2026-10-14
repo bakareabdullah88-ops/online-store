@@ -224,7 +224,7 @@ export function OpenShopWizard() {
             {created.name} is open
           </motion.h1>
           <p className="mt-3 text-body-lg text-muted">
-            Your shop is live at kiosk/{created.handle}. Add a product so students can start
+            Your shop is live at kamplug/{created.handle}. Add a product so students can start
             ordering.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -336,8 +336,8 @@ export function OpenShopWizard() {
                     }
                     hint={
                       shownHandleState === "ok"
-                        ? `kiosk/${s.handle} is yours`
-                        : "Your shop link, e.g. kiosk/moremithrift"
+                        ? `kamplug/${s.handle} is yours`
+                        : "Your shop link, e.g. kamplug/moremithrift"
                     }
                   >
                     <Input
@@ -351,7 +351,7 @@ export function OpenShopWizard() {
                           handleTouched: true,
                         }));
                       }}
-                      leading={<span className="font-mono text-small">kiosk/</span>}
+                      leading={<span className="font-mono text-small">kamplug/</span>}
                       className="pl-16 font-mono"
                       trailing={
                         <span
@@ -541,7 +541,7 @@ export function OpenShopWizard() {
                     <dt className="text-muted">Name</dt>
                     <dd>{s.name}</dd>
                     <dt className="text-muted">Link</dt>
-                    <dd className="font-mono">kiosk/{s.handle}</dd>
+                    <dd className="font-mono">kamplug/{s.handle}</dd>
                     <dt className="text-muted">Category</dt>
                     <dd>{s.category ? categoryById(s.category).name : ""}</dd>
                     <dt className="text-muted">Fulfilment</dt>

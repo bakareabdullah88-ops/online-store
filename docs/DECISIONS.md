@@ -329,7 +329,7 @@ The site stopped being a demo. What changed and why:
 ## 11. Sample data while we build, plain header
 
 - **Sample data is back, on purpose and labelled.** Section 9 removed the demo so nothing fake
-  passed for real. While Kiosk is still being built, an empty app shows visitors nothing, so the
+  passed for real. While Kamplug is still being built, an empty app shows visitors nothing, so the
   sample shops, photos and orders return behind `features.sampleData`, with a notice on the landing
   page and on every app page saying it's sample data and the app is still being built.
 - **No sign-up to look around.** With sample data on, the auth gate signs visitors in to a shared
@@ -388,7 +388,7 @@ The site stopped being a demo. What changed and why:
   Postgres, in the browser it's still IndexedDB. The business rules (stock, order transitions,
   who may do what, invite-only) live in one place and are already covered by the unit tests, so
   nothing had to be rewritten and the UI didn't change.
-- **Storage.** Every record is a JSON row in `kiosk_docs (collection, id, data)`. Each write
+- **Storage.** Every record is a JSON row in `kamplug_docs (collection, id, data)`. Each write
   takes the next number from a sequence (`seq`); a server keeps everything in memory and, per
   request, fetches only rows with a higher `seq` (one small query, usually empty). Deletes are
   tombstones so other servers hear about them.
@@ -405,7 +405,7 @@ The site stopped being a demo. What changed and why:
   Passwords stay PBKDF2-SHA-256 (100k iterations, salted), now computed on the server.
 - **The preview account is read-only** on the server, because every visitor shares it. In
   `mock` mode each browser had its own copy, so it could change freely.
-- **Photos** are stored in Postgres (`kiosk_media`) and served with a year-long cache. The browser
+- **Photos** are stored in Postgres (`kamplug_media`) and served with a year-long cache. The browser
   shrinks anything over 2000px or 3.5MB to WebP first (Vercel caps request bodies at 4.5MB).
   Moving to Vercel Blob later only changes `src/server/media.ts`.
 - **Live updates** are a 20-second poll of `/api/sync` while the tab is visible; a tab ignores
@@ -425,3 +425,23 @@ The site stopped being a demo. What changed and why:
 - **Still to do** before a big launch: roll up old analytics events (they're kept forever), move
   photos to Vercel Blob, a shared rate limiter (today's is per server), and email for password
   resets.
+
+## 15. Kamplug: Google sign-in, Cloudflare R2, the name
+
+- **The name** is Kamplug everywhere people can see it (`config/brand.ts`, copy, docs). Internal
+  keys that existing data depends on keep their old names (browser storage keys, the invite
+  list's hashing pepper), since renaming them would sign people out or break the list. Server
+  tables and the session cookie are `kamplug_*` (nothing had been deployed with the old names).
+- **Google sign-in** uses Better Auth for the OAuth part only (state, PKCE, the callback), with its
+  own tables in the same Neon database. Kamplug keeps its own session and user records, so the
+  service code, invite-only rules and the preview are unchanged. `/api/session/google` turns
+  Better Auth's verified user into a Kamplug sign-in and ends Better Auth's session.
+- **Email ownership.** Open sign-up never verified emails, so a stranger could have signed up with
+  someone else's address. When Google later confirms that address, the account goes to the Google
+  user and the old password is removed (with a notification saying so).
+- **Photos** go to Cloudflare R2 through the server (no bucket CORS setup needed; the browser
+  already shrinks them under Vercel's 4.5MB request limit). `/api/media/:id` redirects to
+  `R2_PUBLIC_URL`; pages use that URL directly instead of downloading blobs. Without R2 settings,
+  photos stay in Postgres.
+- **One switch fewer.** The backend switches on when `DATABASE_URL` exists at build time
+  (`next.config.ts`), so deploying with Neon connected is enough.

@@ -93,8 +93,8 @@ const steps = [
     n: "01",
     title: flags.sampleData ? "Look around" : "Get your login",
     body: flags.sampleData
-      ? "Open the preview, no sign-up needed. Real logins come from the Kiosk team."
-      : "The Kiosk team creates one for you. Log in and pick your campus.",
+      ? "Open the preview, no sign-up needed. Real logins come from the Kamplug team."
+      : "The Kamplug team creates one for you. Log in and pick your campus.",
   },
   {
     n: "02",
@@ -112,16 +112,16 @@ const faqs = [
   ...(flags.sampleData
     ? [
         {
-          q: "Is Kiosk live yet?",
+          q: "Is Kamplug live yet?",
           a: "Not yet, we're still building it. The shops, products and orders inside are sample data so you can see how everything works.",
         },
       ]
     : []),
   {
     q: "How do I join?",
-    a: "Kiosk is invite-only for now. The Kiosk team creates your login and sends you your email and password.",
+    a: "Kamplug is invite-only for now. The Kamplug team creates your login and sends you your email and password.",
   },
-  { q: "Does it cost anything?", a: "No. Using Kiosk and opening a shop are free." },
+  { q: "Does it cost anything?", a: "No. Using Kamplug and opening a shop are free." },
   {
     q: "How do buyers pay?",
     a: "On delivery or at pickup, straight to the seller. Online payments are coming later.",
@@ -347,7 +347,7 @@ export default function LandingPage() {
                 ],
               },
               {
-                title: "Kiosk",
+                title: "Kamplug",
                 links: [
                   ["How it works", "/#how"],
                   ["Log in", "/login"],

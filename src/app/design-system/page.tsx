@@ -3,7 +3,7 @@ import { DesignSystemView } from "./view";
 
 export const metadata: Metadata = {
   title: "Design system",
-  description: "Every primitive and state of the Kiosk design system, in light and dark.",
+  description: "Every primitive and state of the Kamplug design system, in light and dark.",
   robots: { index: false },
 };
 

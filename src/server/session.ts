@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { db } from "./pg";
 
-export const SESSION_COOKIE = "kiosk_session";
+export const SESSION_COOKIE = "kamplug_session";
 const MAX_AGE_S = 30 * 86_400;
 
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -23,7 +23,7 @@ export async function sessionUser(req: Request): Promise<{ token: string; userId
   if (!token || !/^[A-Za-z0-9_-]{20,100}$/.test(token)) return null;
   const pool = await db();
   const { rows } = await pool.query<{ user_id: string }>(
-    "select user_id from kiosk_sessions where token_hash = $1 and expires_at > now()",
+    "select user_id from kamplug_sessions where token_hash = $1 and expires_at > now()",
     [hash(token)],
   );
   return rows[0] ? { token, userId: rows[0].user_id } : null;
@@ -34,12 +34,13 @@ export async function startSession(req: Request, userId: string): Promise<string
   const token = randomBytes(32).toString("base64url");
   const pool = await db();
   await pool.query(
-    `insert into kiosk_sessions (token_hash, user_id, expires_at)
+    `insert into kamplug_sessions (token_hash, user_id, expires_at)
      values ($1, $2, now() + make_interval(secs => $3))`,
     [hash(token), userId, MAX_AGE_S],
   );
   // Housekeeping: drop expired sign-ins now and then.
-  if (Math.random() < 0.05) await pool.query("delete from kiosk_sessions where expires_at < now()");
+  if (Math.random() < 0.05)
+    await pool.query("delete from kamplug_sessions where expires_at < now()");
   return cookie(req, token, MAX_AGE_S);
 }
 
@@ -47,7 +48,7 @@ export async function startSession(req: Request, userId: string): Promise<string
 export async function endSession(req: Request, token: string | null): Promise<string> {
   if (token) {
     const pool = await db();
-    await pool.query("delete from kiosk_sessions where token_hash = $1", [hash(token)]);
+    await pool.query("delete from kamplug_sessions where token_hash = $1", [hash(token)]);
   }
   return cookie(req, "", 0);
 }

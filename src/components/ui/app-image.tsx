@@ -133,6 +133,7 @@ function BlobImage({
 }) {
   const url = useObjectUrl(id);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   return (
     <span className={className}>
       <span
@@ -142,18 +143,19 @@ function BlobImage({
         )}
         aria-hidden
       >
-        {url === null ? (
+        {url === null || failed ? (
           <Fallback variant={variant} name={name ?? alt} />
         ) : (
           <span className="absolute inset-0 animate-pulse bg-skeleton" />
         )}
       </span>
       {url && (
-        // eslint-disable-next-line @next/next/no-img-element -- blob: URLs are local; next/image cannot optimise them
+        // eslint-disable-next-line @next/next/no-img-element -- blob: URLs and /api/media redirects; next/image can't optimise them
         <img
           src={url}
           alt={alt}
           onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
           className={cn(
             "absolute inset-0 size-full object-cover transition-[opacity,filter,scale] duration-500 ease-out",
             loaded ? "blur-0 scale-100 opacity-100" : "scale-[1.03] opacity-0 blur-md",

@@ -13,6 +13,7 @@ import { signInSchema } from "@/services/inputs";
 import { useSignIn } from "@/queries/session";
 import { toast } from "@/stores/toast";
 import { features } from "@/config/features";
+import { GoogleButton, SignInError } from "./google-button";
 
 type Values = z.input<typeof signInSchema>;
 
@@ -52,7 +53,9 @@ export function LoginForm() {
           {features.inviteOnly ? "How to get access" : "Create an account"}
         </Link>
       </p>
+      <SignInError code={params.get("error")} />
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">
+        <GoogleButton next={next} />
         <Field label="Email" error={form.formState.errors.email?.message}>
           <Input
             type="email"

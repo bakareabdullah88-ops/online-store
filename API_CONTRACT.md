@@ -19,9 +19,14 @@ refuses. The UI only talks to these interfaces. Two implementations exist:
 | `DELETE /api/media/:id` | Only by whoever uploaded it.                                                                   |
 | `GET /api/sync`         | `{ seq }`: the newest change. Open tabs poll it every 20s and refetch when it moves.           |
 
-- **Auth:** HTTP-only, `SameSite=Lax` session cookie (`kiosk_session`, 30 days). Only a SHA-256
-  hash of its token is stored (`kiosk_sessions`). `signIn`/`signUp`/`startPreview` set it,
-  `signOut`/`deleteAccount` clear it.
+- **Auth:** HTTP-only, `SameSite=Lax` session cookie (`kamplug_session`, 30 days). Only a SHA-256
+  hash of its token is stored (`kamplug_sessions`). `signIn`/`signUp`/`startPreview` and Google
+  sign-in set it, `signOut`/`deleteAccount` clear it.
+- **Google sign-in:** Better Auth handles the trip to Google; Kamplug then takes the verified email
+  and signs the person in (creating the account on first visit). Invite-only still applies: an
+  email not on the list is sent back to `/login?error=not_invited`. If someone had signed up with
+  a password for that email, the password is removed, because Google has now proved who owns it.
+  Google-only accounts confirm account deletion by typing their email.
 - **Same site only:** requests whose `Origin` isn't this site get `403`. Sign-in, sign-up and
   account deletion allow 10 attempts a minute per address.
 - **Never sent:** password hashes and salts are stripped from every response.

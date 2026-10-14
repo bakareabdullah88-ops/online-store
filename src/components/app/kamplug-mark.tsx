@@ -1,7 +1,7 @@
 import { cn } from "@/lib/cn";
 
 /** The K mark used on the rail, icons and favicon. */
-export function KioskMark({ className }: { className?: string }) {
+export function KamplugMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cn("size-6", className)} aria-hidden>
       <path

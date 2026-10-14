@@ -257,7 +257,7 @@ function GroupSection({
                 error={
                   promoCode && quote?.promo?.status === "invalid" ? quote.promo.reason : undefined
                 }
-                hint="Try KIOSK10, FRESHER or FREEDEL"
+                hint="Try KAMPLUG10, FRESHER or FREEDEL"
               >
                 <Input
                   value={state.promoInput}

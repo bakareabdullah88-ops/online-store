@@ -20,7 +20,7 @@ export default function RouteError({
       <EmptyState
         illustration="error"
         title="Something spilled"
-        body="This part of Kiosk hit a problem. Your bag and orders are safe on this device."
+        body="This part of Kamplug hit a problem. Your bag and orders are safe on this device."
         action={<Button onClick={reset}>Try again</Button>}
         secondary={
           <ButtonLink href="/" variant="secondary">

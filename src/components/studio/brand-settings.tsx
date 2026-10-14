@@ -317,7 +317,7 @@ export function StudioBrandSettings() {
       <NavPageHeader
         eyebrow="Brand"
         title="Brand settings"
-        description={`kiosk/${brand.handle}`}
+        description={`kamplug/${brand.handle}`}
         actions={
           <ButtonLink
             href={`/brands/${brand.handle}`}

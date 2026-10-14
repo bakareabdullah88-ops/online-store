@@ -103,7 +103,7 @@ export function MembersView() {
 
   const site = typeof window !== "undefined" ? window.location.origin : "";
   const message = created
-    ? `Hi ${created.name.split(" ")[0]}, here's your Kiosk login.\n\n${site}/login\nEmail: ${created.email}\nPassword: ${created.password}\n\nPlease keep it private.`
+    ? `Hi ${created.name.split(" ")[0]}, here's your Kamplug login.\n\n${site}/login\nEmail: ${created.email}\nPassword: ${created.password}\n\nPlease keep it private.`
     : "";
 
   return (

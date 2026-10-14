@@ -7,6 +7,7 @@ import { hasSample, refreshSample, SAMPLE_TTL_MS, stripSample } from "@/services
 import { generateSeed, type DbSnapshot } from "@/services/mock/seed";
 import { isSampleId, SAMPLE_VERSION } from "@/services/mock/seed/sample";
 import { ServiceError } from "@/services/errors";
+import { deleteMedia } from "./media-store";
 import { db, LOCK, tx } from "./pg";
 
 /**
@@ -56,7 +57,7 @@ async function refresh(): Promise<Cache> {
   const pool = await db();
   const since = cache.maxSeq;
   const { rows } = await pool.query<DocRow>(
-    "select collection, id, data, seq, ord, deleted from kiosk_docs where seq > $1 order by seq",
+    "select collection, id, data, seq, ord, deleted from kamplug_docs where seq > $1 order by seq",
     [since],
   );
   if (!rows.length) return cache;
@@ -182,16 +183,16 @@ async function write(changes: Change[], meta?: Meta): Promise<number | null> {
     if (changes.length) {
       await check(c, changes);
       const { rows } = await c.query<{ seq: string }>(
-        `insert into kiosk_docs (collection, id, data, seq, ord, deleted)
+        `insert into kamplug_docs (collection, id, data, seq, ord, deleted)
          select t.collection, t.id, coalesce(t.data, '{}'::jsonb), t.n, t.n, t.deleted
          from (
-           select u.*, nextval('kiosk_seq') as n
+           select u.*, nextval('kamplug_seq') as n
            from unnest($1::text[], $2::text[], $3::jsonb[], $4::boolean[])
              with ordinality as u(collection, id, data, deleted, i)
            order by u.i
          ) t
          on conflict (collection, id) do update set
-           data = case when excluded.deleted then kiosk_docs.data else excluded.data end,
+           data = case when excluded.deleted then kamplug_docs.data else excluded.data end,
            seq = excluded.seq,
            deleted = excluded.deleted
          returning seq`,
@@ -207,7 +208,7 @@ async function write(changes: Change[], meta?: Meta): Promise<number | null> {
     if (meta) {
       for (const [key, value] of Object.entries(meta)) {
         await c.query(
-          `insert into kiosk_meta (key, value) values ($1, $2)
+          `insert into kamplug_meta (key, value) values ($1, $2)
            on conflict (key) do update set value = excluded.value`,
           [key, JSON.stringify(value)],
         );
@@ -219,7 +220,7 @@ async function write(changes: Change[], meta?: Meta): Promise<number | null> {
 
 async function check(c: PoolClient, changes: Change[]) {
   const { rows } = await c.query<{ collection: string; id: string; seq: string; deleted: boolean }>(
-    `select d.collection, d.id, d.seq, d.deleted from kiosk_docs d
+    `select d.collection, d.id, d.seq, d.deleted from kamplug_docs d
      join unnest($1::text[], $2::text[]) as t(collection, id)
        on d.collection = t.collection and d.id = t.id`,
     [changes.map((x) => x.collection), changes.map((x) => x.id)],
@@ -240,7 +241,7 @@ async function check(c: PoolClient, changes: Change[]) {
 async function readMeta(keys: string[]): Promise<Meta> {
   const pool = await db();
   const { rows } = await pool.query<{ key: string; value: unknown }>(
-    "select key, value from kiosk_meta where key = any($1)",
+    "select key, value from kamplug_meta where key = any($1)",
     [keys],
   );
   return Object.fromEntries(rows.map((r) => [r.key, r.value]));
@@ -299,7 +300,7 @@ async function prepare() {
       return { sampleAt: null, sampleVersion: null };
     });
     const pool = await db();
-    await pool.query("delete from kiosk_sessions where user_id like '%\\_demo\\_%'");
+    await pool.query("delete from kamplug_sessions where user_id like '%\\_demo\\_%'");
   }
   sampleCheckedAt = Date.now();
 }
@@ -377,13 +378,7 @@ export async function runCall<T>(
     try {
       const top = await write(changes);
       // Only photos this person uploaded, whatever ids their records pointed at.
-      if (context.removeMedia.length && userId) {
-        const pool = await db();
-        await pool.query("delete from kiosk_media where id = any($1) and owner_id = $2", [
-          context.removeMedia,
-          userId,
-        ]);
-      }
+      if (context.removeMedia.length && userId) await deleteMedia(context.removeMedia, userId);
       return {
         value,
         seq: Math.max(top ?? 0, c.maxSeq),

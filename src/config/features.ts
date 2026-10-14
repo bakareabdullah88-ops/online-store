@@ -9,7 +9,7 @@ export const features = {
    */
   inviteOnly: process.env.NEXT_PUBLIC_OPEN_SIGNUP !== "1",
   /**
-   * SAMPLE DATA while Kiosk is being built: sample shops, orders and a preview
+   * SAMPLE DATA while Kamplug is being built: sample shops, orders and a preview
    * account anyone can look around with, no sign-up needed. Set
    * NEXT_PUBLIC_SAMPLE_DATA=0 to switch it off; it is then removed from every
    * browser on the next visit, keeping what real accounts created.

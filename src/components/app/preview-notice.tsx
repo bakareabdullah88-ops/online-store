@@ -29,7 +29,7 @@ export function PreviewNotice() {
           <div className="mx-auto flex max-w-[1400px] items-center gap-2.5 px-4 py-2 md:px-6">
             <Construction className="size-4 shrink-0 text-warning" aria-hidden />
             <p className="min-w-0 flex-1">
-              <b className="font-semibold">We&apos;re still building Kiosk.</b>{" "}
+              <b className="font-semibold">We&apos;re still building Kamplug.</b>{" "}
               <span className="text-ink-2">
                 {user?.preview
                   ? "Shops, orders and numbers here are sample data, so feel free to click around."

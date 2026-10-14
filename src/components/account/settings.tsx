@@ -356,13 +356,25 @@ export function SettingsView() {
           </>
         }
       >
-        <Field label="Enter your password to confirm" error={deleteError ?? undefined}>
-          <PasswordInput
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Field>
+        {user.hasPassword === false ? (
+          // Google-only accounts have no password; typing the email confirms instead.
+          <Field label={`Type ${user.email} to confirm`} error={deleteError ?? undefined}>
+            <Input
+              type="email"
+              autoComplete="off"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+        ) : (
+          <Field label="Enter your password to confirm" error={deleteError ?? undefined}>
+            <PasswordInput
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+        )}
       </Dialog>
     </div>
   );

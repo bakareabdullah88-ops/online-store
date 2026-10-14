@@ -9,7 +9,7 @@ import { useMode } from "@/components/shell/mode";
 import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
-import { KioskMark } from "./kiosk-mark";
+import { KamplugMark } from "./kamplug-mark";
 import { NavGrid } from "./more-menu";
 import { useNavBadges } from "./nav-badges";
 import { ModeLine } from "./mode-line";
@@ -37,10 +37,10 @@ export function MobileTopBar() {
       >
         <Link
           href={mode === "selling" ? "/studio" : "/home"}
-          aria-label="Kiosk home"
+          aria-label="Kamplug home"
           className="grid size-9 shrink-0 pressable place-items-center rounded-xl bg-primary text-on-primary"
         >
-          <KioskMark className="size-5" />
+          <KamplugMark className="size-5" />
         </Link>
         <WorkspaceSwitch compact className="ml-1" />
         <span className="flex-1" />

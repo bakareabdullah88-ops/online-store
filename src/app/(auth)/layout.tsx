@@ -21,7 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
       <aside
         className="relative hidden overflow-hidden bg-canvas lg:flex lg:flex-col lg:justify-center lg:p-10"
-        aria-label="About Kiosk"
+        aria-label="About Kamplug"
       >
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,color-mix(in_oklab,var(--chart-mint)_40%,transparent),transparent_70%),radial-gradient(50%_45%_at_100%_100%,#ffe6cc,transparent_70%)] opacity-70 dark:opacity-20"

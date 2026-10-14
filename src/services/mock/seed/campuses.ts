@@ -67,7 +67,7 @@ const specs: CampusSpec[] = [
     ],
     pickup: [
       [4, "Oduduwa Hall steps", "Left side, facing the amphitheatre"],
-      [1, "Awo Hall porter's lodge", "Ask for the Kiosk shelf"],
+      [1, "Awo Hall porter's lodge", "Ask for the Kamplug shelf"],
     ],
   },
   {

@@ -90,6 +90,8 @@ export type User = {
   role?: "admin" | "member";
   /** The shared preview account (sample data). Can't change password or delete itself. */
   preview?: boolean;
+  /** False for accounts that sign in with Google only. */
+  hasPassword?: boolean;
 };
 
 /** Never leaves the service layer. */

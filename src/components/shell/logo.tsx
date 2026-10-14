@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { KioskMark } from "@/components/app/kiosk-mark";
+import { KamplugMark } from "@/components/app/kamplug-mark";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/cn";
 
@@ -20,7 +20,7 @@ export function Logo({
       aria-label={`${brand.name} home`}
     >
       <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-on-primary shadow-sm transition-transform duration-300 group-hover:-rotate-6">
-        <KioskMark className="size-[18px]" />
+        <KamplugMark className="size-[18px]" />
       </span>
       <span className="text-[22px] leading-none font-bold tracking-[-0.03em] text-ink">
         {brand.name}

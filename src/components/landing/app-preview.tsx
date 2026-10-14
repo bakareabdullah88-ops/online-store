@@ -25,7 +25,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { KioskMark } from "@/components/app/kiosk-mark";
+import { KamplugMark } from "@/components/app/kamplug-mark";
 import { Gauge } from "@/components/dash/gauge";
 import { cn } from "@/lib/cn";
 
@@ -153,7 +153,7 @@ export function AppPreview() {
       ref={ref}
       className="relative w-full text-left"
       style={{ height: H * scale }}
-      aria-label="Preview of Shop Studio, the seller side of Kiosk"
+      aria-label="Preview of Shop Studio, the seller side of Kamplug"
       role="img"
     >
       <div
@@ -165,7 +165,7 @@ export function AppPreview() {
           {/* rail */}
           <div className="flex w-[68px] flex-col items-center gap-3 py-4">
             <span className="grid size-11 place-items-center rounded-2xl bg-primary text-on-primary">
-              <KioskMark className="size-5" />
+              <KamplugMark className="size-5" />
             </span>
             <span className="h-px w-7 bg-line-strong" />
             <span className="grid size-11 place-items-center rounded-2xl bg-[linear-gradient(140deg,var(--chart-blue),var(--chart-violet))] text-white">

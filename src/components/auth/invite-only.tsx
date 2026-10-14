@@ -5,7 +5,7 @@ const steps = [
   {
     icon: UserPlus,
     title: "Ask for a login",
-    body: "Someone running Kiosk on your campus creates one for you.",
+    body: "Someone running Kamplug on your campus creates one for you.",
   },
   {
     icon: KeyRound,
@@ -15,7 +15,7 @@ const steps = [
   { icon: LogIn, title: "Log in", body: "Pick your campus and you're in, buying or selling." },
 ];
 
-/** Sign-up is closed while Kiosk is invite-only. */
+/** Sign-up is closed while Kamplug is invite-only. */
 export function InviteOnly() {
   return (
     <div className="w-full max-w-md">
@@ -23,10 +23,10 @@ export function InviteOnly() {
         <ShieldCheck className="size-7" />
       </span>
       <h1 className="mt-6 text-[30px] leading-tight font-bold tracking-[-0.03em]">
-        Kiosk is invite-only for now
+        Kamplug is invite-only for now
       </h1>
       <p className="mt-2 text-body text-muted">
-        We&apos;re opening campus by campus, so every account is created by the Kiosk team.
+        We&apos;re opening campus by campus, so every account is created by the Kamplug team.
       </p>
       <ol className="mt-8 flex flex-col gap-3">
         {steps.map((s, i) => (

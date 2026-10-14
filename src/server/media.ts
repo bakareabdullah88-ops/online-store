@@ -1,7 +1,7 @@
 import "server-only";
 import { newId } from "@/lib/ids";
 import { isSampleId } from "@/services/mock/seed/sample";
-import { db } from "./pg";
+import { deleteMedia, readMedia, saveMedia } from "./media-store";
 import { errorResponse, sameOrigin } from "./rpc";
 import { sessionUser } from "./session";
 
@@ -26,28 +26,33 @@ export async function handleUpload(req: Request): Promise<Response> {
   if (!bytes.length) return errorResponse("VALIDATION", "That file is empty.");
   if (bytes.length > MAX_UPLOAD) return errorResponse("VALIDATION", "Images must be under 4MB.");
   const id = newId("img");
-  const pool = await db();
-  await pool.query(
-    "insert into kiosk_media (id, owner_id, content_type, bytes) values ($1, $2, $3, $4)",
-    [id, session.userId, type, bytes],
-  );
+  try {
+    await saveMedia(id, session.userId, type, bytes);
+  } catch (e) {
+    console.error("[media] upload failed", e);
+    return errorResponse("UNAVAILABLE", "We couldn't save that photo. Please try again.");
+  }
   return Response.json({ data: { id, ref: { kind: "blob", id } } });
 }
 
-/** GET /api/media/:id → the image. Ids are random and never reused, so it caches forever. */
+/**
+ * GET /api/media/:id → the image: a redirect to Cloudflare R2, or the bytes
+ * from the database. Ids are random and never reused, so it caches forever.
+ */
 export async function handleGet(id: string): Promise<Response> {
   if (!/^[A-Za-z0-9_-]{1,80}$/.test(id)) return new Response(null, { status: 404 });
-  const pool = await db();
-  const { rows } = await pool.query<{ content_type: string; bytes: Buffer }>(
-    "select content_type, bytes from kiosk_media where id = $1",
-    [id],
-  );
-  const row = rows[0];
-  if (!row) return new Response(null, { status: 404, headers: { "cache-control": "no-store" } });
-  return new Response(new Uint8Array(row.bytes), {
+  const found = await readMedia(id);
+  if (!found) return new Response(null, { status: 404, headers: { "cache-control": "no-store" } });
+  const forever = "public, max-age=31536000, immutable";
+  if (found.kind === "url")
+    return new Response(null, {
+      status: 302,
+      headers: { location: found.url, "cache-control": forever },
+    });
+  return new Response(new Uint8Array(found.bytes), {
     headers: {
-      "content-type": row.content_type,
-      "cache-control": "public, max-age=31536000, immutable",
+      "content-type": found.contentType,
+      "cache-control": forever,
       "x-content-type-options": "nosniff",
     },
   });
@@ -58,7 +63,6 @@ export async function handleDelete(req: Request, id: string): Promise<Response> 
   if (!sameOrigin(req)) return errorResponse("FORBIDDEN", "Cross-site requests aren't allowed.");
   const session = await sessionUser(req);
   if (!session) return errorResponse("UNAUTHORIZED", "Please sign in to continue.");
-  const pool = await db();
-  await pool.query("delete from kiosk_media where id = $1 and owner_id = $2", [id, session.userId]);
+  await deleteMedia([id], session.userId);
   return new Response(null, { status: 204 });
 }

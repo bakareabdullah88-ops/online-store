@@ -1,5 +1,5 @@
 /**
- * SAMPLE DATA, for the preview while Kiosk is being built.
+ * SAMPLE DATA, for the preview while Kamplug is being built.
  *
  * Every id made here contains "_demo_" (real ids never can: see lib/ids.ts),
  * so the whole set can be found, refreshed or removed in one pass. Switch it
@@ -39,13 +39,13 @@ export const isSampleId = (id: string) => id.includes(SAMPLE_MARK);
  * Bump when the sample data changes shape or content, so browsers holding an
  * older set rebuild it on their next visit instead of waiting for it to expire.
  */
-export const SAMPLE_VERSION = 2;
+export const SAMPLE_VERSION = 3;
 
 /** The account anyone can look around with, no sign-up needed. */
 export const PREVIEW = {
   userId: "u_demo_preview",
   name: "Temi Adebisi",
-  email: "preview@kiosk.demo",
+  email: "preview@kamplug.demo",
   shopHandle: "adirelab",
 } as const;
 
@@ -487,7 +487,7 @@ export function generateSample(campuses: Campus[], now: number = Date.now()): Sa
         deliveryFeeKobo: fee,
         discountKobo: discount,
       }),
-      ...(discount ? { promoCode: "KIOSK10" } : {}),
+      ...(discount ? { promoCode: "KAMPLUG10" } : {}),
       payment: {
         method: method === "pickup" ? "pay_on_pickup" : "pay_on_delivery",
         status: a.status === "delivered" ? "paid" : "pending",
@@ -658,7 +658,7 @@ export function generateSample(campuses: Campus[], now: number = Date.now()): Sa
   const promos: Promo[] = [
     {
       id: "pr_demo_kiosk10",
-      code: "KIOSK10",
+      code: "KAMPLUG10",
       brandId: null,
       kind: "percent",
       value: 10,

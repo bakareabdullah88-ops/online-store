@@ -26,6 +26,26 @@ const flags = vi.hoisted(() => ({
 }));
 vi.mock("@/config/features", () => ({ features: flags }));
 
+// Google, as Better Auth reports it after the redirect back: whoever `googleUser` is.
+const google = vi.hoisted(() => ({
+  user: null as null | { email: string; name: string; emailVerified: boolean },
+  signedOut: 0,
+}));
+vi.mock("@/server/better-auth", () => ({
+  googleConfigured: () => true,
+  getAuth: async () => ({
+    api: {
+      getSession: async () => (google.user ? { user: google.user, session: {} } : null),
+      signOut: async () => {
+        google.signedOut++;
+        return new Response(null, {
+          headers: { "set-cookie": "kamplug-auth.session_token=; Max-Age=0; Path=/" },
+        });
+      },
+    },
+  }),
+}));
+
 const url = process.env.TEST_DATABASE_URL;
 if (url) process.env.DATABASE_URL = url;
 
@@ -34,12 +54,14 @@ const PASSWORD = "campus123";
 
 const { handleRpc, __resetAttempts } = await import("@/server/rpc");
 const { handleUpload, handleGet } = await import("@/server/media");
+const { handleGoogleFinish } = await import("@/server/google");
+const { forgetR2 } = await import("@/server/media-store");
 const { db, closePool } = await import("@/server/pg");
 const store = await import("@/server/store");
 
 async function wipe() {
   const pool = await db();
-  await pool.query("truncate kiosk_docs, kiosk_meta, kiosk_sessions, kiosk_media");
+  await pool.query("truncate kamplug_docs, kamplug_meta, kamplug_sessions, kamplug_media");
   store.forgetCache();
   store.forgetSetup();
   __resetAttempts();
@@ -88,6 +110,20 @@ describe.skipIf(!url)("backend on Postgres", () => {
         const body = await res.json();
         if (!res.ok) throw Object.assign(new Error(body.error.message), body.error);
         return body.data;
+      },
+      /** Comes back from Google signed in as `google.user`. Returns where it was sent. */
+      async finishGoogle(next?: string) {
+        const res = await handleGoogleFinish(
+          new Request(
+            `${ORIGIN}/api/session/google${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+            { headers: headers() },
+          ),
+        );
+        keep(res);
+        return (
+          new URL(res.headers.get("location")!).pathname +
+          new URL(res.headers.get("location")!).search
+        );
       },
       async upload(bytes: Uint8Array, type = "image/png") {
         const res = await handleUpload(
@@ -202,7 +238,7 @@ describe.skipIf(!url)("backend on Postgres", () => {
     // Every record is a row in Postgres.
     const pool = await db();
     const { rows } = await pool.query(
-      "select collection, count(*)::int as n from kiosk_docs where not deleted group by collection",
+      "select collection, count(*)::int as n from kamplug_docs where not deleted group by collection",
     );
     const n = Object.fromEntries(rows.map((r) => [r.collection, r.n]));
     expect(n).toMatchObject({ users: 2, brands: 1, products: 1, orders: 1 });
@@ -234,7 +270,7 @@ describe.skipIf(!url)("backend on Postgres", () => {
     const b = browser();
     const user = await b.call("auth", "signIn", { email: "kemi@shop.com", password: PASSWORD });
     expect(user.email).toBe("kemi@shop.com");
-    expect(JSON.stringify(user)).not.toMatch(/password/i);
+    expect(JSON.stringify(user)).not.toMatch(/passwordHash|passwordSalt/);
     expect((await b.call("auth", "getSession"))?.id).toBe(user.id);
     await b.call("auth", "signOut");
     expect(await b.call("auth", "getSession")).toBeNull();
@@ -377,6 +413,98 @@ describe.skipIf(!url)("backend on Postgres", () => {
     expect((await handleGet(data.id)).status).toBe(200);
   });
 
+  it("signs in with Google: a new account, then the same one again", async () => {
+    google.user = { email: "Ngozi@Gmail.com", name: "Ngozi Eze", emailVerified: true };
+    const b = browser();
+    expect(await b.finishGoogle("/explore")).toBe("/welcome?next=%2Fexplore");
+    const me = await b.call("auth", "getSession");
+    expect(me).toMatchObject({ email: "ngozi@gmail.com", name: "Ngozi Eze", hasPassword: false });
+    // Better Auth's own session is always ended; Kamplug's cookie is the sign-in.
+    expect(google.signedOut).toBeGreaterThan(0);
+
+    const again = browser();
+    await again.finishGoogle();
+    expect((await again.call("auth", "getSession"))?.id).toBe(me?.id);
+    // No password to guess.
+    expect(
+      await code(browser().call("auth", "signIn", { email: "ngozi@gmail.com", password: "" })),
+    ).toBe("VALIDATION");
+    // Deleting a Google-only account is confirmed with its email.
+    expect(await code(again.call("auth", "deleteAccount", { password: "wrong@gmail.com" }))).toBe(
+      "UNAUTHORIZED",
+    );
+    await again.call("auth", "deleteAccount", { password: "ngozi@gmail.com" });
+  });
+
+  it("takes an email back from whoever signed up with it before Google confirmed it", async () => {
+    const squatter = browser();
+    await squatter.call("auth", "signUp", {
+      name: "Not Kemi",
+      email: "kemi@gmail.com",
+      password: PASSWORD,
+    });
+    google.user = { email: "kemi@gmail.com", name: "Kemi", emailVerified: true };
+    const kemi = browser();
+    await kemi.finishGoogle();
+    expect((await kemi.call("auth", "getSession"))?.hasPassword).toBe(false);
+    expect(
+      await code(browser().call("auth", "signIn", { email: "kemi@gmail.com", password: PASSWORD })),
+    ).toBe("UNAUTHORIZED");
+  });
+
+  it("refuses Google accounts whose email isn't verified", async () => {
+    google.user = { email: "x@example.com", name: "X", emailVerified: false };
+    const b = browser();
+    expect(await b.finishGoogle()).toBe("/login?error=google");
+    expect(await b.call("auth", "getSession")).toBeNull();
+  });
+
+  it("stores photos on Cloudflare R2 when it's set up", async () => {
+    const calls: { method: string; url: string; auth: string | null }[] = [];
+    const realFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      calls.push({ method: req.method, url: req.url, auth: req.headers.get("authorization") });
+      return new Response(null, { status: 200 });
+    });
+    Object.assign(process.env, {
+      R2_ACCOUNT_ID: "acc123",
+      R2_ACCESS_KEY_ID: "key",
+      R2_SECRET_ACCESS_KEY: "secret",
+      R2_BUCKET_NAME: "kamplug-images",
+      R2_PUBLIC_URL: "https://img.kamplug.test/",
+    });
+    forgetR2();
+    try {
+      const { seller } = await openShop();
+      const res = await seller.upload(new Uint8Array([1, 2, 3]), "image/webp");
+      const { data } = await res.json();
+      expect(calls[0]).toMatchObject({
+        method: "PUT",
+        url: `https://acc123.r2.cloudflarestorage.com/kamplug-images/images/${data.id}.webp`,
+      });
+      expect(calls[0]!.auth).toMatch(/^AWS4-HMAC-SHA256 Credential=key\//);
+      const img = await handleGet(data.id);
+      expect(img.status).toBe(302);
+      expect(img.headers.get("location")).toBe(`https://img.kamplug.test/images/${data.id}.webp`);
+      // Deleting the account removes the photo from R2 too (it's theirs).
+      await seller.call("studio", "updateBrand", { logoImageId: data.id });
+      await seller.call("auth", "deleteAccount", { password: PASSWORD });
+      expect(calls.at(-1)).toMatchObject({ method: "DELETE" });
+    } finally {
+      vi.stubGlobal("fetch", realFetch);
+      for (const k of [
+        "R2_ACCOUNT_ID",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_BUCKET_NAME",
+        "R2_PUBLIC_URL",
+      ])
+        delete process.env[k];
+      forgetR2();
+    }
+  });
+
   it("refuses unknown operations and cross-site requests", async () => {
     const b = browser();
     expect((await b.raw("auth", "constructor")).status).toBe(404);
@@ -447,7 +575,7 @@ describe.skipIf(!url)("preview on Postgres", () => {
     expect(Date.now() - t).toBeLessThan(20_000);
     const { rows } = await (
       await db()
-    ).query("select value from kiosk_meta where key = 'sampleVersion'");
+    ).query("select value from kamplug_meta where key = 'sampleVersion'");
     expect(rows).toHaveLength(1);
   });
 
@@ -465,6 +593,19 @@ describe.skipIf(!url)("preview on Postgres", () => {
     const follow = await call("social", "toggleFollow", products[0].brandId);
     expect(follow.status).toBe(403);
     expect(follow.error.message).toMatch(/preview/);
+  });
+
+  it("only lets invited Google accounts in", async () => {
+    google.user = { email: "stranger@gmail.com", name: "Stranger", emailVerified: true };
+    const res = await handleGoogleFinish(
+      new Request(`${ORIGIN}/api/session/google`, { headers: { host: "kiosk.test" } }),
+    );
+    expect(new URL(res.headers.get("location")!).search).toBe("?error=not_invited");
+    expect(
+      res.headers
+        .getSetCookie()
+        .some((c) => c.startsWith("kamplug_session=") && !c.startsWith("kamplug_session=;")),
+    ).toBe(false);
   });
 
   it("keeps invite-only sign-up closed", async () => {

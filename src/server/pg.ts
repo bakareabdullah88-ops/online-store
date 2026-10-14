@@ -31,17 +31,18 @@ export const LOCK = { schema: 7_310_001, write: 7_310_002 } as const;
 
 /**
  * Tables, created on first use so a fresh database needs no setup step.
- * - kiosk_docs: every record as JSON, keyed by collection and id. `seq` goes
+ * - kamplug_docs: every record as JSON, keyed by collection and id. `seq` goes
  *   up on every write (servers fetch only what changed since they last
  *   looked); `ord` keeps the order records were added in; deleted records
  *   stay as tombstones so other servers learn about the delete.
- * - kiosk_meta: small settings (when the sample data was last rebuilt, …).
- * - kiosk_sessions: sign-ins. Only a hash of the cookie's token is stored.
- * - kiosk_media: uploaded photos.
+ * - kamplug_meta: small settings (when the sample data was last rebuilt, …).
+ * - kamplug_sessions: sign-ins. Only a hash of the cookie's token is stored.
+ * - kamplug_media: uploaded photos: who uploaded each, and either its bytes or
+ *   its key on Cloudflare R2.
  */
 const SCHEMA = `
-create sequence if not exists kiosk_seq;
-create table if not exists kiosk_docs (
+create sequence if not exists kamplug_seq;
+create table if not exists kamplug_docs (
   collection text not null,
   id text not null,
   data jsonb not null,
@@ -50,25 +51,28 @@ create table if not exists kiosk_docs (
   deleted boolean not null default false,
   primary key (collection, id)
 );
-create index if not exists kiosk_docs_seq on kiosk_docs (seq);
-create table if not exists kiosk_meta (
+create index if not exists kamplug_docs_seq on kamplug_docs (seq);
+create table if not exists kamplug_meta (
   key text primary key,
   value jsonb not null
 );
-create table if not exists kiosk_sessions (
+create table if not exists kamplug_sessions (
   token_hash text primary key,
   user_id text not null,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null
 );
-create index if not exists kiosk_sessions_user on kiosk_sessions (user_id);
-create table if not exists kiosk_media (
+create index if not exists kamplug_sessions_user on kamplug_sessions (user_id);
+create table if not exists kamplug_media (
   id text primary key,
   owner_id text not null,
   content_type text not null,
-  bytes bytea not null,
+  bytes bytea,
   created_at timestamptz not null default now()
 );
+-- Photos on Cloudflare R2 keep their key here instead of their bytes.
+alter table kamplug_media add column if not exists location text;
+alter table kamplug_media alter column bytes drop not null;
 `;
 
 /** The pool, with the tables in place. */

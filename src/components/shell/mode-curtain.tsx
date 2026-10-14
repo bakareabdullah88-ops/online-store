@@ -72,9 +72,9 @@ function farthestCorner(p: Point) {
   );
 }
 
-/** Where the circle shrinks back to: the Kiosk logo on the new page. */
+/** Where the circle shrinks back to: the Kamplug logo on the new page. */
 function logoPoint(): Point {
-  const logo = Array.from(document.querySelectorAll('[aria-label="Kiosk home"]')).find(
+  const logo = Array.from(document.querySelectorAll('[aria-label="Kamplug home"]')).find(
     (el) => (el as HTMLElement).offsetParent !== null,
   );
   return logo ? centerOf(logo) : { x: window.innerWidth / 2, y: 0 };

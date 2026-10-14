@@ -95,7 +95,7 @@ export function LandingNav() {
               href="/home"
               className="flex h-10 items-center gap-1.5 rounded-xl bg-mint-cta px-4 text-[14px] font-semibold text-on-mint-cta shadow-sm transition-[filter] hover:brightness-95"
             >
-              Open {user.name.split(" ")[0]}&apos;s Kiosk <ArrowRight className="size-4" />
+              Open {user.name.split(" ")[0]}&apos;s Kamplug <ArrowRight className="size-4" />
             </Link>
           ) : (
             <>

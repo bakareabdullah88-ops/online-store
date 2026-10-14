@@ -13,7 +13,7 @@ import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
-import { KioskMark } from "./kiosk-mark";
+import { KamplugMark } from "./kamplug-mark";
 import { ModeLine } from "./mode-line";
 import { NavGrid } from "./more-menu";
 import { useNavBadges } from "./nav-badges";
@@ -111,13 +111,13 @@ export function TopNav() {
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 md:px-6">
         <Link
           href={mode === "selling" ? "/studio" : "/home"}
-          aria-label="Kiosk home"
+          aria-label="Kamplug home"
           className="flex pressable items-center gap-2 pr-1"
         >
           <span className="grid size-9 place-items-center rounded-xl bg-primary text-on-primary">
-            <KioskMark className="size-5" />
+            <KamplugMark className="size-5" />
           </span>
-          <span className="hidden text-[18px] font-bold tracking-[-0.03em] 2xl:block">Kiosk</span>
+          <span className="hidden text-[18px] font-bold tracking-[-0.03em] 2xl:block">Kamplug</span>
         </Link>
         <WorkspaceSwitch compact className="2xl:hidden" />
         <WorkspaceSwitch className="hidden 2xl:flex" />
@@ -167,7 +167,7 @@ export function TopNav() {
           className="flex h-10 shrink-0 pressable items-center justify-center gap-2 rounded-xl px-2.5 text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink 2xl:w-56 2xl:justify-start 2xl:px-3 2xl:ring-1 2xl:ring-line"
         >
           <Search className="size-[18px]" />
-          <span className="hidden text-[13px] text-muted 2xl:inline">Search Kiosk</span>
+          <span className="hidden text-[13px] text-muted 2xl:inline">Search Kamplug</span>
           <Kbd className="ml-auto hidden 2xl:inline-flex">⌘K</Kbd>
         </button>
         <Link

@@ -8,7 +8,7 @@ import { features } from "@/config/features";
 
 export const metadata: Metadata = {
   title: "Get access",
-  description: "How to get a Kiosk login.",
+  description: "How to get a Kamplug login.",
 };
 
 export default function SignupPage() {

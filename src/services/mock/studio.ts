@@ -488,7 +488,7 @@ export const mockStudio: StudioService = {
     const db = await getDb();
     const { brand } = await requireBrand(db);
     if (db.promos.some((p) => p.code === input.code)) {
-      throw new ServiceError("CONFLICT", "That code is already in use on Kiosk.", {
+      throw new ServiceError("CONFLICT", "That code is already in use on Kamplug.", {
         code: "Already in use",
       });
     }

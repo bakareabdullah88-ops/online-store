@@ -21,7 +21,7 @@ async function fail(res: Response): Promise<never> {
   const body = (await res.json().catch(() => null)) as ErrorBody | null;
   throw new ServiceError(
     body?.error?.code ?? "UNAVAILABLE",
-    body?.error?.message ?? "We couldn't reach Kiosk. Check your connection and try again.",
+    body?.error?.message ?? "We couldn't reach Kamplug. Check your connection and try again.",
     body?.error?.fields,
   );
 }
@@ -32,7 +32,7 @@ async function send(input: string, init: RequestInit): Promise<Response> {
   } catch {
     throw new ServiceError(
       "UNAVAILABLE",
-      "We couldn't reach Kiosk. Check your connection and try again.",
+      "We couldn't reach Kamplug. Check your connection and try again.",
     );
   }
 }

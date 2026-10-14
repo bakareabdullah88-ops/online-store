@@ -42,6 +42,7 @@ export function publicUser(u: UserRecord): User {
   return {
     ...structuredClone(rest),
     role,
+    hasPassword: !!passwordHash,
     ...(u.id === PREVIEW.userId ? { preview: true } : {}),
   };
 }

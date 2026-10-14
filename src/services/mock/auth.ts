@@ -73,7 +73,7 @@ export const mockAuth: AuthService = {
     if (features.inviteOnly) {
       throw new ServiceError(
         "FORBIDDEN",
-        "Kiosk is invite-only for now. Ask the Kiosk team for a login.",
+        "Kamplug is invite-only for now. Ask the Kamplug team for a login.",
       );
     }
     const db = await getDb();
@@ -188,10 +188,14 @@ export const mockAuth: AuthService = {
     if (user.id === PREVIEW.userId) {
       throw new ServiceError("FORBIDDEN", "The preview account can't be deleted.");
     }
-    const ok = await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash);
+    // Google-only accounts confirm with their email address instead of a password.
+    const ok = user.passwordHash
+      ? await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash)
+      : normaliseEmail(parsed.data.password) === normaliseEmail(user.email);
     if (!ok) {
-      throw new ServiceError("UNAUTHORIZED", "That password isn't right.", {
-        password: "That password isn't right",
+      const what = user.passwordHash ? "password" : "email";
+      throw new ServiceError("UNAUTHORIZED", `That ${what} isn't right.`, {
+        password: `That ${what} isn't right`,
       });
     }
     const brandIds = new Set(user.brandIds);
@@ -252,3 +256,65 @@ export const mockAuth: AuthService = {
     return publicUser(user);
   },
 };
+
+/**
+ * Signs in someone whose email Google has just verified, creating their
+ * account on first visit. SERVER ONLY: it trusts the email, so it must never
+ * be callable from a browser (it isn't on mockAuth, which /api/rpc exposes).
+ */
+export async function signInWithVerifiedEmail(profile: { email: string; name: string }) {
+  const email = normaliseEmail(profile.email);
+  const db = await getDb();
+  let user: UserRecord | undefined;
+  if (features.inviteOnly) {
+    const hash = await emailHash(email);
+    const entry = accessList.find((e) => e.emailHash === hash);
+    if (!entry) {
+      throw new ServiceError(
+        "FORBIDDEN",
+        "That Google account isn't on the invite list yet. Ask the Kamplug team for access.",
+      );
+    }
+    const id = userIdFor(entry);
+    user = db.users.find((u) => u.id === id);
+    if (!user) {
+      user = newUserRecord({
+        id,
+        email,
+        name: entry.name,
+        passwordHash: entry.passwordHash,
+        passwordSalt: entry.salt,
+      });
+      db.users.push(user);
+      db.notifications.push(welcomeNote(user));
+    }
+  } else {
+    user = db.users.find((u) => normaliseEmail(u.email) === email);
+    if (user?.passwordHash) {
+      // Nobody proved they owned this address when the password was set; Google
+      // just did. Dropping the password stops anyone who signed up with someone
+      // else's email from getting into their account.
+      user.passwordHash = "";
+      user.passwordSalt = "";
+      db.notifications.push({
+        id: newId("n"),
+        userId: user.id,
+        kind: "system",
+        title: "You now log in with Google",
+        body: "Google confirmed this email is yours, so your old password was removed. Use Continue with Google next time.",
+        href: "/account/settings",
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    if (!user) {
+      const name = profile.name.trim().slice(0, 60) || email.split("@")[0]!;
+      user = newUserRecord({ id: newId("u"), email, name, passwordHash: "", passwordSalt: "" });
+      db.users.push(user);
+      db.notifications.push(welcomeNote(user));
+    }
+  }
+  await commit("users", "notifications");
+  await setSessionUserId(user.id);
+  return publicUser(user);
+}

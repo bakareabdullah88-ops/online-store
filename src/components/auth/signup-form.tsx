@@ -11,6 +11,7 @@ import { applyServiceErrors } from "@/lib/form";
 import { safeNext } from "@/lib/safe-next";
 import { signUpSchema } from "@/services/inputs";
 import { useSignUp } from "@/queries/session";
+import { GoogleButton } from "./google-button";
 import { PasswordStrength } from "./password-strength";
 
 type Values = z.input<typeof signUpSchema>;
@@ -47,6 +48,7 @@ export function SignupForm() {
         </Link>
       </p>
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">
+        <GoogleButton next={next} />
         <Field label="Your name" error={form.formState.errors.name?.message}>
           <Input autoComplete="name" placeholder="Ada Okafor" {...form.register("name")} />
         </Field>

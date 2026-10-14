@@ -8,6 +8,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  env: {
+    // The shared backend turns on by itself once a database is connected
+    // (DATABASE_URL, from Neon). NEXT_PUBLIC_DATA_SOURCE still wins if set.
+    NEXT_PUBLIC_DATA_SOURCE:
+      process.env.NEXT_PUBLIC_DATA_SOURCE || (process.env.DATABASE_URL ? "remote" : "mock"),
+  },
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

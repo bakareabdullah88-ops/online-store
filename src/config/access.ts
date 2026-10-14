@@ -1,5 +1,5 @@
 /**
- * Who can log in while Kiosk is invite-only.
+ * Who can log in while Kamplug is invite-only.
  *
  * To add someone: open Account → Members as an admin and create a login, or run
  * `node scripts/add-member.mjs "Full Name" email@example.com`. Either gives you the
@@ -27,7 +27,7 @@ export type AccessEntry = {
 export const accessList: AccessEntry[] = [
   {
     id: "fa7b73471e92",
-    name: "Kiosk Admin",
+    name: "Kamplug Admin",
     role: "admin",
     emailHash: "1b0417f8fead0cfd2c5ef967c2eff5046a79928558c742f4f01be2bb5155cb0b",
     salt: "722fc9542ac2ed5011cdd0a0e3c2d4e7",

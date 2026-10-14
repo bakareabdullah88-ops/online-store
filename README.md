@@ -1,4 +1,4 @@
-# Kiosk
+# Kamplug
 
 A campus marketplace for Nigerian students. Buy from the student brands in your hostel, or open
 a shop and sell. One account has two modes, **Buying** and **Selling**, with an animated switch
@@ -29,7 +29,7 @@ pnpm build && pnpm start
 
 ### Invite-only access
 
-Kiosk is invite-only. Sign-up is closed and only people on the list in
+Kamplug is invite-only. Sign-up is closed and only people on the list in
 [`src/config/access.ts`](src/config/access.ts) can log in. The list stores a SHA-256 of each
 email and a PBKDF2 hash of each password, never the address or password itself.
 
@@ -52,7 +52,7 @@ browser, so two people on different phones won't see each other's shops yet.
 
 ### Sample data (preview)
 
-While Kiosk is being built, the app ships with **sample data**: twenty student shops with photos,
+While Kamplug is being built, the app ships with **sample data**: twenty student shops with photos,
 reviews and five months of orders, plus a shared **preview account** (Temi, who shops around and
 runs Àdìrẹ Lab). Anyone who opens the app without logging in looks around as Temi, no sign-up
 needed, and a notice at the top of every page says the app is still being built.
@@ -90,7 +90,7 @@ Point Playwright at an already running server with `PLAYWRIGHT_BASE_URL=http://l
 ## Environment
 
 See [`.env.example`](.env.example). Public ones are validated in [`src/env.ts`](src/env.ts).
-`DATABASE_URL` is the only secret; Neon sets it for you on Vercel.
+The backend's settings (database, Google, R2) are secrets: set them in Vercel, never in the code.
 
 | Variable                   | Default                                   | Purpose                                                                       |
 | -------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
@@ -131,24 +131,38 @@ API_CONTRACT.md   every service method and the REST endpoint it maps to
 
 ## The backend
 
-With `NEXT_PUBLIC_DATA_SOURCE=remote`, Kiosk runs on a real, shared backend: everyone sees the
-same shops, products, orders and messages. The service code in `src/services/mock` runs on the
-server (Next.js route handlers in `src/app/api`, server code in `src/server`) against Postgres.
-Sign-ins are HTTP-only cookies; photos are stored in the database. See
-[`API_CONTRACT.md`](API_CONTRACT.md) for the routes and rules, and `docs/DECISIONS.md` §14 for how
-it works and its limits.
+With a database connected, Kamplug runs on a real, shared backend: everyone sees the same shops,
+products, orders and messages. The service code in `src/services/mock` runs on the server
+(Next.js route handlers in `src/app/api`, server code in `src/server`) against Postgres. See
+[`API_CONTRACT.md`](API_CONTRACT.md) for the routes and rules, and `docs/DECISIONS.md` §14–15 for
+how it works and its limits.
+
+| Piece          | Service                    | Variables                                                                                      |
+| -------------- | -------------------------- | ---------------------------------------------------------------------------------------------- |
+| Database       | Neon Postgres              | `DATABASE_URL`                                                                                 |
+| Google sign-in | Better Auth + Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`            |
+| Photos         | Cloudflare R2              | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` |
+| Site address   | –                          | `NEXT_PUBLIC_APP_URL`                                                                          |
 
 **Turning it on in Vercel** (once):
 
-1. In the Vercel project, open **Storage → Create Database → Neon** (or Marketplace → Neon) and
-   connect it to the project. That adds `DATABASE_URL`; nobody needs to copy it anywhere.
-2. Add the environment variable `NEXT_PUBLIC_DATA_SOURCE` = `remote` (Production and Preview).
-3. Redeploy. The tables are created on the first request, then the campus list and (while it's
-   on) the sample data are added.
+1. **Project → Settings → Environment Variables**: add each variable above (Production and
+   Preview). Don't add `NODE_ENV`; Vercel sets it.
+2. **Google Cloud → APIs & Services → Credentials →** your OAuth client: add
+   `https://<your domain>/api/auth/callback/google` under **Authorized redirect URIs**, and the
+   domain under **Authorized JavaScript origins**. `BETTER_AUTH_URL` must be that same domain.
+3. **Cloudflare R2 →** the `kamplug-images` bucket: turn on public access (r2.dev or a custom
+   domain) and use that address as `R2_PUBLIC_URL`. The API token needs Object Read & Write on the
+   bucket.
+4. Redeploy. The backend switches on because `DATABASE_URL` is set. Tables are created on the
+   first request, then the campus list and (while it's on) the sample data.
 
-**Locally**: run Postgres, put `DATABASE_URL=postgres://…` and `NEXT_PUBLIC_DATA_SOURCE=remote` in
-`.env.local`, and `pnpm dev`. The backend tests need a throwaway database:
-`TEST_DATABASE_URL=postgres://… pnpm test` (they wipe it; without it they're skipped).
+Google sign-in works on the domain registered with Google; preview deployments (with their own
+addresses) can still use email and password.
+
+**Locally**: run Postgres (or use a Neon branch), put the same variables in `.env.local` with
+`BETTER_AUTH_URL=http://localhost:3000`, and `pnpm dev`. The backend tests need a throwaway
+database: `TEST_DATABASE_URL=postgres://… pnpm test` (they wipe it; without it they're skipped).
 
 Search the code for `BACKEND-SEAM` for what's still to come (payments, email, payouts).
 
@@ -167,16 +181,16 @@ There are five font styles (Modern, Clean, Friendly, Editorial, Classic), define
 ## Images
 
 Sellers upload their own product photos, logos and covers in Shop Studio. With the backend on
-they're stored in Postgres and served from `/api/media/:id` (shrunk in the browser to at most
-2000px first); in `mock` mode they stay in the browser. Products without a photo show a neutral
+they're stored on Cloudflare R2 (or in Postgres if R2 isn't set up) and served from
+`/api/media/:id`, shrunk in the browser to at most 2000px first. In `mock` mode they stay in the
+browser. Products without a photo show a neutral
 placeholder; there are no stock or stand-in pictures anywhere.
 
 ## Deploying
 
 See [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md). In short: import the repo in Vercel, keep the
 defaults, deploy. With no environment variables it runs in `mock` mode; to share one database
-between everyone, connect Neon and set `NEXT_PUBLIC_DATA_SOURCE=remote` (see
-[The backend](#the-backend)).
+between everyone, add the backend's variables (see [The backend](#the-backend)).
 
 ## Making changes later
 
