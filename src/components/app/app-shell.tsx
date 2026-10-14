@@ -6,16 +6,15 @@ import { RequireAuth } from "@/components/shell/require-auth";
 import { AppBackdrop } from "./backdrop";
 import { MobileNav } from "./mobile-nav";
 import { MobileTopBar } from "./mobile-top-bar";
+import { PreviewNotice } from "./preview-notice";
 import { TopNav } from "./top-nav";
 
 /** Neutral frame shown while the session loads. */
 function ShellSkeleton() {
   return (
-    <div className="min-h-dvh" aria-busy="true" aria-label="Loading">
+    <div className="min-h-dvh bg-[var(--app-bg)]" aria-busy="true" aria-label="Loading">
       <AppBackdrop />
-      <div className="px-3 pt-3 md:px-6">
-        <Skeleton className="mx-auto h-14 max-w-[1400px] md:h-16" rounded="lg" />
-      </div>
+      <div className="h-14 border-b border-line bg-surface md:h-16" />
       <div className="mx-auto max-w-[1400px] px-4 pt-8 md:px-6">
         <Skeleton className="h-10 w-64" />
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -30,17 +29,18 @@ function ShellSkeleton() {
 }
 
 /**
- * Signed-in frame: a tinted, drifting backdrop, a floating glass top bar on
- * tablets and up, and a top bar plus floating pill nav on phones.
+ * Signed-in frame: a plain background, a full-width top bar on tablets and
+ * up, and a top bar plus floating pill nav on phones.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<ShellSkeleton />}>
       <RequireAuth fallback={<ShellSkeleton />}>
-        <div className="relative min-h-dvh">
+        <div className="relative min-h-dvh bg-[var(--app-bg)]">
           <AppBackdrop />
           <TopNav />
           <MobileTopBar />
+          <PreviewNotice />
           <div className="mx-auto w-full max-w-[1400px]">{children}</div>
           <MobileNav />
         </div>

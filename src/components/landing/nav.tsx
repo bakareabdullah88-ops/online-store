@@ -7,6 +7,7 @@ import { ArrowRight, ChevronDown, Menu as MenuIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/overlay";
 import { Logo } from "@/components/shell/logo";
+import { features } from "@/config/features";
 import { cn } from "@/lib/cn";
 import { useSession } from "@/queries/session";
 
@@ -105,10 +106,10 @@ export function LandingNav() {
                 Log in
               </Link>
               <Link
-                href="/signup"
+                href={features.sampleData ? "/home" : "/signup"}
                 className="flex h-10 items-center rounded-xl bg-mint-cta px-4 text-[14px] font-semibold text-on-mint-cta shadow-sm transition-[filter] hover:brightness-95"
               >
-                Get access
+                {features.sampleData ? "Explore" : "Get access"}
               </Link>
             </>
           )}

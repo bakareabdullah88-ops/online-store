@@ -74,11 +74,7 @@
   --on-mint-cta: #0d3b24;
 
   /* App backdrop (signed-in pages sit on this, slightly tinted vs the landing page) */
-  --app-bg: #edf0f7;
-  --blob-1: #c9d4ff;
-  --blob-2: #e4d6ff;
-  --blob-3: #c8f0dc;
-  --blob-4: #ffe2cc;
+  --app-bg: #f3f4f6;
   /* Liquid glass */
   --glass-fill: rgb(255 255 255 / 0.72);
   --glass-fill-strong: rgb(255 255 255 / 0.86);
@@ -189,11 +185,7 @@
   --info-soft: #11263a;
   --badge: #ff5a5a;
 
-  --app-bg: #0a0b10;
-  --blob-1: #1c2a6b;
-  --blob-2: #2e1f5e;
-  --blob-3: #0f3b2a;
-  --blob-4: #3b2414;
+  --app-bg: #0c0d10;
   --glass-fill: rgb(22 24 30 / 0.66);
   --glass-fill-strong: rgb(24 26 33 / 0.86);
   --glass-border: rgb(255 255 255 / 0.08);
@@ -723,38 +715,6 @@
   background: var(--app-bg);
   pointer-events: none;
 }
-.app-backdrop > span {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.85;
-  animation: drift 26s ease-in-out infinite alternate;
-}
-.app-backdrop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    color-mix(in oklab, var(--ink) 9%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
-  mask-image: linear-gradient(to bottom, black, transparent 70%);
-  opacity: 0.5;
-}
-
-@keyframes drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(4vw, 3vh, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(-3vw, 5vh, 0) scale(0.95);
-  }
-}
-
 @keyframes float {
   0%,
   100% {
@@ -779,7 +739,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-backdrop > span,
   [class*="animate-[float"] {
     animation: none;
   }

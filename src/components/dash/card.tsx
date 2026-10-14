@@ -236,18 +236,18 @@ export function StatCard({
       <div className="flex items-start gap-2.5">
         {icon && (
           <span
-            className="grid size-9 shrink-0 place-items-center rounded-xl tone-tile [&_svg]:size-[18px]"
+            className="hidden size-9 shrink-0 place-items-center rounded-xl tone-tile sm:grid [&_svg]:size-[18px]"
             style={{ ["--tone" as string]: tone }}
           >
             {icon}
           </span>
         )}
-        <h2 className="min-w-0 flex-1 pt-1.5 text-[13px] leading-tight font-medium text-ink-2">
+        <h2 className="min-w-0 flex-1 pt-1 text-[13px] leading-tight font-medium break-words text-ink-2 sm:pt-1.5">
           {label}
         </h2>
         <DeltaBadge change={change} />
       </div>
-      <p className="text-[22px] leading-none font-bold tracking-[-0.03em] md:text-[26px]">
+      <p className="truncate text-[19px] leading-none font-bold tracking-[-0.03em] sm:text-[22px] md:text-[26px]">
         <CountUp value={value} format={format} />
       </p>
       {spark && <Sparkline data={spark} tone={tone} />}

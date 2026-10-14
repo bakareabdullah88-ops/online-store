@@ -30,7 +30,7 @@ function Count({ n, className }: { n: number; className?: string }) {
       animate={{ scale: 1 }}
       transition={spring.bouncy}
       className={cn(
-        "absolute grid h-[18px] min-w-[18px] place-items-center rounded-full bg-badge px-1 text-[10px] font-bold text-white ring-2 ring-[var(--glass-fill-strong)]",
+        "absolute grid h-[18px] min-w-[18px] place-items-center rounded-full bg-badge px-1 text-[10px] font-bold text-white ring-2 ring-surface",
         className ?? "-top-0.5 -right-0.5",
       )}
     >
@@ -39,55 +39,45 @@ function Count({ n, className }: { n: number; className?: string }) {
   );
 }
 
-function Pill({ item, active, count }: { item: NavItem; active: boolean; count: number }) {
+function NavLink({ item, active, count }: { item: NavItem; active: boolean; count: number }) {
   const Icon = item.icon;
-  const body = (
-    <Link
-      href={item.href}
-      aria-current={active ? "page" : undefined}
-      aria-label={item.label}
-      className={cn(
-        "group relative flex h-10 shrink-0 items-center gap-2 rounded-xl px-2.5 text-[13.5px] font-semibold transition-colors xl:px-3",
-        active ? "text-on-primary" : "text-ink-2 hover:text-ink",
-      )}
-    >
-      {active && (
-        <motion.span
-          layoutId="topnav-active"
-          transition={spring.snappy}
-          className="absolute inset-0 rounded-xl bg-primary shadow-[0_8px_18px_-8px_rgb(0_0_0/0.45)]"
-          aria-hidden
-        />
-      )}
-      {!active && (
-        <span
-          className="absolute inset-0 rounded-xl opacity-0 transition-opacity group-hover:bg-ink/[0.05] group-hover:opacity-100"
-          aria-hidden
-        />
-      )}
-      <motion.span
-        className="relative"
-        whileTap={{ scale: 0.8, rotate: -8 }}
-        animate={active ? { scale: [1, 1.18, 1] } : { scale: 1 }}
-        transition={{ duration: 0.35 }}
-      >
-        <Icon className="size-[18px]" style={active ? undefined : { color: item.tone }} />
-      </motion.span>
-      <span className="relative hidden xl:inline">{item.label}</span>
-      {active && <span className="relative xl:hidden">{item.label}</span>}
-      <Count n={count} className="-top-1 -right-1" />
-    </Link>
-  );
-  return active ? (
-    body
-  ) : (
+  return (
     <Tooltip content={item.label} side="bottom">
-      {body}
+      <Link
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        aria-label={item.label}
+        className={cn(
+          "relative flex h-16 shrink-0 items-center gap-2 px-2.5 text-[14px] font-medium transition-colors xl:px-3",
+          active ? "text-ink" : "text-muted hover:text-ink",
+        )}
+      >
+        <Icon className="size-[18px] lg:hidden" />
+        <span className="hidden items-center gap-1.5 lg:flex">
+          {item.label}
+          {count > 0 && (
+            <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-badge px-1 text-[10px] font-bold text-white">
+              {count > 99 ? "99+" : count}
+            </span>
+          )}
+        </span>
+        <span className="lg:hidden">
+          <Count n={count} className="top-3 right-0" />
+        </span>
+        {active && (
+          <motion.span
+            layoutId="topnav-underline"
+            transition={spring.snappy}
+            className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-ink"
+            aria-hidden
+          />
+        )}
+      </Link>
     </Tooltip>
   );
 }
 
-/** Floating liquid-glass header with the workspace's pages (zentra / LoopAI). Tablets and up. */
+/** A plain full-width header with the workspace's pages. Tablets and up. */
 export function TopNav() {
   const mode = useMode();
   const path = usePathname() ?? "/";
@@ -110,37 +100,32 @@ export function TopNav() {
 
   return (
     <header
-      className="sticky top-0 z-(--z-header) hidden px-4 pt-3 md:block md:px-6"
+      className={cn(
+        "sticky top-0 z-(--z-header) hidden border-b border-line bg-surface/95 backdrop-blur-md transition-shadow duration-300 md:block",
+        scrolled && "shadow-[0_6px_20px_-14px_rgb(16_24_40/0.35)]",
+      )}
       style={{ viewTransitionName: "site-header" }}
     >
-      <motion.div
-        animate={{ y: 0, opacity: 1 }}
-        initial={{ y: -16, opacity: 0 }}
-        transition={spring.smooth}
-        className={cn(
-          "mx-auto flex h-16 max-w-[1400px] items-center gap-2 rounded-[20px] glass-bar px-2.5 transition-shadow duration-300",
-          scrolled && "shadow-[var(--shadow-card-hover)]",
-        )}
-      >
+      <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 md:px-6">
         <Link
           href={mode === "selling" ? "/studio" : "/home"}
           aria-label="Kiosk home"
           className="flex pressable items-center gap-2 pr-1"
         >
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-on-primary shadow-md">
+          <span className="grid size-9 place-items-center rounded-xl bg-primary text-on-primary">
             <KioskMark className="size-5" />
           </span>
           <span className="hidden text-[18px] font-bold tracking-[-0.03em] 2xl:block">Kiosk</span>
         </Link>
         <WorkspaceSwitch compact className="2xl:hidden" />
         <WorkspaceSwitch className="hidden 2xl:flex" />
-        <span className="mx-1 h-7 w-px bg-line" aria-hidden />
+        <span className="mx-2 h-6 w-px bg-line" aria-hidden />
         <nav
           aria-label={mode === "selling" ? "Shop" : "Market"}
-          className="scrollbar-none flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto"
+          className="scrollbar-none flex min-w-0 flex-1 items-center overflow-x-auto"
         >
           {primary.map((item) => (
-            <Pill
+            <NavLink
               key={item.href}
               item={item}
               active={isActive(item, path)}
@@ -157,18 +142,16 @@ export function TopNav() {
                 type="button"
                 aria-label="More pages"
                 className={cn(
-                  "relative flex h-10 shrink-0 pressable items-center gap-1.5 rounded-xl px-2.5 text-[13.5px] font-semibold transition-colors",
-                  moreActive || more
-                    ? "bg-ink/[0.06] text-ink"
-                    : "text-ink-2 hover:bg-ink/[0.05] hover:text-ink",
+                  "relative flex h-16 shrink-0 items-center gap-1.5 px-2.5 text-[14px] font-medium transition-colors xl:px-3",
+                  moreActive || more ? "text-ink" : "text-muted hover:text-ink",
                 )}
               >
-                <Grid2X2 className="size-[18px]" />
-                <span className="hidden xl:inline">More</span>
+                <Grid2X2 className="size-[18px] lg:hidden" />
+                <span className="hidden lg:inline">More</span>
                 <ChevronDown
                   className={cn("size-3.5 transition-transform", more && "rotate-180")}
                 />
-                <Count n={moreCount} className="-top-1 -right-1" />
+                <Count n={moreCount} className="top-3 right-0" />
               </button>
             }
           >
@@ -179,11 +162,11 @@ export function TopNav() {
           type="button"
           onClick={() => setCommandOpen(true)}
           aria-label="Search"
-          className="flex h-10 shrink-0 pressable items-center justify-center gap-2 rounded-xl px-2.5 text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink 2xl:px-3"
+          className="flex h-10 shrink-0 pressable items-center justify-center gap-2 rounded-xl px-2.5 text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink 2xl:w-56 2xl:justify-start 2xl:px-3 2xl:ring-1 2xl:ring-line"
         >
           <Search className="size-[18px]" />
-          <span className="hidden text-[13px] text-muted 2xl:inline">Search</span>
-          <Kbd className="hidden 2xl:inline-flex">⌘K</Kbd>
+          <span className="hidden text-[13px] text-muted 2xl:inline">Search Kiosk</span>
+          <Kbd className="ml-auto hidden 2xl:inline-flex">⌘K</Kbd>
         </button>
         <Link
           href="/notifications"
@@ -211,7 +194,7 @@ export function TopNav() {
         <span className="ml-1">
           <AccountMenu />
         </span>
-      </motion.div>
+      </div>
     </header>
   );
 }

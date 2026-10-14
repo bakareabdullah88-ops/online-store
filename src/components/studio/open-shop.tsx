@@ -7,6 +7,7 @@ import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ProgressBar } from "@/components/ui/misc";
+import { Ribbons } from "@/components/ui/ribbons";
 import { Celebration } from "@/components/checkout/celebration";
 import { useCurtain } from "@/components/shell/mode-curtain";
 import { categories, categoryById } from "@/config/categories";
@@ -214,26 +215,34 @@ export function OpenShopWizard() {
 
   if (created) {
     return (
-      <div className="mx-auto max-w-lg py-10 text-center">
-        <Celebration />
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring.smooth, delay: 0.25 }}
-          className="mt-8 font-display text-display-lg text-balance"
-        >
-          {created.name} is open
-        </motion.h1>
-        <p className="mt-3 text-body-lg text-muted">
-          Your shop is live at kiosk/{created.handle}. Add a product so students can start ordering.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" onClick={() => startCurtain("selling", "/studio/products/new")}>
-            Add your first product
-          </Button>
-          <Button size="lg" variant="secondary" onClick={() => startCurtain("selling", "/studio")}>
-            Go to Shop Studio
-          </Button>
+      <div className="relative mx-auto max-w-lg py-10 text-center">
+        <Ribbons />
+        <div className="relative z-10">
+          <Celebration />
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.smooth, delay: 0.25 }}
+            className="mt-8 font-display text-display-lg text-balance"
+          >
+            {created.name} is open
+          </motion.h1>
+          <p className="mt-3 text-body-lg text-muted">
+            Your shop is live at kiosk/{created.handle}. Add a product so students can start
+            ordering.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button size="lg" onClick={() => startCurtain("selling", "/studio/products/new")}>
+              Add your first product
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              onClick={() => startCurtain("selling", "/studio")}
+            >
+              Go to Shop Studio
+            </Button>
+          </div>
         </div>
       </div>
     );

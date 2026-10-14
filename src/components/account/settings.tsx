@@ -288,12 +288,17 @@ export function SettingsView() {
         icon={<ShieldAlert />}
         tone="#f43f5e"
         title="Account"
-        description="Sign out of this device, or delete your account for good."
+        description={
+          user.preview
+            ? "This is the shared preview account. It resets every few days."
+            : "Sign out of this device, or delete your account for good."
+        }
       >
         <div className="flex max-w-lg flex-col items-start gap-3">
           <p className="text-small text-muted">
-            Deleting removes your profile, your shop and its products, saved addresses and uploads.
-            Orders other people placed with you stay in their history.
+            {user.preview
+              ? "Everything here is sample data. Changes you make stay in this browser until the preview resets."
+              : "Deleting removes your profile, your shop and its products, saved addresses and uploads. Orders other people placed with you stay in their history."}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -302,19 +307,21 @@ export function SettingsView() {
               loading={signOut.isPending}
               onClick={() => void signOut.mutateAsync().then(() => router.push("/"))}
             >
-              Sign out
+              {user.preview ? "Leave the preview" : "Sign out"}
             </Button>
-            <Button
-              variant="danger"
-              leadingIcon={<Trash2 className="size-4.5" />}
-              onClick={() => {
-                setPassword("");
-                setDeleteError(null);
-                setConfirm(true);
-              }}
-            >
-              Delete account
-            </Button>
+            {!user.preview && (
+              <Button
+                variant="danger"
+                leadingIcon={<Trash2 className="size-4.5" />}
+                onClick={() => {
+                  setPassword("");
+                  setDeleteError(null);
+                  setConfirm(true);
+                }}
+              >
+                Delete account
+              </Button>
+            )}
           </div>
         </div>
       </Section>

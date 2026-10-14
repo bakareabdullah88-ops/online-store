@@ -173,7 +173,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
       />
 
       {/* Sticky category rail + tools */}
-      <div className="card sticky top-[calc(env(safe-area-inset-top)+76px)] z-(--z-sticky) mt-5 rounded-2xl px-3 py-2.5 md:top-[88px]">
+      <div className="card sticky top-[calc(env(safe-area-inset-top)+66px)] z-(--z-sticky) mt-5 rounded-2xl px-3 py-2.5 md:top-[76px]">
         <div className="flex items-center gap-3">
           <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
             <ChipGroup

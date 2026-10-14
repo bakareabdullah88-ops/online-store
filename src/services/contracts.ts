@@ -46,6 +46,8 @@ export interface AuthService {
   signUp(input: SignUpInput): Promise<User>;
   signIn(input: SignInInput): Promise<User>;
   signOut(): Promise<void>;
+  /** Look around as the sample preview account, no sign-up. Only while features.sampleData is on. */
+  startPreview(): Promise<User>;
   /** Emails a reset link. BACKEND-SEAM: needs transactional email (see config/features). */
   requestPasswordReset(input: ResetInput): Promise<{ sent: true }>;
   /** Deletes the account, its shop and listings. Orders stay in the other party's history. */

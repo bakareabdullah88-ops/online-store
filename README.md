@@ -45,10 +45,25 @@ To let someone in:
 To remove someone, delete their entry and push; they are signed out on their next visit.
 
 For local development and the end-to-end tests, set `NEXT_PUBLIC_OPEN_SIGNUP=1` to let anyone
-sign up (`pnpm build:open` does this for a production build).
+sign up (`pnpm build:open` does this for a production build, with sample data off).
 
 Until the backend is connected, each person's shop, orders and messages are saved in their own
 browser, so two people on different phones won't see each other's shops yet.
+
+### Sample data (preview)
+
+While Kiosk is being built, the app ships with **sample data**: twenty student shops with photos,
+reviews and five months of orders, plus a shared **preview account** (Ada, who shops around and
+runs Àdìrẹ Lab). Anyone who opens the app without logging in looks around as Ada, no sign-up
+needed, and a notice at the top of every page says the app is still being built.
+
+- The data lives in [`src/services/mock/seed/sample.ts`](src/services/mock/seed/sample.ts) and the
+  photos in `public/seed/`. Every sample id contains `_demo_`, so it can be found in one pass.
+- It is rebuilt every few days so dates stay current; that also resets whatever visitors did in
+  the preview. Real accounts keep everything they made.
+- **To remove it:** set `NEXT_PUBLIC_SAMPLE_DATA=0` in Vercel and redeploy. Each browser drops the
+  sample data on its next visit, and the landing page goes back to invite-only wording. Then
+  delete `sample.ts`, `sample-sync.ts`, `public/seed/` and the code marked `SAMPLE DATA`.
 
 ## Scripts
 

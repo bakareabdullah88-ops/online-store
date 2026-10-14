@@ -88,6 +88,8 @@ export type User = {
   createdAt: ISODate;
   /** Admins can create logins for other people (invite-only mode). */
   role?: "admin" | "member";
+  /** The shared preview account (sample data). Can't change password or delete itself. */
+  preview?: boolean;
 };
 
 /** Never leaves the service layer. */

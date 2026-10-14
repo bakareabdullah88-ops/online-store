@@ -1,5 +1,7 @@
-import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
+import { clear, createStore, del, get, getMany, set, setMany, type UseStore } from "idb-keyval";
+import { features } from "@/config/features";
 import { generateSeed, type DbSnapshot } from "./seed";
+import { hasSample, refreshSample, SAMPLE_TTL_MS, stripSample } from "./sample-sync";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
@@ -86,7 +88,9 @@ let sessionUserId: string | null = null;
 async function loadFromIdb(): Promise<DbSnapshot> {
   if (!hasIdb()) {
     // Server render or non-browser: read-only seed in memory.
-    return generateSeed();
+    const db = await generateSeed();
+    if (features.sampleData) refreshSample(db);
+    return db;
   }
   const [version, sid] = (await getMany(["meta:version", "session"], store())) as [
     number | undefined,
@@ -97,6 +101,7 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     await writeAll(seed);
     await set("meta:version", SCHEMA_VERSION, store());
     sessionUserId = null;
+    await syncSample(seed);
     return seed;
   }
   const values = await getMany(
@@ -116,7 +121,30 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     await set("meta:version", SCHEMA_VERSION, store());
   }
   sessionUserId = session;
+  await syncSample(db);
   return db;
+}
+
+/**
+ * SAMPLE DATA: adds it (and rebuilds it every few days so dates stay current),
+ * or takes it out once features.sampleData is off.
+ */
+async function syncSample(db: DbSnapshot) {
+  const at = (await get("meta:sampleAt", store())) as number | undefined;
+  if (features.sampleData) {
+    if (at !== undefined && Date.now() - at < SAMPLE_TTL_MS && hasSample(db)) return;
+    refreshSample(db);
+    await writeAll(db);
+    await set("meta:sampleAt", Date.now(), store());
+  } else if (at !== undefined || hasSample(db)) {
+    stripSample(db, "remove");
+    if (sessionUserId && !db.users.some((u) => u.id === sessionUserId)) {
+      sessionUserId = null;
+      await del("session", store());
+    }
+    await writeAll(db);
+    await del("meta:sampleAt", store());
+  }
 }
 
 async function writeAll(db: DbSnapshot) {

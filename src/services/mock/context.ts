@@ -4,6 +4,7 @@ import { ServiceError } from "../errors";
 import type { Brand, UserRecord, User } from "../types";
 import { getDb, getSessionUserId } from "./db";
 import type { DbSnapshot } from "./seed";
+import { isSampleId, PREVIEW } from "./seed/sample";
 
 /** The access-list entry behind an account, in invite-only mode. */
 export function accessEntryFor(userId: string) {
@@ -15,7 +16,9 @@ export async function currentUser(db?: DbSnapshot): Promise<UserRecord | null> {
   const id = await getSessionUserId();
   if (!id) return null;
   // Invite-only: accounts not (or no longer) on the list are signed out.
-  if (features.inviteOnly && !accessEntryFor(id)) return null;
+  // The sample preview account is open to everyone while sample data is on.
+  const preview = features.sampleData && isSampleId(id);
+  if (features.inviteOnly && !preview && !accessEntryFor(id)) return null;
   return d.users.find((u) => u.id === id) ?? null;
 }
 
@@ -36,7 +39,11 @@ export async function requireBrand(db: DbSnapshot): Promise<{ user: UserRecord; 
 export function publicUser(u: UserRecord): User {
   const { passwordHash, passwordSalt, ...rest } = u;
   const role = features.inviteOnly ? (accessEntryFor(u.id)?.role ?? "member") : "member";
-  return { ...structuredClone(rest), role };
+  return {
+    ...structuredClone(rest),
+    role,
+    ...(u.id === PREVIEW.userId ? { preview: true } : {}),
+  };
 }
 
 /** Return detached copies so UI mutations never leak into the store. */

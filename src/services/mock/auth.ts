@@ -11,6 +11,7 @@ import { features } from "@/config/features";
 import { removeMedia } from "./media";
 import { accessList, userIdFor } from "@/config/access";
 import { emailHash, normaliseEmail } from "@/lib/access-hash";
+import { PREVIEW } from "./seed/sample";
 
 function validation(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
@@ -144,6 +145,19 @@ export const mockAuth: AuthService = {
     return publicUser(user);
   },
 
+  async startPreview() {
+    await latency(0.6);
+    if (!features.sampleData) {
+      throw new ServiceError("UNAVAILABLE", "The preview is switched off. Log in to continue.");
+    }
+    const db = await getDb();
+    const user = db.users.find((u) => u.id === PREVIEW.userId);
+    if (!user)
+      throw new ServiceError("UNAVAILABLE", "The preview isn't ready. Refresh and try again.");
+    await setSessionUserId(user.id);
+    return publicUser(user);
+  },
+
   async signOut() {
     await latency(0.4);
     await setSessionUserId(null);
@@ -171,6 +185,9 @@ export const mockAuth: AuthService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
+    if (user.id === PREVIEW.userId) {
+      throw new ServiceError("FORBIDDEN", "The preview account can't be deleted.");
+    }
     const ok = await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash);
     if (!ok) {
       throw new ServiceError("UNAUTHORIZED", "That password isn't right.", {

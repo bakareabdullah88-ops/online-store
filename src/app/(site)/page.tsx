@@ -18,6 +18,7 @@ import { LandingNav } from "@/components/landing/nav";
 import { Logo } from "@/components/shell/logo";
 import { Page } from "@/components/shell/page";
 import { brand } from "@/config/brand";
+import { features as flags } from "@/config/features";
 import { seedCampuses } from "@/services/mock/seed/campuses";
 
 export const metadata: Metadata = {
@@ -31,6 +32,7 @@ const campuses = seedCampuses();
 const features = [
   {
     title: "Get found by students nearby",
+    href: "/explore",
     body: "Your products show up when students on your campus search or browse by category. They see how far you are and whether you deliver to their hall.",
     points: [
       "Search and categories by campus",
@@ -41,6 +43,7 @@ const features = [
   },
   {
     title: "Turn views into orders",
+    href: "/studio",
     body: "A short checkout with pay on delivery or at pickup. Each shop gets its own order, so you only handle what's yours.",
     points: [
       "Pay on delivery or at pickup",
@@ -51,6 +54,7 @@ const features = [
   },
   {
     title: "Talk to your buyers",
+    href: "/studio/messages",
     body: "Questions about sizes, times and delivery happen in one inbox, next to the order. Buyers are notified as soon as you reply.",
     points: [
       "One inbox for every conversation",
@@ -87,8 +91,10 @@ const benefits = [
 const steps = [
   {
     n: "01",
-    title: "Get your login",
-    body: "The Kiosk team creates one for you. Log in and pick your campus.",
+    title: flags.sampleData ? "Look around" : "Get your login",
+    body: flags.sampleData
+      ? "Open the preview, no sign-up needed. Real logins come from the Kiosk team."
+      : "The Kiosk team creates one for you. Log in and pick your campus.",
   },
   {
     n: "02",
@@ -103,6 +109,14 @@ const steps = [
 ];
 
 const faqs = [
+  ...(flags.sampleData
+    ? [
+        {
+          q: "Is Kiosk live yet?",
+          a: "Not yet, we're still building it. The shops, products and orders inside are sample data so you can see how everything works.",
+        },
+      ]
+    : []),
   {
     q: "How do I join?",
     a: "Kiosk is invite-only for now. The Kiosk team creates your login and sends you your email and password.",
@@ -135,18 +149,24 @@ function Callout({ tag, text, className }: { tag: string; text: string; classNam
 export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-surface">
-      <Link
-        href="/login"
-        className="block bg-[linear-gradient(90deg,#ffe9d6,#fff3e6,#ffe9d6)] px-4 py-2.5 text-center text-[13px] text-[#4a2b14] dark:bg-[linear-gradient(90deg,#2b1d12,#33251a,#2b1d12)] dark:text-[#f3d9c2]"
-      >
-        {brand.name} is invite-only while we open campus by campus. Have a login?{" "}
-        <b className="font-semibold underline-offset-2 hover:underline">Log in</b>
-      </Link>
+      {flags.sampleData ? (
+        <Link
+          href="/home"
+          className="block bg-[#fff3e6] px-4 py-2.5 text-center text-[13px] text-[#4a2b14] dark:bg-[#2b1d12] dark:text-[#f3d9c2]"
+        >
+          🚧 We&apos;re still building {brand.name}. Everything inside is sample data for now.{" "}
+          <b className="font-semibold underline-offset-2 hover:underline">Have a look around</b>
+        </Link>
+      ) : (
+        <Link
+          href="/login"
+          className="block bg-[#fff3e6] px-4 py-2.5 text-center text-[13px] text-[#4a2b14] dark:bg-[#2b1d12] dark:text-[#f3d9c2]"
+        >
+          {brand.name} is invite-only while we open campus by campus. Have a login?{" "}
+          <b className="font-semibold underline-offset-2 hover:underline">Log in</b>
+        </Link>
+      )}
       <div className="relative">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-[900px] bg-[radial-gradient(60%_50%_at_15%_10%,color-mix(in_oklab,var(--chart-mint)_45%,transparent),transparent_70%),radial-gradient(50%_45%_at_85%_20%,#ffe6cc,transparent_70%)] opacity-80 dark:opacity-25"
-          aria-hidden
-        />
         <LandingNav />
         <Page className="relative">
           {/* hero */}
@@ -188,10 +208,11 @@ export default function LandingPage() {
                 <circle cx="54" cy="14" r="3.5" fill="currentColor" />
               </svg>
               <Link
-                href="/login"
+                href={flags.sampleData ? "/home" : "/login"}
                 className="flex h-13 items-center gap-2 rounded-xl bg-[#2f45d8] px-7 text-[16px] font-semibold text-white shadow-[0_12px_30px_-10px_#2f45d8] transition-transform hover:-translate-y-0.5"
               >
-                Log in to {brand.name} <ArrowRight className="size-4" />
+                {flags.sampleData ? `Explore ${brand.name}` : `Log in to ${brand.name}`}{" "}
+                <ArrowRight className="size-4" />
               </Link>
               <p className="max-w-xs text-left text-[15px] text-ink-2">
                 Student-run food, fashion, thrift and more, from people in your hostel.
@@ -257,7 +278,7 @@ export default function LandingPage() {
                       ))}
                     </ul>
                     <Link
-                      href="/signup"
+                      href={flags.sampleData ? f.href : "/signup"}
                       className="mt-6 inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-accent hover:underline"
                     >
                       Get started <ArrowRight className="size-4" />
@@ -335,20 +356,22 @@ export default function LandingPage() {
                 Your campus is already shopping.
               </h2>
               <p className="relative mt-3 text-[16px] opacity-75">
-                Got your invite? Log in, then buy or sell from the same place.
+                {flags.sampleData
+                  ? "We're still building it. Look around the preview, no sign-up needed."
+                  : "Got your invite? Log in, then buy or sell from the same place."}
               </p>
               <div className="relative mt-8 flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/login"
+                  href={flags.sampleData ? "/home" : "/login"}
                   className="flex h-12 items-center gap-2 rounded-xl bg-mint-cta px-6 text-[15px] font-semibold text-on-mint-cta"
                 >
-                  <Zap className="size-4" /> Log in
+                  <Zap className="size-4" /> {flags.sampleData ? "Explore the preview" : "Log in"}
                 </Link>
                 <Link
-                  href="/signup"
+                  href={flags.sampleData ? "/login" : "/signup"}
                   className="flex h-12 items-center gap-2 rounded-xl px-6 text-[15px] font-semibold ring-1 ring-white/30 hover:bg-white/10"
                 >
-                  <Store className="size-4" /> How to get access
+                  <Store className="size-4" /> {flags.sampleData ? "Log in" : "How to get access"}
                 </Link>
               </div>
             </div>
@@ -382,7 +405,7 @@ export default function LandingPage() {
                 links: [
                   ["How it works", "/#how"],
                   ["Log in", "/login"],
-                  ["Get access", "/signup"],
+                  flags.sampleData ? ["Explore the preview", "/home"] : ["Get access", "/signup"],
                 ],
               },
             ].map((c) => (

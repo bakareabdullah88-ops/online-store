@@ -26,17 +26,17 @@ export function MobileTopBar() {
   return (
     <header
       style={{ viewTransitionName: "site-header" }}
-      className="sticky top-0 z-(--z-header) px-3 pt-[calc(env(safe-area-inset-top)+8px)] md:hidden"
+      className="sticky top-0 z-(--z-header) border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur-md md:hidden"
     >
       <motion.div
-        initial={{ y: -12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex h-14 items-center gap-1 rounded-[18px] glass-bar px-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex h-14 items-center gap-1 px-3"
       >
         <Link
           href={mode === "selling" ? "/studio" : "/home"}
           aria-label="Kiosk home"
-          className="grid size-10 shrink-0 pressable place-items-center rounded-xl bg-primary text-on-primary shadow-md"
+          className="grid size-9 shrink-0 pressable place-items-center rounded-xl bg-primary text-on-primary"
         >
           <KioskMark className="size-5" />
         </Link>

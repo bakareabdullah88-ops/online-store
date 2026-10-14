@@ -307,7 +307,7 @@ The site stopped being a demo. What changed and why:
 - **Navigation.** The left rail and sidebar took about 320px, which squeezed every page on 1280–1366px
   laptops (tables scrolled sideways, labels truncated). They're replaced by a floating liquid-glass
   top bar like zentra's and LoopAI's: logo, a Market ⇄ shop switch, the workspace's main pages as
-  pills (the active one is a dark pill that slides), a **More** grid for the rest, search,
+  pills (the active one was a dark pill that slid; see §11), a **More** grid for the rest, search,
   notifications, bag and account. Phones keep the floating pill nav, plus a top bar with an
   "all pages" grid.
 - **Look.** Signed-in pages sit on a tinted, slowly drifting colour field (slightly different
@@ -325,3 +325,23 @@ The site stopped being a demo. What changed and why:
   and the list entry; the login works after the entry is pushed. This gates the front door only:
   with data still in each browser it isn't a security boundary, and the real version (invite-only
   sign-up on the backend) replaces it.
+
+## 11. Sample data while we build, plain header
+
+- **Sample data is back, on purpose and labelled.** Section 9 removed the demo so nothing fake
+  passed for real. While Kiosk is still being built, an empty app shows visitors nothing, so the
+  sample shops, photos and orders return behind `features.sampleData`, with a notice on the landing
+  page and on every app page saying it's sample data and the app is still being built.
+- **No sign-up to look around.** With sample data on, the auth gate signs visitors in to a shared
+  preview account instead of sending them to log in. It can't be deleted and has no password.
+  Logging in with a real account replaces it. Invite-only access is unchanged for real accounts.
+- **Easy to take out.** Every sample id contains `_demo_` (real ids can't: their alphabet has no
+  "o"). On load the database adds the set, rebuilds it every three days so dates stay current, or
+  removes it once the flag is off, keeping real accounts' data. The end-to-end tests build with it
+  off, and `tests/unit/sample.test.ts` covers it.
+- **A plain header and background.** The floating glass bar with pill links is replaced by a normal
+  full-width header: text links with an underline under the current page, and inline count
+  badges. The drifting colour blobs are replaced by a flat background a shade apart from the
+  landing page.
+- **Opening a shop is celebrated.** Streamers draw themselves across the screen and keep waving
+  while paper ribbons fall, behind the content (static ribbons with reduced motion).
