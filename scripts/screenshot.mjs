@@ -34,6 +34,17 @@ for (const width of widths) {
   for (const route of routesArg.split(",")) {
     await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(waitMs);
+    if (full) {
+      // Scroll through once so sections that reveal on scroll are drawn.
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight / 2) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 120));
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(400);
+    }
     const name = `${route.replace(/\W+/g, "_") || "home"}-${width}${dark ? "-dark" : ""}.png`;
     await page.screenshot({ path: `${out}/${name}`, fullPage: full });
     console.log("saved", name);
