@@ -23,7 +23,7 @@ import { productTransitionName } from "./product-card";
 import { WishlistButton } from "./wishlist-button";
 
 const pill =
-  "inline-flex h-11 w-full max-w-[300px] pressable items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition-[background-color,filter,box-shadow]";
+  "inline-flex h-10 w-full max-w-[300px] pressable items-center justify-center gap-2 rounded-full px-3 text-[14px] font-semibold sm:h-11 sm:px-5 sm:text-[15px] transition-[background-color,filter,box-shadow]";
 
 /** "₦" small and raised, the amount large: easy to scan down a list. */
 function BigPrice({ kobo, compareAt }: { kobo: number; compareAt?: number | undefined }) {
@@ -33,7 +33,7 @@ function BigPrice({ kobo, compareAt }: { kobo: number; compareAt?: number | unde
     <div className="flex flex-wrap items-end gap-x-2.5 gap-y-1">
       <p className="flex items-start leading-none font-semibold tracking-[-0.02em] tabular">
         <span className="mt-1 mr-0.5 text-[13px] sm:text-[14px]">₦</span>
-        <span className="text-[24px] sm:text-[30px]">{naira}</span>
+        <span className="text-[22px] sm:text-[30px]">{naira}</span>
       </p>
       {off && compareAt && (
         <p className="flex items-center gap-2 pb-0.5 text-[13px]">
@@ -110,7 +110,7 @@ export function ProductRow({
   );
 
   return (
-    <article className="relative grid grid-cols-[minmax(0,120px)_minmax(0,1fr)] gap-4 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
+    <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
       <div className="relative bg-surface-2">
         <Link
           href={href}
@@ -136,17 +136,17 @@ export function ProductRow({
         />
       </div>
 
-      <div className="flex min-w-0 flex-col items-start gap-1.5 py-3 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
+      <div className="flex min-w-0 flex-col items-start gap-1 py-3 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
         <Link
           href={`/brands/${p.brand.handle}`}
-          className="inline-flex max-w-full items-center gap-1 text-[13px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
+          className="inline-flex max-w-full items-center gap-1 text-[12px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
         >
           <span className="truncate">{p.brand.name}</span>
           {p.brand.verified && (
             <BadgeCheck className="size-4 shrink-0 text-accent" aria-label="Verified shop" />
           )}
         </Link>
-        <h3 className="line-clamp-2 text-[15px] leading-snug font-medium sm:line-clamp-3 sm:text-[19px] lg:text-[21px]">
+        <h3 className="line-clamp-2 text-[14.5px] leading-snug font-medium sm:line-clamp-3 sm:text-[19px] lg:text-[21px]">
           <Link href={href} className="hover:text-accent-ink">
             {p.name}
           </Link>
@@ -187,7 +187,13 @@ export function ProductRow({
               </span>
             )}
             {f.pickup && (
-              <span className="inline-flex items-center gap-1.5">
+              <span
+                className={cn(
+                  "items-center gap-1.5",
+                  // Phones have room for one way to get it; delivery wins.
+                  f.delivery ? "hidden sm:inline-flex" : "inline-flex",
+                )}
+              >
                 <Store className="size-4 text-muted" aria-hidden />
                 Free pickup
               </span>
@@ -209,11 +215,11 @@ export function ProductRow({
           <p className="text-[13px] font-medium text-danger sm:text-[14px]">Sold out</p>
         ) : state === "low" ? (
           <p className="text-[13px] font-medium text-danger sm:text-[14px]">
-            Only {stock} left in stock, order soon.
+            Only {stock} left<span className="hidden sm:inline"> in stock, order soon</span>.
           </p>
         ) : null}
 
-        <div className="mt-1 w-full sm:mt-2">
+        <div className="mt-1.5 w-full sm:mt-2">
           {own ? (
             <Link
               href={`/studio/products/${p.id}`}
@@ -249,7 +255,7 @@ export function ProductRow({
                 <span
                   title={v.label}
                   className={cn(
-                    "block size-6 rounded-full ring-1 ring-line-strong",
+                    "block size-5 rounded-full ring-1 ring-line-strong sm:size-6",
                     i === 0 && "ring-2 ring-ink ring-offset-2 ring-offset-surface",
                   )}
                   style={{ background: v.swatch }}
@@ -267,7 +273,7 @@ export function ProductRow({
 export function ProductRowSkeleton() {
   return (
     <div
-      className="grid grid-cols-[120px_1fr] gap-4 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
+      className="grid grid-cols-[44%_1fr] gap-3 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
       aria-hidden
     >
       <Skeleton className="aspect-square w-full" rounded="none" />
