@@ -27,7 +27,6 @@ import { DailyDots, WeekdayDots } from "@/components/dash/dot-matrix";
 import { HatchedBars } from "@/components/dash/bars";
 import { FunnelChart } from "@/components/dash/funnel-chart";
 import { InsightCard } from "@/components/dash/insight";
-import { QuickJump } from "@/components/dash/quick-jump";
 import { SetupStrip } from "@/components/dash/setup";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
 import { StepLine } from "@/components/dash/step-line";
@@ -159,27 +158,6 @@ export function ShopPerformance() {
                   </Empty>
                 )}
               </div>
-              <QuickJump
-                prompt="What would you like to check next?"
-                placeholder="Search your products, or type / for shortcuts"
-                search={(q) => `/studio/products?q=${encodeURIComponent(q)}`}
-                shortcuts={[
-                  { token: "new orders", href: "/studio/orders?status=placed" },
-                  {
-                    token: "orders",
-                    href: "/studio/orders",
-                    withQuery: (q) => `/studio/orders?q=${encodeURIComponent(q)}`,
-                  },
-                  { token: "low stock", href: "/studio/products?stock=low" },
-                  { token: "drafts", href: "/studio/products?status=draft" },
-                  {
-                    token: "customers",
-                    href: "/studio/customers",
-                    withQuery: (q) => `/studio/customers?q=${encodeURIComponent(q)}`,
-                  },
-                  { token: "reviews", href: "/studio/reviews" },
-                ]}
-              />
             </DashCard>
             <DashCard
               title="Gross volume"

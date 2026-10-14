@@ -279,7 +279,7 @@ export function BrandView() {
 
       <div className="container-page">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:gap-6">
-          <div className="-mt-12 size-24 shrink-0 overflow-hidden rounded-full shadow-md ring-4 ring-canvas md:-mt-16 md:size-32">
+          <div className="-mt-12 size-24 shrink-0 overflow-hidden rounded-full ring-4 ring-canvas md:-mt-16 md:size-32">
             <AppImage
               image={brand.logo}
               alt={`${brand.name} logo`}

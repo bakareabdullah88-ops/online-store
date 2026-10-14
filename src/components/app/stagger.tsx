@@ -5,18 +5,11 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 const item: Variants = {
-  hidden: { opacity: 0, y: 14, filter: "blur(4px)" },
-  show: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { type: "spring", stiffness: 260, damping: 30, mass: 0.9 },
-    // A lingering filter would trap fixed/backdrop-blurred children.
-    transitionEnd: { filter: "none" },
-  },
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.25, ease: "easeOut" } },
 };
 
-/** A group of sections; each one fades up as it scrolls into view. */
+/** A group of sections; each one fades in as it scrolls into view. */
 export function Stagger({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={className}>{children}</div>;
 }

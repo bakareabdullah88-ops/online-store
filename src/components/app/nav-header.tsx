@@ -22,7 +22,6 @@ function useNavContext(): { icon: LucideIcon; tone: string; crumbs: Crumb[] } {
     for (const item of s.items)
       if (isActive(item, path)) {
         const crumbs: Crumb[] = [root];
-        if (s.title) crumbs.push({ label: s.title });
         if (path !== item.href) crumbs.push({ label: item.label, href: item.href });
         return { icon: item.icon, tone: item.tone, crumbs };
       }

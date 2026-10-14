@@ -67,7 +67,7 @@ export function MobileNav() {
                   <motion.span
                     layoutId="mobile-nav-active"
                     transition={spring.snappy}
-                    className="absolute inset-0 rounded-full bg-primary shadow-md"
+                    className="absolute inset-0 rounded-full bg-primary"
                     aria-hidden
                   />
                 )}
@@ -92,7 +92,7 @@ export function MobileNav() {
         <Link
           href={fab.href}
           aria-label={fab.label}
-          className="pointer-events-auto grid size-16 shrink-0 place-items-center rounded-full bg-accent text-on-accent shadow-[0_12px_32px_-10px_var(--accent)] transition-transform active:scale-95"
+          className="pointer-events-auto grid size-16 shrink-0 place-items-center rounded-full bg-accent text-on-accent transition-transform active:scale-95"
         >
           <Plus className="size-6" strokeWidth={2.4} />
         </Link>

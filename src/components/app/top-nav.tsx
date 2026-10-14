@@ -177,9 +177,7 @@ export function TopNav() {
           }
           className={iconBtn}
         >
-          <motion.span whileHover={{ rotate: [0, -12, 10, -6, 0] }} transition={{ duration: 0.5 }}>
-            <Bell className="size-[18px]" />
-          </motion.span>
+          <Bell className="size-[18px]" />
           <Count n={badges.notifications} />
         </Link>
         {mode === "buying" && (

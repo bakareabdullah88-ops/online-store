@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BadgeCheck, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { useMode } from "@/components/shell/mode";
 import { useCurtain } from "@/components/shell/mode-curtain";
@@ -91,17 +91,7 @@ export function ArrivalBanner() {
           onPointerEnter={() => setPaused(true)}
           onPointerLeave={() => setPaused(false)}
         >
-          <div className="relative overflow-hidden rounded-[14px] border border-[color-mix(in_oklab,var(--accent)_22%,transparent)] bg-[color-mix(in_oklab,var(--accent)_7%,var(--surface))]">
-            {/* A soft light sweeping across once, as you arrive. */}
-            {!reduce && (
-              <motion.span
-                aria-hidden
-                className="pointer-events-none absolute inset-y-0 w-1/3 bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--accent)_16%,transparent),transparent)]"
-                initial={{ x: "-120%" }}
-                animate={{ x: "420%" }}
-                transition={{ duration: 1.4, delay: 0.25, ease: "easeInOut" }}
-              />
-            )}
+          <div className="relative overflow-hidden rounded-[12px] border border-[color-mix(in_oklab,var(--accent)_20%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_5%,var(--surface))]">
             <div className="relative flex items-center gap-3.5 p-3.5 md:gap-4 md:p-4">
               <motion.span
                 className="relative shrink-0"
@@ -110,15 +100,12 @@ export function ArrivalBanner() {
                 transition={{ type: "spring", stiffness: 380, damping: 16, delay: 0.08 }}
               >
                 {selling && brand ? (
-                  <span className="block size-11 overflow-hidden rounded-[12px] ring-2 ring-accent/30 md:size-12">
+                  <span className="block size-11 overflow-hidden rounded-[12px] md:size-12">
                     <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
                   </span>
                 ) : (
                   <UserAvatar size={48} className="ring-2 ring-accent/30" />
                 )}
-                <span className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-accent text-on-accent ring-2 ring-surface">
-                  <BadgeCheck className="size-3" aria-hidden />
-                </span>
               </motion.span>
 
               <div className="min-w-0 flex-1">
@@ -132,8 +119,8 @@ export function ArrivalBanner() {
                 </motion.p>
                 <motion.h2
                   className="truncate text-[19px] leading-tight font-bold tracking-[-0.025em] md:text-[22px]"
-                  initial={reduce ? false : { opacity: 0, y: 8, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  initial={reduce ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
                 >
                   {selling ? (brand?.name ?? "Your shop") : greeting}
@@ -183,22 +170,6 @@ export function ArrivalBanner() {
                 {cta.label} <ArrowRight className="size-4" />
               </Link>
             </div>
-            {/* Time left before it tucks away; full while paused, as the timer restarts. */}
-            {!reduce &&
-              (paused ? (
-                <span
-                  aria-hidden
-                  className="absolute bottom-0 left-0 h-[2px] w-full bg-accent/60"
-                />
-              ) : (
-                <motion.span
-                  aria-hidden
-                  className="absolute bottom-0 left-0 h-[2px] w-full origin-left bg-accent/60"
-                  initial={{ scaleX: 1 }}
-                  animate={{ scaleX: 0 }}
-                  transition={{ duration: SHOW_MS / 1000, ease: "linear" }}
-                />
-              ))}
           </div>
         </motion.section>
       )}

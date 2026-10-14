@@ -117,7 +117,7 @@ export function FunnelChart({
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ ...spring.smooth, delay: 0.25 + i * 0.05 }}
-                      className="absolute left-[calc((100%-26px)/2)] h-1.5 w-9 -translate-x-1/2 rounded-full bg-chart-blue-2 shadow-[0_2px_6px_-1px_var(--chart-blue-2)]"
+                      className="absolute left-[calc((100%-26px)/2)] h-1.5 w-9 -translate-x-1/2 rounded-full bg-chart-blue-2"
                       style={{ bottom: `calc(${pct(s.prev)}% + 10px)` }}
                       title={`Previous period: ${s.prev}`}
                       aria-hidden
@@ -131,9 +131,7 @@ export function FunnelChart({
                     className={cn(
                       "absolute bottom-0 left-0 origin-bottom transition-[background] duration-300",
                       next ? "right-[26px]" : "right-0",
-                      on
-                        ? "bg-[linear-gradient(160deg,var(--chart-blue)_0%,#1f2fd0_100%)] shadow-[0_-8px_30px_-10px_var(--chart-blue)]"
-                        : "bg-[linear-gradient(180deg,color-mix(in_oklab,var(--chart-blue)_10%,transparent),transparent)] hatch [--hatch:var(--chart-blue)]",
+                      on ? "bg-chart-blue" : "hatch [--hatch:var(--chart-blue)]",
                     )}
                     style={{ height: `${Math.max(h, s.value > 0 ? 1.5 : 0)}%` }}
                     aria-hidden

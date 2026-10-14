@@ -54,17 +54,9 @@ const REVEAL_S = 0.55;
 const MIN_HOLD_MS = 650;
 const ease = [0.7, 0, 0.25, 1] as const;
 
-const palettes: Record<Mode, { bg: string; glow: string; accent: string }> = {
-  selling: {
-    bg: "radial-gradient(120% 120% at 50% 40%, #1f8a55 0%, #0f5132 55%, #0a3a24 100%)",
-    glow: "#86e0b0",
-    accent: "#bff3d8",
-  },
-  buying: {
-    bg: "radial-gradient(120% 120% at 50% 40%, #3d55f0 0%, #2235b5 55%, #18267f 100%)",
-    glow: "#aab5ff",
-    accent: "#dfe4ff",
-  },
+const palettes: Record<Mode, { bg: string; accent: string }> = {
+  selling: { bg: "#17653e", accent: "#bff3d8" },
+  buying: { bg: "#2f45d8", accent: "#dfe4ff" },
 };
 
 function farthestCorner(p: Point) {
@@ -213,45 +205,9 @@ export function ModeCurtain() {
             }
           }}
         >
-          {/* Soft light that follows the circle's start point. */}
-          {!reduce && geo && (
-            <motion.span
-              aria-hidden
-              className="pointer-events-none absolute size-[60vmax] rounded-full blur-3xl"
-              style={{
-                left: geo.from.x,
-                top: geo.from.y,
-                x: "-50%",
-                y: "-50%",
-                background: colors.glow,
-                opacity: 0.18,
-              }}
-              initial={{ scale: 0.2 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
-            />
-          )}
-
           <div className="relative flex flex-col items-center px-6 text-center">
             {/* The bag turns into a shop (or back). */}
             <div className="relative grid size-24 place-items-center">
-              {!reduce &&
-                [0, 1].map((i) => (
-                  <motion.span
-                    key={i}
-                    aria-hidden
-                    className="absolute inset-0 rounded-full border"
-                    style={{ borderColor: colors.glow }}
-                    initial={{ scale: 0.8, opacity: 0.6 }}
-                    animate={{ scale: 1.9, opacity: 0 }}
-                    transition={{
-                      duration: 1.4,
-                      delay: 0.25 + i * 0.45,
-                      repeat: Infinity,
-                      ease: "easeOut",
-                    }}
-                  />
-                ))}
               <motion.span
                 className="absolute inset-0 rounded-full bg-white/12 ring-1 ring-white/25 backdrop-blur-sm"
                 initial={reduce ? false : { scale: 0.6, opacity: 0 }}

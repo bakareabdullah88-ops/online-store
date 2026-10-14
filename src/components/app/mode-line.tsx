@@ -15,7 +15,7 @@ export function ModeLine() {
     <motion.span
       key={mode}
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 top-0 h-[3px] origin-left bg-[linear-gradient(90deg,var(--accent),color-mix(in_oklab,var(--accent)_45%,transparent)_70%,transparent)]"
+      className="pointer-events-none absolute inset-x-0 top-0 h-[2px] origin-left bg-accent"
       initial={reduce ? false : { scaleX: 0 }}
       animate={{ scaleX: 1 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}

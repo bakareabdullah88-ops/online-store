@@ -364,3 +364,19 @@ The site stopped being a demo. What changed and why:
 - **Always know where you are.** A thin line in the side's colour runs along the top of the header
   (blue while buying, green while selling) and draws across each time you switch. The switch itself
   says "Buying" and "Selling".
+
+## 13. Simpler, sharper
+
+- **Cards** are the surface colour with a 1px border and 12px corners: no blur, no shadow. Hover on
+  clickable cards only darkens the border; nothing lifts or scales. Chart fills are flat tints
+  instead of stripes, and decorative glows are gone.
+- **Page headers** are a title and a line of description. The coloured icon bubble is gone, and
+  the breadcrumb only appears on deeper pages (an order, a product), where it adds something.
+- **Icons** sit plain, without coloured tiles, on stat cards, card titles, categories and the More
+  menu.
+- **Less repetition.** The search boxes on Home and Performance repeated the header search, so
+  they're gone. Product tiles are just the photo and its text, without a card frame.
+- **Quieter motion.** Sections fade in (no slide or blur); the page title no longer slides in; the
+  bell no longer wiggles; empty-state art no longer floats. The switch keeps its circle, icon and
+  numbers but drops the pulsing rings and glow; the arrival card drops the light sweep, badge and
+  countdown bar. The landing page loses its tilted callouts, scribbled arrow and blurred blobs.

@@ -133,19 +133,6 @@ const faqs = [
   { q: "Which campuses?", a: `${campuses.length} campuses to start, with more being added.` },
 ];
 
-function Callout({ tag, text, className }: { tag: string; text: string; className: string }) {
-  return (
-    <div
-      className={`absolute hidden w-56 rounded-xl bg-surface/90 px-4 py-3 shadow-[0_10px_40px_-12px_rgb(0_0_0/0.25)] ring-1 ring-line backdrop-blur-md xl:block ${className}`}
-    >
-      <span className="inline-block rounded-full bg-chart-mint/60 px-2 py-0.5 text-[11px] font-semibold text-[#0d5a33] dark:text-[#bff3d8]">
-        {tag}
-      </span>
-      <p className="mt-1.5 text-[14px] font-medium">{text}</p>
-    </div>
-  );
-}
-
 export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-surface">
@@ -176,40 +163,10 @@ export default function LandingPage() {
               <br />
               sell to your campus
             </h1>
-            <Callout
-              tag="₦0 to start"
-              text="Open a shop free, no monthly fees"
-              className="top-[250px] -left-4 -rotate-6"
-            />
-            <Callout
-              tag="No card needed"
-              text="Pay when it reaches your hall"
-              className="top-[236px] -right-4 rotate-6"
-            />
             <div className="mt-10 flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-8">
-              <svg
-                className="hidden h-16 w-16 text-badge sm:block"
-                viewBox="0 0 64 64"
-                fill="none"
-                aria-hidden
-              >
-                <path
-                  d="M6 58 C 14 30, 22 20, 28 40 S 44 50, 54 14"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M6 58 l-2 -9 M6 58 l8 -4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <circle cx="54" cy="14" r="3.5" fill="currentColor" />
-              </svg>
               <Link
                 href={flags.sampleData ? "/home" : "/login"}
-                className="flex h-13 items-center gap-2 rounded-xl bg-[#2f45d8] px-7 text-[16px] font-semibold text-white shadow-[0_12px_30px_-10px_#2f45d8] transition-transform hover:-translate-y-0.5"
+                className="flex h-13 items-center gap-2 rounded-xl bg-[#2f45d8] px-7 text-[16px] font-semibold text-white transition-[filter] hover:brightness-110"
               >
                 {flags.sampleData ? `Explore ${brand.name}` : `Log in to ${brand.name}`}{" "}
                 <ArrowRight className="size-4" />
@@ -301,11 +258,8 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" id="pricing">
-                {benefits.map((b, i) => (
-                  <div
-                    key={b.title}
-                    className={`rounded-[22px] p-6 ring-1 ring-line ${i === 0 ? "bg-surface shadow-lg" : "bg-surface/60"}`}
-                  >
+                {benefits.map((b) => (
+                  <div key={b.title} className="rounded-[12px] bg-surface p-6 ring-1 ring-line">
                     <span className="grid size-11 place-items-center rounded-2xl bg-surface-2 ring-1 ring-line">
                       <b.icon className="size-5" />
                     </span>
@@ -324,7 +278,7 @@ export default function LandingPage() {
             </h2>
             <ol className="mt-12 grid gap-4 md:grid-cols-3">
               {steps.map((s) => (
-                <li key={s.n} className="rounded-[22px] bg-surface-2/70 p-6 ring-1 ring-line">
+                <li key={s.n} className="rounded-[12px] bg-surface p-6 ring-1 ring-line">
                   <span className="text-[13px] font-semibold text-muted tabular">{s.n}</span>
                   <h3 className="mt-6 text-[20px] font-semibold tracking-[-0.02em]">{s.title}</h3>
                   <p className="mt-2 text-[14.5px] text-muted">{s.body}</p>
@@ -343,15 +297,7 @@ export default function LandingPage() {
 
           {/* cta */}
           <section className="mx-auto max-w-6xl px-4 pb-20 md:px-6">
-            <div className="relative overflow-hidden rounded-[32px] bg-primary px-6 py-14 text-center text-on-primary md:px-16 md:py-20">
-              <div
-                className="pointer-events-none absolute -top-24 -left-24 size-72 rounded-full bg-chart-blue/40 blur-3xl"
-                aria-hidden
-              />
-              <div
-                className="pointer-events-none absolute -right-20 -bottom-24 size-72 rounded-full bg-chart-mint/30 blur-3xl"
-                aria-hidden
-              />
+            <div className="relative overflow-hidden rounded-[16px] bg-primary px-6 py-14 text-center text-on-primary md:px-16 md:py-20">
               <h2 className="relative text-[clamp(28px,4vw,44px)] leading-tight font-bold tracking-[-0.035em]">
                 Your campus is already shopping.
               </h2>

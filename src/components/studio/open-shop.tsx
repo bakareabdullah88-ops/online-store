@@ -61,7 +61,7 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
   };
   return (
     <div
-      className="card overflow-hidden shadow-lg"
+      className="card overflow-hidden"
       aria-label="Live preview of your shop"
       role="img"
     >

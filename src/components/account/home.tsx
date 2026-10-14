@@ -25,7 +25,6 @@ import { DateRangeControl, useRangeParam } from "@/components/dash/date-range";
 import { DailyDots, WeekdayDots } from "@/components/dash/dot-matrix";
 import { FunnelChart } from "@/components/dash/funnel-chart";
 import { InsightCard } from "@/components/dash/insight";
-import { QuickJump } from "@/components/dash/quick-jump";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
 import { TodoList, type Todo } from "@/components/dash/todo";
 import { ButtonLink } from "@/components/ui/button";
@@ -149,18 +148,6 @@ export function BuyerHome() {
         </div>
       ) : (
         <Stagger className="mt-6 grid grid-cols-1 gap-4">
-          <StaggerItem className="card overflow-hidden">
-            <QuickJump
-              prompt="What are you looking for today?"
-              placeholder="Search products and shops, or type / for a category"
-              search={(q) => `/search?q=${encodeURIComponent(q)}`}
-              shortcuts={categories.map((c) => ({
-                token: c.name.toLowerCase(),
-                href: `/explore?category=${c.id}`,
-              }))}
-            />
-          </StaggerItem>
-
           <StaggerItem className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <StatCard
               icon={<Wallet />}

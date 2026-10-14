@@ -19,7 +19,7 @@ const steps = [
 export function InviteOnly() {
   return (
     <div className="w-full max-w-md">
-      <span className="grid size-14 place-items-center rounded-2xl bg-[linear-gradient(140deg,var(--chart-blue),var(--chart-violet))] text-white shadow-lg">
+      <span className="grid size-14 place-items-center rounded-xl bg-primary text-on-primary">
         <ShieldCheck className="size-7" />
       </span>
       <h1 className="mt-6 text-[30px] leading-tight font-bold tracking-[-0.03em]">

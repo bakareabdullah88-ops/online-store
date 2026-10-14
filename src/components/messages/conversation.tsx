@@ -131,7 +131,7 @@ function DraftCard({
                 disabled={sending || !text.trim()}
                 onClick={() => onSend(text.trim())}
                 aria-label="Send this reply"
-                className="grid size-10 place-items-center rounded-full bg-chart-violet text-white shadow-[0_8px_20px_-6px_var(--chart-violet)] disabled:opacity-50"
+                className="grid size-10 place-items-center rounded-full bg-primary text-on-primary disabled:opacity-50"
               >
                 <SendHorizontal className="size-4" />
               </motion.button>

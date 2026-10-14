@@ -48,10 +48,7 @@ export function BrandCard({
   return (
     <Link
       href={`/brands/${b.handle}`}
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg bg-surface hairline transition-shadow hover:shadow-md",
-        className,
-      )}
+      className={cn("group card relative flex flex-col overflow-hidden lift", className)}
     >
       <div
         className={cn(

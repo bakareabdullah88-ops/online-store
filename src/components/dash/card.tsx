@@ -45,11 +45,9 @@ export function CardMenu({ actions, label }: { actions: CardAction[]; label: str
   );
 }
 
-/** Glass card with a header and an optional "…" menu. Fades up when scrolled into view. */
+/** Card with a title and an optional "…" menu. */
 export function DashCard({
   title,
-  icon,
-  tone = "var(--chart-blue)",
   aside,
   actions,
   className,
@@ -57,7 +55,7 @@ export function DashCard({
   children,
 }: {
   title?: ReactNode;
-  /** Small coloured icon next to the title. */
+  /** Accepted for older call sites; titles no longer carry icons. */
   icon?: ReactNode;
   tone?: string;
   aside?: ReactNode;
@@ -68,19 +66,11 @@ export function DashCard({
 }) {
   const label = typeof title === "string" ? title : "Card";
   return (
-    <section className={cn("card flex min-w-0 lift flex-col overflow-hidden", className)}>
+    <section className={cn("card flex min-w-0 flex-col overflow-hidden", className)}>
       {(title || actions) && (
         <header className="flex items-center gap-3 px-5 pt-5 md:px-6 md:pt-6">
-          {icon && (
-            <span
-              className="grid size-9 shrink-0 place-items-center rounded-xl tone-tile [&_svg]:size-[18px]"
-              style={{ ["--tone" as string]: tone }}
-            >
-              {icon}
-            </span>
-          )}
           {title && (
-            <h2 className="min-w-0 flex-1 truncate text-[16px] font-semibold tracking-[-0.01em] md:text-[18px]">
+            <h2 className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.01em] md:text-[16px]">
               {title}
             </h2>
           )}
@@ -211,14 +201,13 @@ export function Sparkline({ data, tone }: { data: number[]; tone: string }) {
   );
 }
 
-/** Headline number card: coloured icon, change badge, count-up value and a sparkline. */
+/** Headline number card: label, change badge, count-up value and a sparkline. */
 export function StatCard({
   label,
   value,
   format,
   change,
   compare,
-  icon,
   tone = "var(--chart-blue)",
   spark,
 }: {
@@ -227,22 +216,15 @@ export function StatCard({
   format: (n: number) => string;
   change: number | null;
   compare: string;
+  /** Accepted for older call sites; not drawn. */
   icon?: ReactNode;
   tone?: string;
   spark?: number[];
 }) {
   return (
-    <section className="card flex min-w-0 lift flex-col gap-3 p-4 md:p-5">
+    <section className="card flex min-w-0 flex-col gap-3 p-4 md:p-5">
       <div className="flex items-start gap-2.5">
-        {icon && (
-          <span
-            className="hidden size-9 shrink-0 place-items-center rounded-xl tone-tile sm:grid [&_svg]:size-[18px]"
-            style={{ ["--tone" as string]: tone }}
-          >
-            {icon}
-          </span>
-        )}
-        <h2 className="min-w-0 flex-1 pt-1 text-[13px] leading-tight font-medium break-words text-ink-2 sm:pt-1.5">
+        <h2 className="min-w-0 flex-1 pt-0.5 text-[13px] leading-tight font-medium break-words text-ink-2">
           {label}
         </h2>
         <DeltaBadge change={change} />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { ChevronRight, LayoutGrid, type LucideIcon } from "lucide-react";
+import { LayoutGrid, type LucideIcon } from "lucide-react";
 import { Chip } from "@/components/ui/chip";
 import { RangeSlider, Switch } from "@/components/ui/controls";
 import { Select } from "@/components/ui/overlay";
@@ -212,7 +212,7 @@ export function CategoryNav({
                 aria-pressed={active}
                 onClick={() => onChange(c.id)}
                 className={cn(
-                  "relative flex h-11 w-full pressable items-center gap-3 rounded-xl px-2 text-left text-[14.5px] font-medium transition-colors",
+                  "relative flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[14px] font-medium transition-colors",
                   active ? "text-ink" : "text-ink-2 hover:bg-ink/[0.04] hover:text-ink",
                 )}
               >
@@ -220,20 +220,18 @@ export function CategoryNav({
                   <motion.span
                     layoutId="category-active"
                     transition={spring.snappy}
-                    className="absolute inset-0 rounded-xl bg-accent-soft"
+                    className="absolute inset-0 rounded-lg bg-accent-soft"
                     aria-hidden
                   />
                 )}
-                <span
+                <Icon
                   className={cn(
-                    "relative grid size-8 shrink-0 place-items-center rounded-lg transition-colors",
-                    active ? "bg-accent text-on-accent" : "bg-surface-2 text-muted",
+                    "relative size-4 shrink-0",
+                    active ? "text-accent-ink" : "text-muted",
                   )}
-                >
-                  <Icon className="size-4" />
-                </span>
+                  aria-hidden
+                />
                 <span className="relative min-w-0 flex-1 truncate">{c.name}</span>
-                {active && <ChevronRight className="relative size-4 text-accent-ink" />}
               </button>
             </li>
           );

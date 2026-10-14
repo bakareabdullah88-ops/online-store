@@ -37,7 +37,7 @@ export function WorkspaceSwitch({
       label: "Buying",
       title: "Buying: the market",
       icon: (
-        <span className="grid size-6 place-items-center rounded-lg bg-[linear-gradient(140deg,var(--chart-blue),var(--chart-violet))] text-white shadow-sm">
+        <span className="grid size-6 place-items-center rounded-lg bg-chart-blue text-white">
           <ShoppingBag className="size-3.5" />
         </span>
       ),
@@ -47,7 +47,7 @@ export function WorkspaceSwitch({
       label: "Selling",
       title: brand ? `Selling: ${brand.name}` : "Selling: open a shop",
       icon: brand ? (
-        <span className="block size-6 overflow-hidden rounded-lg shadow-sm">
+        <span className="block size-6 overflow-hidden rounded-lg">
           <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
         </span>
       ) : (
@@ -94,7 +94,7 @@ export function WorkspaceSwitch({
               <motion.span
                 layoutId="workspace-thumb"
                 transition={spring.snappy}
-                className="absolute inset-0 rounded-[10px] bg-surface shadow-sm ring-1 ring-line"
+                className="absolute inset-0 rounded-[10px] bg-surface ring-1 ring-line"
                 aria-hidden
               />
             )}

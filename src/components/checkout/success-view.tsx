@@ -69,7 +69,7 @@ export function SuccessView() {
               >
                 <Link
                   href={`/orders/${o.id}`}
-                  className="group card flex items-center gap-4 p-4 transition-shadow hover:shadow-md"
+                  className="group card lift flex items-center gap-4 p-4"
                 >
                   <span className="size-12 shrink-0 overflow-hidden rounded-full">
                     <AppImage image={o.brandLogo} alt="" variant="logo" name={o.brandName} />
