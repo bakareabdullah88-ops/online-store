@@ -138,45 +138,51 @@ export const productOptionSchema = z.object({
     .min(1, "Add at least one value"),
 });
 
-export const productInputSchema = z.object({
-  name: z.string().trim().min(3, "Name your product").max(80),
-  description: z.string().trim().min(10, "Describe it in a sentence or two").max(1200),
-  details: z.array(z.string().trim().min(1).max(120)).max(8).default([]),
-  category: z.enum([
-    "fashion",
-    "thrift",
-    "food",
-    "beauty",
-    "accessories",
-    "print",
-    "tech",
-    "books",
-  ]),
-  tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
-  priceKobo: z.number().int().min(10_000, "Minimum price is ₦100").max(100_000_000),
-  compareAtKobo: z.number().int().optional(),
-  imageIds: z.array(z.string()).max(8).default([]),
-  /** Existing seeded/remote images kept on edit */
-  keepImages: z.array(z.unknown()).optional(),
-  options: z.array(productOptionSchema).max(3).default([]),
-  variants: z
-    .array(
-      z.object({
-        key: z.string(),
-        stock: z.number().int().min(0).max(9999),
-        priceDeltaKobo: z.number().int(),
-      }),
-    )
-    .min(1),
-  status: z.enum(["published", "draft"]),
-});
+export const productInputSchema = z
+  .object({
+    name: z.string().trim().min(3, "Name your product").max(80),
+    description: z.string().trim().min(10, "Describe it in a sentence or two").max(1200),
+    details: z.array(z.string().trim().min(1).max(120)).max(8).default([]),
+    category: z.enum([
+      "fashion",
+      "thrift",
+      "food",
+      "beauty",
+      "accessories",
+      "print",
+      "tech",
+      "books",
+    ]),
+    tags: z.array(z.string().trim().min(1).max(24)).max(8).default([]),
+    priceKobo: z.number().int().min(10_000, "Minimum price is ₦100").max(100_000_000),
+    compareAtKobo: z.number().int().min(0).max(100_000_000).optional(),
+    imageIds: z.array(z.string().max(80)).max(8).default([]),
+    /** Images already on the product, kept on edit. Anything not already there is dropped. */
+    keepImages: z.array(z.unknown()).max(8).optional(),
+    options: z.array(productOptionSchema).max(3).default([]),
+    variants: z
+      .array(
+        z.object({
+          key: z.string().max(200),
+          stock: z.number().int().min(0).max(9999),
+          priceDeltaKobo: z.number().int().min(-100_000_000).max(100_000_000),
+        }),
+      )
+      .min(1)
+      .max(200),
+    status: z.enum(["published", "draft"]),
+  })
+  .refine((p) => p.variants.every((v) => p.priceKobo + v.priceDeltaKobo >= 10_000), {
+    message: "Every option must cost at least ₦100",
+    path: ["variants"],
+  });
 export type ProductInput = z.input<typeof productInputSchema>;
 
 export const fulfilmentChoiceSchema = z
   .object({
     method: z.enum(["pickup", "delivery"]),
-    zoneId: z.string().min(1, "Choose a zone"),
-    pickupPointId: z.string().optional(),
+    zoneId: z.string().min(1, "Choose a zone").max(80),
+    pickupPointId: z.string().max(80).optional(),
     addressLine: z.string().trim().max(120).optional(),
     note: z.string().trim().max(200).optional(),
   })
@@ -191,26 +197,28 @@ export const fulfilmentChoiceSchema = z
 export type FulfilmentChoice = z.infer<typeof fulfilmentChoiceSchema>;
 
 export const checkoutSchema = z.object({
-  campusId: z.string().min(1),
+  campusId: z.string().min(1).max(80),
   phone: nigerianPhone,
   groups: z
     .array(
       z.object({
-        brandId: z.string(),
+        brandId: z.string().max(80),
         lines: z
           .array(
             z.object({
-              productId: z.string(),
-              variantKey: z.string(),
+              productId: z.string().max(80),
+              variantKey: z.string().max(200),
               quantity: z.number().int().min(1).max(20),
             }),
           )
-          .min(1),
+          .min(1)
+          .max(50),
         fulfilment: fulfilmentChoiceSchema,
-        promoCode: z.string().trim().toUpperCase().optional(),
+        promoCode: z.string().trim().toUpperCase().max(40).optional(),
       }),
     )
-    .min(1, "Your bag is empty"),
+    .min(1, "Your bag is empty")
+    .max(20),
   paymentMethod: z.enum(["pay_on_delivery", "pay_on_pickup", "card", "transfer"]),
 });
 export type CheckoutInput = z.input<typeof checkoutSchema>;
@@ -237,7 +245,10 @@ export const promoInputSchema = z
     minSubtotalKobo: z.number().int().min(0),
     maxDiscountKobo: z.number().int().min(0).optional(),
     usageLimit: z.number().int().min(1).optional(),
-    expiresAt: z.string().optional(),
+    expiresAt: z
+      .string()
+      .refine((v) => !Number.isNaN(Date.parse(v)), "Choose a valid date")
+      .optional(),
     description: z.string().trim().max(80).default(""),
     active: z.boolean().default(true),
   })

@@ -2,6 +2,7 @@ import { createStore, del, get, set, type UseStore } from "idb-keyval";
 import { newId } from "@/lib/ids";
 import { ServiceError } from "../errors";
 import type { MediaService } from "../contracts";
+import { hasDriver, removeMediaViaDriver } from "./db";
 import { quick } from "./latency";
 
 let blobs: UseStore | null = null;
@@ -39,6 +40,7 @@ export const mockMedia: MediaService = {
 };
 
 export async function removeMedia(ids: string[]) {
+  if (hasDriver()) return removeMediaViaDriver(ids);
   for (const id of ids) memory.delete(id);
   if (!hasIdb() || !ids.length) return;
   const { delMany } = await import("idb-keyval");

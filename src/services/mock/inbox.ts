@@ -37,6 +37,7 @@ export const mockNotifications: NotificationService = {
 };
 
 function canSee(thread: Thread, userId: string, brandIds: string[], as: "buyer" | "brand") {
+  if (as !== "buyer" && as !== "brand") throw new ServiceError("VALIDATION", "Unknown inbox.");
   return as === "buyer" ? thread.buyerId === userId : brandIds.includes(thread.brandId);
 }
 
@@ -66,6 +67,8 @@ export const mockMessages: MessageService = {
   },
 
   async startThread({ brandId, productId }) {
+    if (typeof brandId !== "string" || (productId !== undefined && typeof productId !== "string"))
+      throw new ServiceError("VALIDATION", "Choose a shop to message.");
     await quick();
     const db = await getDb();
     const user = await requireUser(db);

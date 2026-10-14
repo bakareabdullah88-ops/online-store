@@ -70,7 +70,12 @@ export function breakdown(reviews: Review[]): RatingBreakdown {
   return { average, count, histogram };
 }
 
-function isVisible(db: DbSnapshot, p: Product) {
+/** What a shop shows the public: everything but its payout details. */
+export function publicBrand(b: Brand): Brand {
+  return { ...clone(b), payoutAccount: null };
+}
+
+export function isVisible(db: DbSnapshot, p: Product) {
   return p.status === "published" && db.brands.some((b) => b.id === p.brandId);
 }
 
@@ -88,7 +93,7 @@ export const mockCatalog: CatalogService = {
     const pageSize = Math.min(48, Math.max(1, query.pageSize ?? 24));
     const brandsById = new Map(db.brands.map((b) => [b.id, b]));
 
-    let list = db.products.filter((p) => (query.includeDrafts ? true : isVisible(db, p)));
+    let list = db.products.filter((p) => isVisible(db, p));
     if (query.ids) {
       const set = new Set(query.ids);
       list = list.filter((p) => set.has(p.id));
@@ -201,7 +206,7 @@ export const mockCatalog: CatalogService = {
     } else {
       list.sort((a, b) => b.followerCount - a.followerCount);
     }
-    return clone(query.limit ? list.slice(0, query.limit) : list);
+    return (query.limit ? list.slice(0, query.limit) : list).map(publicBrand);
   },
 
   async getBrand(handle) {
@@ -209,7 +214,7 @@ export const mockCatalog: CatalogService = {
     const db = await getDb();
     const b = db.brands.find((x) => x.handle === handle.toLowerCase());
     if (!b) throw new ServiceError("NOT_FOUND", "We couldn't find that brand.");
-    return clone(b);
+    return publicBrand(b);
   },
 
   async getProductReviews(productId) {
@@ -248,10 +253,15 @@ export const mockCatalog: CatalogService = {
     const brands = db.brands
       .filter((b) => normalize(`${b.name} ${b.handle} ${b.tagline} ${b.category}`).includes(nq))
       .slice(0, Math.max(3, Math.floor(limit / 2)));
-    return { products, brands: clone(brands) };
+    return { products, brands: brands.map(publicBrand) };
   },
 
   async recordEvent(event) {
+    if (
+      (event?.type !== "view" && event?.type !== "add_to_bag") ||
+      typeof event.productId !== "string"
+    )
+      throw new ServiceError("VALIDATION", "Unknown event.");
     const db = await getDb();
     const p = db.products.find((x) => x.id === event.productId);
     if (!p) return;

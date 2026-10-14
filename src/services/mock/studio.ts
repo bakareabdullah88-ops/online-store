@@ -48,9 +48,19 @@ function buildProduct(
   if (expected.length !== keys.size || !expected.every((k) => keys.has(k))) {
     throw new ServiceError("VALIDATION", "Stock is missing for some option combinations.");
   }
-  const kept = (input.keepImages ?? []) as ImageRef[];
+  // Only images the product already has can be kept, so nobody attaches arbitrary refs.
+  const same = (a: ImageRef, b: unknown) => {
+    const r = b as Partial<Record<string, unknown>> | null;
+    if (!r || r.kind !== a.kind) return false;
+    if (a.kind === "blob") return r.id === a.id;
+    if (a.kind === "url") return r.src === a.src;
+    return r.seed === a.seed && r.motif === a.motif && r.palette === a.palette;
+  };
+  const kept = (existing?.images ?? []).filter((img) =>
+    (input.keepImages ?? []).some((k) => same(img, k)),
+  );
   const uploaded: ImageRef[] = input.imageIds.map((id) => ({ kind: "blob", id }));
-  const images = [...kept, ...uploaded];
+  const images = [...kept, ...uploaded].slice(0, 8);
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? newId("p"),
@@ -357,6 +367,9 @@ export const mockStudio: StudioService = {
   },
 
   async setProductsStatus(ids, status) {
+    if (status !== "published" && status !== "draft")
+      throw new ServiceError("VALIDATION", "Choose published or draft.");
+    if (!Array.isArray(ids)) throw new ServiceError("VALIDATION", "Choose some products.");
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);

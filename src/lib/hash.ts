@@ -1,7 +1,8 @@
 /**
- * Browser-side password hashing with Web Crypto (PBKDF2-SHA-256). This runs in the
- * browser only because there is no backend. It is NOT a security boundary.
- * BACKEND-SEAM: real auth hashes server-side (argon2/bcrypt) and never ships hashes to clients.
+ * Password hashing with Web Crypto (PBKDF2-SHA-256). With the backend on, this runs on the
+ * server and hashes never reach a browser; in `mock` mode it runs in the browser and is not a
+ * security boundary. BACKEND-SEAM: raise the iteration count (or move to argon2) and rehash
+ * on sign-in.
  */
 const ITERATIONS = 100_000;
 

@@ -89,14 +89,15 @@ Point Playwright at an already running server with `PLAYWRIGHT_BASE_URL=http://l
 
 ## Environment
 
-All variables are public (`NEXT_PUBLIC_*`); there are no server secrets. See
-[`.env.example`](.env.example). They're validated in [`src/env.ts`](src/env.ts).
+See [`.env.example`](.env.example). Public ones are validated in [`src/env.ts`](src/env.ts).
+`DATABASE_URL` is the only secret; Neon sets it for you on Vercel.
 
-| Variable                   | Default                                   | Purpose                                                                     |
-| -------------------------- | ----------------------------------------- | --------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_DATA_SOURCE`  | `mock`                                    | `mock` (IndexedDB) or `remote` (stub for a real backend)                    |
-| `NEXT_PUBLIC_SITE_URL`     | Vercel URL, else `http://localhost:$PORT` | Canonical URL for metadata, OG image and sitemap                            |
-| `NEXT_PUBLIC_MOCK_LATENCY` | `900`                                     | Upper bound (ms) of simulated network latency in the mock. `0` turns it off |
+| Variable                   | Default                                   | Purpose                                                                       |
+| -------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_DATA_SOURCE`  | `mock`                                    | `mock` (each browser on its own) or `remote` (the shared backend)             |
+| `DATABASE_URL`             | –                                         | Postgres connection string, needed with `remote`. Set by the Neon integration |
+| `NEXT_PUBLIC_SITE_URL`     | Vercel URL, else `http://localhost:$PORT` | Canonical URL for metadata, OG image and sitemap                              |
+| `NEXT_PUBLIC_MOCK_LATENCY` | `900`                                     | Upper bound (ms) of simulated network latency in the mock. `0` turns it off   |
 
 ## Project map
 
@@ -128,13 +129,28 @@ API_CONTRACT.md   every service method and the REST endpoint it maps to
 
 `/design-system` is a living style guide of every token and primitive.
 
-## Connecting a real backend
+## The backend
 
-The UI only talks to the interfaces in [`src/services/contracts.ts`](src/services/contracts.ts).
-Implement them in `src/services/remote/` against the endpoints in
-[`API_CONTRACT.md`](API_CONTRACT.md), then set `NEXT_PUBLIC_DATA_SOURCE=remote`. Search the code
-for `BACKEND-SEAM` to find every place that changes meaning with a real server (sessions,
-uploads, payments, realtime).
+With `NEXT_PUBLIC_DATA_SOURCE=remote`, Kiosk runs on a real, shared backend: everyone sees the
+same shops, products, orders and messages. The service code in `src/services/mock` runs on the
+server (Next.js route handlers in `src/app/api`, server code in `src/server`) against Postgres.
+Sign-ins are HTTP-only cookies; photos are stored in the database. See
+[`API_CONTRACT.md`](API_CONTRACT.md) for the routes and rules, and `docs/DECISIONS.md` §14 for how
+it works and its limits.
+
+**Turning it on in Vercel** (once):
+
+1. In the Vercel project, open **Storage → Create Database → Neon** (or Marketplace → Neon) and
+   connect it to the project. That adds `DATABASE_URL`; nobody needs to copy it anywhere.
+2. Add the environment variable `NEXT_PUBLIC_DATA_SOURCE` = `remote` (Production and Preview).
+3. Redeploy. The tables are created on the first request, then the campus list and (while it's
+   on) the sample data are added.
+
+**Locally**: run Postgres, put `DATABASE_URL=postgres://…` and `NEXT_PUBLIC_DATA_SOURCE=remote` in
+`.env.local`, and `pnpm dev`. The backend tests need a throwaway database:
+`TEST_DATABASE_URL=postgres://… pnpm test` (they wipe it; without it they're skipped).
+
+Search the code for `BACKEND-SEAM` for what's still to come (payments, email, payouts).
 
 ## Changing fonts
 
@@ -150,14 +166,17 @@ There are five font styles (Modern, Clean, Friendly, Editorial, Classic), define
 
 ## Images
 
-Sellers upload their own product photos, logos and covers in Shop Studio. Until the backend
-exists they're stored as blobs in the browser. Products without a photo show a neutral
+Sellers upload their own product photos, logos and covers in Shop Studio. With the backend on
+they're stored in Postgres and served from `/api/media/:id` (shrunk in the browser to at most
+2000px first); in `mock` mode they stay in the browser. Products without a photo show a neutral
 placeholder; there are no stock or stand-in pictures anywhere.
 
 ## Deploying
 
 See [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md). In short: import the repo in Vercel, keep the
-defaults, deploy. No environment variables are required.
+defaults, deploy. With no environment variables it runs in `mock` mode; to share one database
+between everyone, connect Neon and set `NEXT_PUBLIC_DATA_SOURCE=remote` (see
+[The backend](#the-backend)).
 
 ## Making changes later
 

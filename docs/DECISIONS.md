@@ -380,3 +380,48 @@ The site stopped being a demo. What changed and why:
   bell no longer wiggles; empty-state art no longer floats. The switch keeps its circle, icon and
   numbers but drops the pulsing rings and glow; the arrival card drops the light sweep, badge and
   countdown bar. The landing page loses its tilted callouts, scribbled arrow and blurred blobs.
+
+## 14. The backend
+
+- **Same code, shared database.** The service code that ran in each browser now also runs on the
+  server. `services/mock/db.ts` takes a `Driver`; on the server (`src/server/store.ts`) it's
+  Postgres, in the browser it's still IndexedDB. The business rules (stock, order transitions,
+  who may do what, invite-only) live in one place and are already covered by the unit tests, so
+  nothing had to be rewritten and the UI didn't change.
+- **Storage.** Every record is a JSON row in `kiosk_docs (collection, id, data)`. Each write
+  takes the next number from a sequence (`seq`); a server keeps everything in memory and, per
+  request, fetches only rows with a higher `seq` (one small query, usually empty). Deletes are
+  tombstones so other servers hear about them.
+- **Concurrency.** A request works on its own copy and writes back only the records it changed,
+  in one transaction, checking each was untouched since it read it. If not, nothing is written
+  and the call runs again on fresh data (up to five times). Writers take a lock for the moment
+  they write, so `seq` numbers appear in order. Tested: three people buying the last item at
+  once get exactly one order.
+- **Why not tables per entity yet.** It would mean rewriting every query the services make. At
+  campus scale (thousands of records) the in-memory approach is fast and simple. When it
+  outgrows that (tens of thousands of products, or many writes a second), move the busiest
+  collections (events, orders) to real tables behind the same driver.
+- **Sessions** are random 32-byte tokens in an HTTP-only cookie; only their SHA-256 is stored.
+  Passwords stay PBKDF2-SHA-256 (100k iterations, salted), now computed on the server.
+- **The preview account is read-only** on the server, because every visitor shares it. In
+  `mock` mode each browser had its own copy, so it could change freely.
+- **Photos** are stored in Postgres (`kiosk_media`) and served with a year-long cache. The browser
+  shrinks anything over 2000px or 3.5MB to WebP first (Vercel caps request bodies at 4.5MB).
+  Moving to Vercel Blob later only changes `src/server/media.ts`.
+- **Live updates** are a 20-second poll of `/api/sync` while the tab is visible; a tab ignores
+  changes it made itself.
+- **Provider.** Neon Postgres through the Vercel Marketplace (the recommended Postgres on
+  Vercel; it sets `DATABASE_URL`). The `pg` driver with `attachDatabasePool`, so it also works
+  against any Postgres locally.
+- **Trusting nothing from the browser.** The service code was written for one person's own
+  browser, so a review went through it as if an attacker were calling `/api/rpc` directly, and
+  these were fixed: drafts no longer show up in public listings or wishlists; shops' payout details
+  are only returned to the shop itself; a checkout can't put one shop's product under another
+  shop, buy from your own shop, list a shop twice, or repeat a line to get around stock; a limited
+  promo can't apply twice in one checkout; deleting an account only deletes photos that account
+  uploaded; kept product images must already be on the product; notification settings, inbox
+  roles, product status, promo dates, event types and checkout sizes are all checked. Sign-in,
+  sign-up and the analytics beacon are rate limited per address.
+- **Still to do** before a big launch: roll up old analytics events (they're kept forever), move
+  photos to Vercel Blob, a shared rate limiter (today's is per server), and email for password
+  resets.

@@ -241,7 +241,13 @@ export const mockAuth: AuthService = {
     await latency(0.4);
     const db = await getDb();
     const user = await requireUser(db);
-    user.notificationPrefs = { ...user.notificationPrefs, ...prefs };
+    // Only the known switches, and only true or false.
+    const next = { ...user.notificationPrefs };
+    for (const key of Object.keys(next) as (keyof typeof next)[]) {
+      const v = (prefs as Record<string, unknown> | null)?.[key];
+      if (typeof v === "boolean") next[key] = v;
+    }
+    user.notificationPrefs = next;
     await commit("users");
     return publicUser(user);
   },

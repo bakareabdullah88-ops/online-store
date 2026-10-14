@@ -52,7 +52,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card mb-4 grid lift grid-cols-1 gap-6 p-5 md:grid-cols-[240px_1fr] md:p-6">
+    <section className="card mb-4 grid grid-cols-1 gap-6 lift p-5 md:grid-cols-[240px_1fr] md:p-6">
       <div className="flex items-start gap-3">
         {icon && (
           <span

@@ -376,8 +376,6 @@ export type ProductQuery = {
   sort?: SortKey;
   page?: number;
   pageSize?: number;
-  /** Include drafts (seller views only) */
-  includeDrafts?: boolean;
   ids?: ID[];
 };
 

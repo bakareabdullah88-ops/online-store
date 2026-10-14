@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { hasDriver } from "./db";
 
 const MAX = env.NEXT_PUBLIC_MOCK_LATENCY ?? 900;
 const MIN = Math.min(300, MAX);
@@ -8,7 +9,8 @@ const MIN = Math.min(300, MAX);
  * real and designed. Set NEXT_PUBLIC_MOCK_LATENCY=0 to disable.
  */
 export function latency(scale = 1): Promise<void> {
-  if (MAX === 0) return Promise.resolve();
+  // On the server the network is real; no need to pretend.
+  if (MAX === 0 || hasDriver()) return Promise.resolve();
   const ms = (MIN + Math.random() * (MAX - MIN)) * scale;
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

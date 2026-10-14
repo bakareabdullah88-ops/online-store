@@ -60,11 +60,7 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
     seed,
   };
   return (
-    <div
-      className="card overflow-hidden"
-      aria-label="Live preview of your shop"
-      role="img"
-    >
+    <div className="card overflow-hidden" aria-label="Live preview of your shop" role="img">
       <div className="aspect-[16/7]">
         <AppImage image={cover} alt="" variant="cover" />
       </div>
