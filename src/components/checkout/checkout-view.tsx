@@ -257,7 +257,7 @@ function GroupSection({
                 error={
                   promoCode && quote?.promo?.status === "invalid" ? quote.promo.reason : undefined
                 }
-                hint="Try KAMPLUG10, FRESHER or FREEDEL"
+                hint="If the shop gave you a code, enter it here."
               >
                 <Input
                   value={state.promoInput}
@@ -511,7 +511,7 @@ export function CheckoutView() {
               <Field label="Name">
                 <Input value={user?.name ?? ""} readOnly className="bg-surface-2" />
               </Field>
-              <Field label="Phone for the rider" error={phoneError}>
+              <Field label="Phone for delivery" error={phoneError}>
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}

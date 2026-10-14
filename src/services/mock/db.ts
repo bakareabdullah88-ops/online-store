@@ -1,15 +1,13 @@
 import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
-import { features } from "@/config/features";
 import { generateSeed, type DbSnapshot } from "./seed";
-import { hasSample, refreshSample, SAMPLE_TTL_MS, stripSample } from "./sample-sync";
-import { SAMPLE_VERSION } from "./seed/sample";
+import { stripSample } from "./sample-sync";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
  * One key per collection keeps writes small; the whole dataset is < 1MB.
  */
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /**
  * Where the data lives. By default the browser's IndexedDB (one person's
@@ -54,11 +52,20 @@ export const COLLECTIONS: CollectionName[] = [
 ];
 
 /** Collections from v1 that no longer exist. */
-const RETIRED = ["col:wallet", "col:payouts", "col:metrics", "meta:photos"];
+const RETIRED = [
+  "col:wallet",
+  "col:payouts",
+  "col:metrics",
+  "meta:photos",
+  "meta:sampleAt",
+  "meta:sampleVersion",
+];
 
 /** Ordered migrations: key = version being migrated TO. */
 const migrations: Record<number, (db: DbSnapshot) => void> = {
   2: purgeSampleData,
+  // The sample shops and preview account are gone for good.
+  3: stripSample,
 };
 
 const isSampleUser = (id: string) =>
@@ -115,9 +122,7 @@ let sessionUserId: string | null = null;
 async function loadFromIdb(): Promise<DbSnapshot> {
   if (!hasIdb()) {
     // Server render or non-browser: read-only seed in memory.
-    const db = await generateSeed();
-    if (features.sampleData) refreshSample(db);
-    return db;
+    return generateSeed();
   }
   const [version, sid] = (await getMany(["meta:version", "session"], store())) as [
     number | undefined,
@@ -128,7 +133,6 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     await writeAll(seed);
     await set("meta:version", SCHEMA_VERSION, store());
     sessionUserId = null;
-    await syncSample(seed);
     return seed;
   }
   const values = await getMany(
@@ -148,40 +152,7 @@ async function loadFromIdb(): Promise<DbSnapshot> {
     await set("meta:version", SCHEMA_VERSION, store());
   }
   sessionUserId = session;
-  await syncSample(db);
   return db;
-}
-
-/**
- * SAMPLE DATA: adds it (and rebuilds it every few days so dates stay current),
- * or takes it out once features.sampleData is off.
- */
-async function syncSample(db: DbSnapshot) {
-  const [at, version] = (await getMany(["meta:sampleAt", "meta:sampleVersion"], store())) as [
-    number | undefined,
-    number | undefined,
-  ];
-  if (features.sampleData) {
-    const fresh = at !== undefined && Date.now() - at < SAMPLE_TTL_MS;
-    if (fresh && version === SAMPLE_VERSION && hasSample(db)) return;
-    refreshSample(db);
-    await writeAll(db);
-    await setMany(
-      [
-        ["meta:sampleAt", Date.now()],
-        ["meta:sampleVersion", SAMPLE_VERSION],
-      ],
-      store(),
-    );
-  } else if (at !== undefined || hasSample(db)) {
-    stripSample(db, "remove");
-    if (sessionUserId && !db.users.some((u) => u.id === sessionUserId)) {
-      sessionUserId = null;
-      await del("session", store());
-    }
-    await writeAll(db);
-    await Promise.all([del("meta:sampleAt", store()), del("meta:sampleVersion", store())]);
-  }
 }
 
 async function writeAll(db: DbSnapshot) {

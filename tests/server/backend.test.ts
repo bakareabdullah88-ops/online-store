@@ -4,7 +4,7 @@
  * service code on the server, and a Postgres database. Needs DATABASE_URL
  * (a throwaway database: every test wipes it). Skipped without one.
  */
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Services } from "@/services/contracts";
 import type { CheckoutInput } from "@/services/inputs";
 
@@ -16,10 +16,8 @@ type Method<S extends keyof Api> = {
   string;
 type Call<S extends keyof Api, M extends Method<S>> = Api[S][M] extends Fn ? Api[S][M] : never;
 
-// One file, run in order: the tests share a database. The flags change per block.
+// One file, run in order: the tests share a database.
 const flags = vi.hoisted(() => ({
-  inviteOnly: false,
-  sampleData: false,
   onlinePayments: false,
   passwordResetEmail: false,
   payouts: false,
@@ -536,85 +534,35 @@ describe.skipIf(!url)("backend on Postgres", () => {
     expect(new Uint8Array(await img.arrayBuffer())).toEqual(png);
     expect((await seller.upload(png, "text/html")).status).toBe(422);
   });
-});
-
-describe.skipIf(!url)("preview on Postgres", () => {
-  beforeAll(async () => {
-    flags.inviteOnly = true;
-    flags.sampleData = true;
-    await wipe();
-  });
-  afterAll(() => {
-    flags.inviteOnly = false;
-    flags.sampleData = false;
-  });
-
-  let cookie = "";
-  async function call(service: string, method: string, ...args: unknown[]) {
-    const res = await handleRpc(
-      new Request(`${ORIGIN}/api/rpc`, {
-        method: "POST",
-        headers: {
-          origin: ORIGIN,
-          host: "kiosk.test",
-          "content-type": "application/json",
-          ...(cookie ? { cookie } : {}),
-        },
-        body: JSON.stringify({ service, method, args }),
-      }),
-    );
-    for (const c of res.headers.getSetCookie()) cookie = c.split(";")[0]!;
-    const body = await res.json();
-    return { status: res.status, ...body };
-  }
-
-  it("fills a fresh database with the sample shops once", async () => {
-    const t = Date.now();
-    const page = await call("catalog", "getProducts", { pageSize: 48 });
-    expect(page.data.total).toBeGreaterThan(100);
-    expect(Date.now() - t).toBeLessThan(20_000);
-    const { rows } = await (
-      await db()
-    ).query("select value from kamplug_meta where key = 'sampleVersion'");
-    expect(rows).toHaveLength(1);
-  });
-
-  it("lets anyone look around as the preview account, without changing anything", async () => {
-    const me = await call("auth", "startPreview");
-    expect(me.data.preview).toBe(true);
-    expect((await call("auth", "getSession")).data.id).toBe(me.data.id);
-    expect((await call("orders", "listMyOrders")).data.length).toBeGreaterThan(20);
-
-    const products = (await call("catalog", "getProducts", { pageSize: 5 })).data.items;
-    // Views still count; edits don't stick.
-    expect(
-      (await call("catalog", "recordEvent", { type: "view", productId: products[0].id })).status,
-    ).toBe(200);
-    const follow = await call("social", "toggleFollow", products[0].brandId);
-    expect(follow.status).toBe(403);
-    expect(follow.error.message).toMatch(/preview/);
-  });
-
-  it("only lets invited Google accounts in", async () => {
-    google.user = { email: "stranger@gmail.com", name: "Stranger", emailVerified: true };
-    const res = await handleGoogleFinish(
-      new Request(`${ORIGIN}/api/session/google`, { headers: { host: "kiosk.test" } }),
-    );
-    expect(new URL(res.headers.get("location")!).search).toBe("?error=not_invited");
-    expect(
-      res.headers
-        .getSetCookie()
-        .some((c) => c.startsWith("kamplug_session=") && !c.startsWith("kamplug_session=;")),
-    ).toBe(false);
-  });
-
-  it("keeps invite-only sign-up closed", async () => {
-    cookie = "";
-    const res = await call("auth", "signUp", {
-      name: "Someone New",
-      email: "new@example.com",
-      password: "campus123",
+  it("takes old sample data out of a database that still has it, keeping real accounts", async () => {
+    const real = browser();
+    await real.call("auth", "signUp", {
+      name: "Real Person",
+      email: "real@example.com",
+      password: PASSWORD,
     });
-    expect(res.status).toBeGreaterThanOrEqual(400);
+    const pool = await db();
+    const row = (collection: string, data: Record<string, unknown>) =>
+      pool.query(
+        "insert into kamplug_docs (collection, id, data, seq, ord) values ($1, $2, $3, nextval('kamplug_seq'), nextval('kamplug_seq'))",
+        [collection, data.id, JSON.stringify(data)],
+      );
+    await row("brands", { id: "b_demo_secondlap", name: "Second Lap" });
+    await row("users", {
+      id: "u_demo_preview",
+      name: "Temi",
+      brandIds: [],
+      followingBrandIds: [],
+      wishlistProductIds: [],
+    });
+    // A fresh server, as after a deploy.
+    store.forgetCache();
+    store.forgetSetup();
+    expect(await real.call("catalog", "getBrands")).toEqual([]);
+    const { rows } = await pool.query(
+      "select id from kamplug_docs where id like '%\\_demo\\_%' and not deleted",
+    );
+    expect(rows).toEqual([]);
+    expect((await real.call("auth", "getSession"))?.email).toBe("real@example.com");
   });
 });

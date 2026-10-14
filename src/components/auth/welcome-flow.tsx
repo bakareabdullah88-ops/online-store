@@ -239,7 +239,7 @@ export function WelcomeFlow() {
                   Add a profile photo
                 </h1>
                 <p className="mt-2 text-body text-muted">
-                  It helps riders and sellers recognise you at pickup. You can skip this.
+                  It helps sellers recognise you at pickup or delivery. You can skip this.
                 </p>
                 <div className="mt-8 flex items-center gap-5">
                   <div className="relative">

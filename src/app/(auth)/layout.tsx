@@ -1,5 +1,4 @@
 import { BadgeCheck } from "lucide-react";
-import { AppPreview } from "@/components/landing/app-preview";
 import { Logo } from "@/components/shell/logo";
 
 const points = [
@@ -38,9 +37,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               </li>
             ))}
           </ul>
-          <div className="mt-10 -mr-40">
-            <AppPreview />
-          </div>
         </div>
       </aside>
     </div>

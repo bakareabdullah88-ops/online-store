@@ -1,6 +1,5 @@
 import "server-only";
 import { newId } from "@/lib/ids";
-import { isSampleId } from "@/services/mock/seed/sample";
 import { deleteMedia, readMedia, saveMedia } from "./media-store";
 import { errorResponse, sameOrigin } from "./rpc";
 import { sessionUser } from "./session";
@@ -17,11 +16,6 @@ export async function handleUpload(req: Request): Promise<Response> {
     return errorResponse("VALIDATION", "Use a JPG, PNG, WebP or GIF image.");
   const session = await sessionUser(req);
   if (!session) return errorResponse("UNAUTHORIZED", "Please sign in to continue.");
-  if (isSampleId(session.userId))
-    return errorResponse(
-      "FORBIDDEN",
-      "You're looking around with the preview account, so uploads aren't saved.",
-    );
   const bytes = Buffer.from(await req.arrayBuffer());
   if (!bytes.length) return errorResponse("VALIDATION", "That file is empty.");
   if (bytes.length > MAX_UPLOAD) return errorResponse("VALIDATION", "Images must be under 4MB.");

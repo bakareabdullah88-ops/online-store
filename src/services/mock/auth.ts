@@ -9,9 +9,7 @@ import { currentUser, publicUser, requireUser } from "./context";
 import { latency } from "./latency";
 import { features } from "@/config/features";
 import { removeMedia } from "./media";
-import { accessList, userIdFor } from "@/config/access";
-import { emailHash, normaliseEmail } from "@/lib/access-hash";
-import { PREVIEW } from "./seed/sample";
+import { normaliseEmail } from "@/lib/email";
 
 function validation(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
@@ -70,14 +68,9 @@ export const mockAuth: AuthService = {
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;
     await latency();
-    if (features.inviteOnly) {
-      throw new ServiceError(
-        "FORBIDDEN",
-        "Kamplug is invite-only for now. Ask the Kamplug team for a login.",
-      );
-    }
     const db = await getDb();
-    if (db.users.some((u) => u.email === input.email)) {
+    const email = normaliseEmail(input.email);
+    if (db.users.some((u) => normaliseEmail(u.email) === email)) {
       throw new ServiceError(
         "CONFLICT",
         "An account with this email already exists. Try logging in.",
@@ -89,7 +82,7 @@ export const mockAuth: AuthService = {
     const salt = randomSalt();
     const user = newUserRecord({
       id: newId("u"),
-      email: input.email,
+      email,
       name: input.name,
       passwordHash: await hashPassword(input.password, salt),
       passwordSalt: salt,
@@ -114,46 +107,11 @@ export const mockAuth: AuthService = {
         password: "That email and password don't match",
       });
     };
-    if (features.inviteOnly) {
-      const hash = await emailHash(input.email);
-      const entry = accessList.find((e) => e.emailHash === hash);
-      if (!entry || !(await verifyPassword(input.password, entry.salt, entry.passwordHash)))
-        return fail();
-      const id = userIdFor(entry);
-      let member = db.users.find((u) => u.id === id);
-      // First login on this device: create the account from the invite.
-      if (!member) {
-        member = newUserRecord({
-          id,
-          email: normaliseEmail(input.email),
-          name: entry.name,
-          passwordHash: entry.passwordHash,
-          passwordSalt: entry.salt,
-        });
-        db.users.push(member);
-        db.notifications.push(welcomeNote(member));
-        await commit("users", "notifications");
-      }
-      await setSessionUserId(member.id);
-      return publicUser(member);
-    }
-    const user = db.users.find((u) => u.email === input.email);
+    const email = normaliseEmail(input.email);
+    const user = db.users.find((u) => normaliseEmail(u.email) === email);
     if (!user || !user.passwordHash) return fail();
     const ok = await verifyPassword(input.password, user.passwordSalt, user.passwordHash);
     if (!ok) return fail();
-    await setSessionUserId(user.id);
-    return publicUser(user);
-  },
-
-  async startPreview() {
-    await latency(0.6);
-    if (!features.sampleData) {
-      throw new ServiceError("UNAVAILABLE", "The preview is switched off. Log in to continue.");
-    }
-    const db = await getDb();
-    const user = db.users.find((u) => u.id === PREVIEW.userId);
-    if (!user)
-      throw new ServiceError("UNAVAILABLE", "The preview isn't ready. Refresh and try again.");
     await setSessionUserId(user.id);
     return publicUser(user);
   },
@@ -185,9 +143,6 @@ export const mockAuth: AuthService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    if (user.id === PREVIEW.userId) {
-      throw new ServiceError("FORBIDDEN", "The preview account can't be deleted.");
-    }
     // Google-only accounts confirm with their email address instead of a password.
     const ok = user.passwordHash
       ? await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash)
@@ -265,54 +220,29 @@ export const mockAuth: AuthService = {
 export async function signInWithVerifiedEmail(profile: { email: string; name: string }) {
   const email = normaliseEmail(profile.email);
   const db = await getDb();
-  let user: UserRecord | undefined;
-  if (features.inviteOnly) {
-    const hash = await emailHash(email);
-    const entry = accessList.find((e) => e.emailHash === hash);
-    if (!entry) {
-      throw new ServiceError(
-        "FORBIDDEN",
-        "That Google account isn't on the invite list yet. Ask the Kamplug team for access.",
-      );
-    }
-    const id = userIdFor(entry);
-    user = db.users.find((u) => u.id === id);
-    if (!user) {
-      user = newUserRecord({
-        id,
-        email,
-        name: entry.name,
-        passwordHash: entry.passwordHash,
-        passwordSalt: entry.salt,
-      });
-      db.users.push(user);
-      db.notifications.push(welcomeNote(user));
-    }
-  } else {
-    user = db.users.find((u) => normaliseEmail(u.email) === email);
-    if (user?.passwordHash) {
-      // Nobody proved they owned this address when the password was set; Google
-      // just did. Dropping the password stops anyone who signed up with someone
-      // else's email from getting into their account.
-      user.passwordHash = "";
-      user.passwordSalt = "";
-      db.notifications.push({
-        id: newId("n"),
-        userId: user.id,
-        kind: "system",
-        title: "You now log in with Google",
-        body: "Google confirmed this email is yours, so your old password was removed. Use Continue with Google next time.",
-        href: "/account/settings",
-        read: false,
-        createdAt: new Date().toISOString(),
-      });
-    }
-    if (!user) {
-      const name = profile.name.trim().slice(0, 60) || email.split("@")[0]!;
-      user = newUserRecord({ id: newId("u"), email, name, passwordHash: "", passwordSalt: "" });
-      db.users.push(user);
-      db.notifications.push(welcomeNote(user));
-    }
+  let user = db.users.find((u) => normaliseEmail(u.email) === email);
+  if (user?.passwordHash) {
+    // Nobody proved they owned this address when the password was set; Google
+    // just did. Dropping the password stops anyone who signed up with someone
+    // else's email from getting into their account.
+    user.passwordHash = "";
+    user.passwordSalt = "";
+    db.notifications.push({
+      id: newId("n"),
+      userId: user.id,
+      kind: "system",
+      title: "You now log in with Google",
+      body: "Google confirmed this email is yours, so your old password was removed. Use Continue with Google next time.",
+      href: "/account/settings",
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  if (!user) {
+    const name = profile.name.trim().slice(0, 60) || email.split("@")[0]!;
+    user = newUserRecord({ id: newId("u"), email, name, passwordHash: "", passwordSalt: "" });
+    db.users.push(user);
+    db.notifications.push(welcomeNote(user));
   }
   await commit("users", "notifications");
   await setSessionUserId(user.id);

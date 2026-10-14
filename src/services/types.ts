@@ -86,8 +86,6 @@ export type User = {
   onboarded: boolean;
   notificationPrefs: NotificationPrefs;
   createdAt: ISODate;
-  /** Admins can create logins for other people (invite-only mode). */
-  role?: "admin" | "member";
   /** The shared preview account (sample data). Can't change password or delete itself. */
   preview?: boolean;
   /** False for accounts that sign in with Google only. */

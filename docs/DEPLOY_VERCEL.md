@@ -66,8 +66,8 @@ the README under [The backend](../README.md#the-backend). Other optional ones:
   routes at build time.
 - `/sw.js` is served with `no-cache` so a new deploy's service worker is picked up on the next
   visit. To force every client to drop its cached pages, bump `VERSION` in `public/sw.js`.
-- Preview deployments behave exactly like production. Every visitor (and every preview URL) gets
-  its own empty data, because until the backend lands data is per browser and per origin.
+- Preview deployments use the same database as production unless you give the Preview
+  environment its own `DATABASE_URL` (a Neon branch works well for that).
 
 ## 6. Connecting the backend
 

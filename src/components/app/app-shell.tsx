@@ -7,7 +7,6 @@ import { ArrivalBanner } from "./arrival";
 import { AppBackdrop } from "./backdrop";
 import { MobileNav } from "./mobile-nav";
 import { MobileTopBar } from "./mobile-top-bar";
-import { PreviewNotice } from "./preview-notice";
 import { TopNav } from "./top-nav";
 
 /** Neutral frame shown while the session loads. */
@@ -41,7 +40,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <AppBackdrop />
           <TopNav />
           <MobileTopBar />
-          <PreviewNotice />
           <div className="mx-auto w-full max-w-[1400px]">
             <ArrivalBanner />
             {children}

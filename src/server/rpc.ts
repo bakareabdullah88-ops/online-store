@@ -6,7 +6,6 @@ import { mockCatalog } from "@/services/mock/catalog";
 import { mockMessages, mockNotifications, mockPlaces } from "@/services/mock/inbox";
 import { mockOrders } from "@/services/mock/orders";
 import { mockSocial } from "@/services/mock/social";
-import { isSampleId } from "@/services/mock/seed/sample";
 import { mockStudio } from "@/services/mock/studio";
 import { endSession, sessionUser, startSession } from "./session";
 import { runCall } from "./store";
@@ -136,9 +135,6 @@ export async function handleRpc(req: Request): Promise<Response> {
 
   try {
     const session = await sessionUser(req);
-    // Views from the shared preview account aren't real customers.
-    if (session && isSampleId(session.userId) && name === "catalog.recordEvent")
-      return Response.json({ data: null, seq: 0 }, { headers: { "cache-control": "no-store" } });
     const args = body.args.map((a) => (a === null ? undefined : a));
     const result = await runCall(session?.userId ?? null, () =>
       (fn as (...a: unknown[]) => Promise<unknown>).apply(service, args),

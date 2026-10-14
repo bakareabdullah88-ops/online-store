@@ -15,7 +15,6 @@ import {
   Store,
   Tag,
   Users,
-  UserCog,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -31,7 +30,6 @@ export type NavItem = {
   match?: (path: string) => boolean;
   /** Shown as a pill in the top bar; the rest live under "More". */
   primary?: boolean;
-  adminOnly?: boolean;
 };
 
 export type NavSection = { title?: string; items: NavItem[] };
@@ -132,7 +130,6 @@ export const marketNav: NavSection[] = [
       { href: "/account/places", label: "Addresses", icon: MapPin, tone: T.rose },
       { href: "/account/reviews", label: "My reviews", icon: Star, tone: T.amber },
       { href: "/account/settings", label: "Settings", icon: Settings, tone: T.slate },
-      { href: "/account/members", label: "Members", icon: UserCog, tone: T.sky, adminOnly: true },
     ],
   },
 ];
@@ -216,9 +213,4 @@ export const shopTabs: NavItem[] = [
 
 export function isActive(item: NavItem, path: string) {
   return item.match ? item.match(path) : path === item.href || path.startsWith(`${item.href}/`);
-}
-
-/** Sections with admin-only items removed for everyone else. */
-export function visibleSections(sections: NavSection[], isAdmin: boolean): NavSection[] {
-  return sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.adminOnly || isAdmin) }));
 }

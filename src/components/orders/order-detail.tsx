@@ -12,13 +12,7 @@ import { Dialog } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatSheet } from "@/components/messages/chat-sheet";
 import { spring } from "@/design/motion";
-import {
-  canBuyerCancel,
-  deliveryProgress,
-  etaSeconds,
-  isActive,
-  statusLabel,
-} from "@/domain/orders";
+import { canBuyerCancel, etaSeconds, isActive, statusLabel } from "@/domain/orders";
 import { formatNaira } from "@/domain/money";
 import { formatDate, formatTime } from "@/lib/format";
 import { useDocumentTitle, useNow } from "@/lib/hooks";
@@ -27,7 +21,6 @@ import { useCancelOrder, useOrder } from "@/queries/orders";
 import { useSession } from "@/queries/session";
 import { errorMessage, isServiceError } from "@/services/errors";
 import { toast } from "@/stores/toast";
-import { CampusMap } from "./campus-map";
 import { etaLine } from "./orders-list";
 import { OrderTimeline } from "./order-timeline";
 import { ReviewDialog } from "./review-dialog";
@@ -89,7 +82,6 @@ export function OrderDetail() {
   const active = isActive(order.status);
   const zone = campus?.zones.find((z) => z.id === order.fulfilment.zoneId);
   const point = campus?.pickupPoints.find((p) => p.id === order.fulfilment.pickupPointId);
-  const progress = now ? deliveryProgress(order, now) : 0;
   const eta = now ? etaSeconds(order, now) : null;
   const isBuyer = user?.id === order.buyerId;
   const units = order.items.reduce((n, i) => n + i.quantity, 0);
@@ -167,13 +159,16 @@ export function OrderDetail() {
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 lg:col-span-7">
           {order.fulfilment.method === "delivery" ? (
-            <CampusMap
-              campusKey={order.fulfilment.campusId}
-              progress={progress}
-              mode="delivery"
-              fromLabel={order.brandName}
-              toLabel={`${zone?.name ?? "You"}${order.fulfilment.addressLine ? ` · ${order.fulfilment.addressLine}` : ""}`}
-            />
+            <section className="card p-5 md:p-6">
+              <p className="eyebrow text-muted">Delivery</p>
+              <p className="mt-2 text-title font-semibold">
+                {zone?.name ?? "Your address"}
+                {order.fulfilment.addressLine ? ` · ${order.fulfilment.addressLine}` : ""}
+              </p>
+              <p className="mt-1 text-small text-muted">
+                {order.brandName} delivers it to you. Message them if you need to change anything.
+              </p>
+            </section>
           ) : (
             <section className="overflow-hidden rounded-lg bg-primary p-6 text-on-primary">
               <p className="eyebrow opacity-60">Pickup code</p>

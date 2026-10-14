@@ -1,11 +1,9 @@
 import "server-only";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { PoolClient } from "pg";
-import { features } from "@/config/features";
 import { COLLECTIONS, installDriver, type CollectionName } from "@/services/mock/db";
-import { hasSample, refreshSample, SAMPLE_TTL_MS, stripSample } from "@/services/mock/sample-sync";
+import { hasSample, stripSample } from "@/services/mock/sample-sync";
 import { generateSeed, type DbSnapshot } from "@/services/mock/seed";
-import { isSampleId, SAMPLE_VERSION } from "@/services/mock/seed/sample";
 import { ServiceError } from "@/services/errors";
 import { deleteMedia } from "./media-store";
 import { db, LOCK, tx } from "./pg";
@@ -263,10 +261,9 @@ async function maintain(fn: (db: DbSnapshot) => Meta | void): Promise<void> {
 }
 
 let seeded: Promise<void> | null = null;
-let sampleCheckedAt = 0;
-const SAMPLE_CHECK_MS = 10 * 60_000;
+let sampleChecked = false;
 
-/** First run: the campus list. Then, while it's on, the sample data. */
+/** First run: the campus list. */
 async function prepare() {
   seeded ??= (async () => {
     const { seeded: done } = await readMeta(["seeded"]);
@@ -283,32 +280,20 @@ async function prepare() {
   });
   await seeded;
 
-  if (Date.now() - sampleCheckedAt < SAMPLE_CHECK_MS) return;
-  const meta = await readMeta(["sampleAt", "sampleVersion"]);
-  const at = typeof meta.sampleAt === "number" ? meta.sampleAt : undefined;
-  if (features.sampleData) {
-    const fresh = at !== undefined && Date.now() - at < SAMPLE_TTL_MS;
-    if (!fresh || meta.sampleVersion !== SAMPLE_VERSION || !hasSample(viewOf(await refresh()).db)) {
-      await maintain((d) => {
-        refreshSample(d);
-        return { sampleAt: Date.now(), sampleVersion: SAMPLE_VERSION };
-      });
-    }
-  } else if (at !== undefined) {
-    await maintain((d) => {
-      stripSample(d, "remove");
-      return { sampleAt: null, sampleVersion: null };
-    });
+  // Once per server: take out sample data an earlier version may have added.
+  if (sampleChecked) return;
+  if (hasSample(viewOf(await refresh()).db)) {
+    await maintain((d) => stripSample(d));
     const pool = await db();
     await pool.query("delete from kamplug_sessions where user_id like '%\\_demo\\_%'");
   }
-  sampleCheckedAt = Date.now();
+  sampleChecked = true;
 }
 
-/** Test helper: run the first-time setup and the sample check again. */
+/** Test helper: run the first-time setup again. */
 export function forgetSetup() {
   seeded = null;
-  sampleCheckedAt = 0;
+  sampleChecked = false;
 }
 
 /* ------------------------------------------------------------- requests */
@@ -368,13 +353,6 @@ export async function runCall<T>(
     const context: Ctx = { view: viewOf(c), committed: new Set(), userId, removeMedia: [] };
     const value = await als.run(context, fn);
     const changes = diff(context.view, context.committed);
-    // Everyone shares the preview account, so whatever it changed would show up for every visitor.
-    if (userId && isSampleId(userId) && changes.length) {
-      throw new ServiceError(
-        "FORBIDDEN",
-        "You're looking around with the preview account, so changes aren't saved. Ask for an invite to buy and sell for real.",
-      );
-    }
     try {
       const top = await write(changes);
       // Only photos this person uploaded, whatever ids their records pointed at.

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { parseEnv } from "./env";
 
 describe("parseEnv", () => {
-  it("defaults to the mock data source", () => {
-    expect(parseEnv({})).toEqual({ NEXT_PUBLIC_DATA_SOURCE: "mock" });
+  it("defaults to the real backend", () => {
+    expect(parseEnv({})).toEqual({ NEXT_PUBLIC_DATA_SOURCE: "remote" });
   });
 
   it("parses every supported value", () => {

@@ -28,7 +28,7 @@ export function notifyBuyerOfStatus(
     confirmed: `${order.brandName} accepted your order.`,
     preparing: `${order.brandName} is packing your order.`,
     ready: `Your order is ready. Show code ${order.code} at the pickup point.`,
-    out_for_delivery: "A rider is on the way. Keep your phone close.",
+    out_for_delivery: "It's on the way. Keep your phone close.",
     delivered:
       order.fulfilment.method === "pickup"
         ? "Picked up. Enjoy! Tap to leave a review."

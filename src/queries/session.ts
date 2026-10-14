@@ -44,18 +44,6 @@ export function useSignUp() {
   return useMutation({ mutationFn: (i: SignUpInput) => services.auth.signUp(i), onSuccess: done });
 }
 
-/** SAMPLE DATA: look around as the preview account, no sign-up. */
-export function useStartPreview() {
-  const done = useOnIdentityChange();
-  return useMutation({
-    mutationFn: () => services.auth.startPreview(),
-    onSuccess: (u) => {
-      useUi.getState().setLeaving(false);
-      done(u);
-    },
-  });
-}
-
 export function useSignOut() {
   const done = useOnIdentityChange();
   return useMutation({

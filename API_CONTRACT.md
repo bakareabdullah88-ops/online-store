@@ -20,19 +20,17 @@ refuses. The UI only talks to these interfaces. Two implementations exist:
 | `GET /api/sync`         | `{ seq }`: the newest change. Open tabs poll it every 20s and refetch when it moves.           |
 
 - **Auth:** HTTP-only, `SameSite=Lax` session cookie (`kamplug_session`, 30 days). Only a SHA-256
-  hash of its token is stored (`kamplug_sessions`). `signIn`/`signUp`/`startPreview` and Google
+  hash of its token is stored (`kamplug_sessions`). `signIn`/`signUp` and Google
   sign-in set it, `signOut`/`deleteAccount` clear it.
 - **Google sign-in:** Better Auth handles the trip to Google; Kamplug then takes the verified email
-  and signs the person in (creating the account on first visit). Invite-only still applies: an
-  email not on the list is sent back to `/login?error=not_invited`. If someone had signed up with
+  and signs the person in (creating the account on first visit). If someone had signed up with
   a password for that email, the password is removed, because Google has now proved who owns it.
   Google-only accounts confirm account deletion by typing their email.
 - **Same site only:** requests whose `Origin` isn't this site get `403`. Sign-in, sign-up and
   account deletion allow 10 attempts a minute per address.
+- **Data source:** the app always uses this backend. `NEXT_PUBLIC_DATA_SOURCE=mock` (automated
+  tests only) keeps data in the browser instead.
 - **Never sent:** password hashes and salts are stripped from every response.
-- **The preview account** (sample data) is shared by every visitor, so it can look at everything
-  but change nothing: any call that would save a change gets `403 FORBIDDEN` with a message saying
-  so. Its product views aren't recorded.
 - **Money:** always integer **kobo** (`number`). Never floats.
 - **Dates:** ISO-8601 strings in UTC.
 - **Types:** request and response shapes refer to `src/services/types.ts`; input schemas are the Zod
@@ -64,7 +62,6 @@ List endpoints return `Page<T> = { items, total, page, pageSize, hasMore }` wher
 | `signUp(input)`               | `POST /auth/signup`            | `SignUpInput { name, email, password }`                  | `User` (sets cookie)                      | `VALIDATION`, `CONFLICT` (email taken)                                    |
 | `signIn(input)`               | `POST /auth/login`             | `SignInInput { email, password }`                        | `User` (sets cookie)                      | `VALIDATION`, `UNAUTHORIZED`                                              |
 | `signOut()`                   | `POST /auth/logout`            | –                                                        | `204`                                     | –                                                                         |
-| `startPreview()`              | `POST /auth/preview`           | –                                                        | `User` (sets cookie)                      | `UNAVAILABLE` (sample data off; drop with the sample data)                |
 | `requestPasswordReset(input)` | `POST /auth/password-reset`    | `{ email }`                                              | `{ sent: true }` (always, no enumeration) | `VALIDATION`, `UNAVAILABLE` (until email is on, see `config/features.ts`) |
 | `deleteAccount(input)`        | `DELETE /me`                   | `{ password }`                                           | `204` (clears cookie)                     | `VALIDATION`, `UNAUTHORIZED` (wrong password)                             |
 | `updateProfile(input)`        | `PATCH /me`                    | `ProfileInput { name, campusId, phone, avatarImageId? }` | `User`                                    | `VALIDATION`, `UNAUTHORIZED`                                              |

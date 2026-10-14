@@ -70,9 +70,6 @@ type Ui = {
   bagPulse: number;
   /** Set while the open-shop success screen is showing (suppresses the "already has a shop" redirect). */
   shopJustOpened: boolean;
-  /** The "still building / sample data" notice was closed for this visit. */
-  previewNoticeHidden: boolean;
-  hidePreviewNotice: () => void;
   setBagOpen: (v: boolean) => void;
   setCommandOpen: (v: boolean) => void;
   setLeaving: (v: boolean) => void;
@@ -85,8 +82,6 @@ export const useUi = create<Ui>((set) => ({
   leaving: false,
   bagPulse: 0,
   shopJustOpened: false,
-  previewNoticeHidden: false,
-  hidePreviewNotice: () => set({ previewNoticeHidden: true }),
   setBagOpen: (bagOpen) => set({ bagOpen }),
   setCommandOpen: (commandOpen) => set({ commandOpen }),
   setLeaving: (leaving) => set({ leaving }),

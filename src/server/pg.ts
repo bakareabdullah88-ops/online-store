@@ -6,6 +6,24 @@ import { ServiceError } from "@/services/errors";
 let pool: Pool | null = null;
 let ready: Promise<void> | null = null;
 
+/**
+ * Neon's links say sslmode=require, which node-postgres already treats as full
+ * certificate checking (and warns about). Ask for that explicitly, and keep
+ * Neon's channel binding.
+ */
+function connection(url: string) {
+  try {
+    const u = new URL(url);
+    const binding = u.searchParams.get("channel_binding") === "require";
+    if (["require", "prefer", "verify-ca"].includes(u.searchParams.get("sslmode") ?? ""))
+      u.searchParams.set("sslmode", "verify-full");
+    u.searchParams.delete("channel_binding");
+    return { connectionString: u.toString(), ...(binding ? { enableChannelBinding: true } : {}) };
+  } catch {
+    return { connectionString: url };
+  }
+}
+
 /** Neon (through the Vercel Marketplace) sets DATABASE_URL; POSTGRES_URL is the older name. */
 export function databaseUrl() {
   return process.env.DATABASE_URL ?? process.env.POSTGRES_URL ?? null;
@@ -20,7 +38,7 @@ export function getPool(): Pool {
       "The database isn't connected yet. Connect Neon to this project (DATABASE_URL).",
     );
   }
-  pool = new Pool({ connectionString: url, max: 5, idleTimeoutMillis: 10_000 });
+  pool = new Pool({ ...connection(url), max: 5, idleTimeoutMillis: 10_000 });
   // On Vercel, closes idle connections before a function instance is suspended.
   attachDatabasePool(pool);
   return pool;

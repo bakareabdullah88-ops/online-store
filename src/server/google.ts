@@ -1,5 +1,4 @@
 import "server-only";
-import { isServiceError } from "@/services/errors";
 import { signInWithVerifiedEmail } from "@/services/mock/auth";
 import { safeNext } from "@/lib/safe-next";
 import { getAuth, googleConfigured } from "./better-auth";
@@ -55,7 +54,6 @@ export async function handleGoogleFinish(req: Request): Promise<Response> {
     return redirect(req, to, cookies);
   } catch (e) {
     await signOut();
-    if (isServiceError(e) && e.code === "FORBIDDEN") return fail("not_invited");
     console.error("[google] sign-in failed", e);
     return fail("google");
   }

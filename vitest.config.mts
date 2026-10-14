@@ -14,9 +14,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
-    // Most tests create accounts freely; tests/unit/access.test.ts covers invite-only mode.
-    // tests/unit/sample.test.ts covers the sample data.
-    env: { NEXT_PUBLIC_OPEN_SIGNUP: "1", NEXT_PUBLIC_SAMPLE_DATA: "0" },
+    // Unit tests run the service code against the in-browser store (fake-indexeddb).
+    env: { NEXT_PUBLIC_DATA_SOURCE: "mock" },
     include: [
       "src/**/*.test.{ts,tsx}",
       "tests/unit/**/*.test.{ts,tsx}",

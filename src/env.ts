@@ -21,7 +21,7 @@ function isAbsoluteUrl(value: string): boolean {
 
 export function parseEnv(raw: Record<string, string | undefined>): Env {
   const problems: string[] = [];
-  const source = raw.NEXT_PUBLIC_DATA_SOURCE || "mock";
+  const source = raw.NEXT_PUBLIC_DATA_SOURCE || "remote";
   if (source !== "mock" && source !== "remote")
     problems.push(`NEXT_PUBLIC_DATA_SOURCE must be "mock" or "remote" (got "${source}")`);
 

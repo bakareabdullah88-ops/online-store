@@ -45,12 +45,12 @@ export function LoginForm() {
     <div className="w-full max-w-md">
       <h1 className="font-display text-display-md">Welcome back</h1>
       <p className="mt-2 text-body text-muted">
-        {features.inviteOnly ? "No login yet? " : "New here? "}
+        New here?{" "}
         <Link
           href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
           className="font-medium text-ink underline underline-offset-4"
         >
-          {features.inviteOnly ? "How to get access" : "Create an account"}
+          Create an account
         </Link>
       </p>
       <SignInError code={params.get("error")} />
@@ -69,12 +69,15 @@ export function LoginForm() {
           label="Password"
           error={form.formState.errors.password?.message}
           aside={
-            <Link
-              href="/forgot-password"
-              className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
-            >
-              Forgot password?
-            </Link>
+            // Only once reset emails can actually be sent.
+            features.passwordResetEmail ? (
+              <Link
+                href="/forgot-password"
+                className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
+              >
+                Forgot password?
+              </Link>
+            ) : undefined
           }
         >
           <PasswordInput autoComplete="current-password" {...form.register("password")} />

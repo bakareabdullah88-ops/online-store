@@ -445,3 +445,18 @@ The site stopped being a demo. What changed and why:
   photos stay in Postgres.
 - **One switch fewer.** The backend switches on when `DATABASE_URL` exists at build time
   (`next.config.ts`), so deploying with Neon connected is enough.
+
+## 16. Open sign-up, nothing fake
+
+- **Standard accounts.** Anyone can sign up with email and password or with Google, and log in
+  the same ways. The invite list, the Members page, the admin role and the "get access" screens are
+  gone. "Forgot password?" only appears once reset emails can be sent (`features.passwordResetEmail`).
+- **No sample data.** The sample shops, their photos, the shared preview account and the "still
+  building" notice are gone. Databases and browsers that still have sample records (ids containing
+  `_demo_`) are cleaned once (`services/mock/sample-sync.ts`), keeping everything real accounts made.
+- **Nothing made up on screen.** The landing page's mock app screenshots and example chats/orders,
+  the promo codes suggested at checkout, the placeholder support email and handle, and the
+  simulated delivery map with a moving rider are removed. Delivery orders show where it's going and
+  who's delivering it; status comes only from the seller.
+- **Always the real backend.** `NEXT_PUBLIC_DATA_SOURCE` defaults to `remote`. The in-browser store
+  remains only so unit and end-to-end tests can run without a database (`pnpm build:test`).

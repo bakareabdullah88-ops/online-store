@@ -102,7 +102,7 @@ export function statusDescription(status: OrderStatus, method: FulfilmentMethod)
     case "ready":
       return "Head to the pickup point with your order code.";
     case "out_for_delivery":
-      return "A rider is on the way to you.";
+      return "It's on the way to you.";
     case "delivered":
       return method === "pickup" ? "Collected. Enjoy!" : "Delivered. Enjoy!";
     case "cancelled":
@@ -160,20 +160,6 @@ export function advanceOrder(order: Order, now: number): { order: Order; reached
     },
     reached: added.map((a) => a.status),
   };
-}
-
-/** 0 → 1 rider progress while out for delivery (for the map marker). */
-export function deliveryProgress(order: Order, now: number): number {
-  if (order.fulfilment.method !== "delivery") return 0;
-  if (order.status === "delivered") return 1;
-  if (order.status !== "out_for_delivery") return 0;
-  const start = order.timeline.find((t) => t.status === "out_for_delivery");
-  if (!start) return 0;
-  const elapsed = now - Date.parse(start.at);
-  const total = order.autoProgress
-    ? (AUTO_SCHEDULE.delivered - AUTO_SCHEDULE.dispatch) * 1000
-    : 15 * 60 * 1000;
-  return Math.max(0, Math.min(0.97, elapsed / total));
 }
 
 /**

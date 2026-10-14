@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMode } from "@/components/shell/mode";
-import { isActive, marketNav, shopNav, visibleSections, type NavItem } from "@/config/nav";
+import { isActive, marketNav, shopNav, type NavItem } from "@/config/nav";
 import { cn } from "@/lib/cn";
-import { useSession } from "@/queries/session";
 import { useNavBadges } from "./nav-badges";
 
 /** Every destination in the current workspace as colourful tiles (used in the More popover and the phone sheet). */
@@ -18,9 +17,8 @@ export function NavGrid({
 }) {
   const mode = useMode();
   const path = usePathname() ?? "/";
-  const { user } = useSession();
   const badges = useNavBadges();
-  const sections = visibleSections(mode === "selling" ? shopNav : marketNav, user?.role === "admin")
+  const sections = (mode === "selling" ? shopNav : marketNav)
     .map((s) => ({ ...s, items: onlySecondary ? s.items.filter((i) => !i.primary) : s.items }))
     .filter((s) => s.items.length);
   return (

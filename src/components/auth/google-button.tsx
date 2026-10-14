@@ -82,8 +82,6 @@ export function GoogleButton({ next }: { next: string | null }) {
 }
 
 const ERRORS: Record<string, string> = {
-  not_invited:
-    "That Google account isn't on the invite list yet. Ask the Kamplug team for access, or use the email you were invited with.",
   google: "Google sign-in didn't finish. Please try again.",
   google_unavailable: "Google sign-in isn't set up yet. Use your email and password for now.",
 };

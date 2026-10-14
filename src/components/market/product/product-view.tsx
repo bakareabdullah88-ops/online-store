@@ -386,8 +386,7 @@ export function ProductView() {
                       Delivery · {formatNaira(fulfilment.deliveryFeeKobo)}
                     </p>
                     <p className="text-muted">
-                      To {fulfilment.zoneIds.length} zones on {campus?.shortName}. Promo codes like
-                      FREEDEL work at checkout.
+                      To {fulfilment.zoneIds.length} zones on {campus?.shortName}.
                     </p>
                   </div>
                 </div>

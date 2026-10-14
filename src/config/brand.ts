@@ -13,8 +13,6 @@ export const brand = {
   /** Prefix for order codes, e.g. KMP-7F2Q */
   orderPrefix: "KMP",
   sellerProductName: "Shop Studio",
-  supportEmail: "hello@kamplug.example",
-  social: { twitter: "@kamplug" },
   locale: "en-NG",
   currency: "NGN",
 } as const;
