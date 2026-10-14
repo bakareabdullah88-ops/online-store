@@ -356,3 +356,11 @@ The site stopped being a demo. What changed and why:
 - The route swaps underneath; after at least ~650ms (so the numbers can be read) the circle shrinks
   into the new page's logo. The cover has its own view-transition layer so the page cross-fade under
   it never makes it see-through. Reduced motion: a quick crossfade.
+- **Arriving.** After the circle shrinks away, a welcome card slides in under the header in the
+  side's colour: your shop's logo and name (or "Hi, Ada" when buying), a line of live details
+  (rating, followers and new orders; or campus, orders on the way and bag), and one next step
+  (review orders or add a product; track orders or discover). A soft light sweeps across it once.
+  It tucks away after 6.5s, pausing while the pointer is on it, and can be dismissed.
+- **Always know where you are.** A thin line in the side's colour runs along the top of the header
+  (blue while buying, green while selling) and draws across each time you switch. The switch itself
+  says "Buying" and "Selling".

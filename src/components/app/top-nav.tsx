@@ -14,6 +14,7 @@ import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
 import { KioskMark } from "./kiosk-mark";
+import { ModeLine } from "./mode-line";
 import { NavGrid } from "./more-menu";
 import { useNavBadges } from "./nav-badges";
 import { WorkspaceSwitch } from "./workspace-switch";
@@ -106,6 +107,7 @@ export function TopNav() {
       )}
       style={{ viewTransitionName: "site-header" }}
     >
+      <ModeLine />
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 md:px-6">
         <Link
           href={mode === "selling" ? "/studio" : "/home"}

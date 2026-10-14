@@ -23,6 +23,8 @@ type CurtainState = {
   href: string;
   /** Where the switch was tapped; the circle grows from here. */
   origin: Point | null;
+  /** Set when a switch finishes, so the destination can say hello. */
+  arrival: { mode: Mode; id: number } | null;
   start: (target: Mode, href: string, origin?: Point) => void;
   set: (p: Partial<Pick<CurtainState, "phase">>) => void;
 };
@@ -32,6 +34,7 @@ export const useCurtain = create<CurtainState>((set, get) => ({
   target: "buying",
   href: "/",
   origin: null,
+  arrival: null,
   start: (target, href, origin) => {
     if (get().phase !== "idle") return;
     set({ phase: "cover", target, href, origin: origin ?? null });
@@ -182,6 +185,7 @@ export function ModeCurtain() {
         covered.current = false;
         setGeo(null);
         set({ phase: "idle" });
+        useCurtain.setState({ arrival: { mode: target, id: Date.now() } });
       }}
     >
       {visible && (

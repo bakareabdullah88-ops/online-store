@@ -12,6 +12,7 @@ import { AccountMenu } from "./account-menu";
 import { KioskMark } from "./kiosk-mark";
 import { NavGrid } from "./more-menu";
 import { useNavBadges } from "./nav-badges";
+import { ModeLine } from "./mode-line";
 import { WorkspaceSwitch } from "./workspace-switch";
 
 const iconButton =
@@ -28,6 +29,7 @@ export function MobileTopBar() {
       style={{ viewTransitionName: "site-header" }}
       className="sticky top-0 z-(--z-header) border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur-md md:hidden"
     >
+      <ModeLine />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
