@@ -48,7 +48,10 @@ function buildProduct(
   if (expected.length !== keys.size || !expected.every((k) => keys.has(k))) {
     throw new ServiceError("VALIDATION", "Stock is missing for some option combinations.");
   }
-  // Only images the product already has can be kept, so nobody attaches arbitrary refs.
+  // The editor sends every photo, in the order the seller arranged them. Keep
+  // ones the product already has (any kind), and new uploads, which are
+  // always { kind: "blob", id }. Anything else (an outside URL, made-up art)
+  // is dropped, so nobody can attach arbitrary images.
   const same = (a: ImageRef, b: unknown) => {
     const r = b as Partial<Record<string, unknown>> | null;
     if (!r || r.kind !== a.kind) return false;
@@ -56,11 +59,27 @@ function buildProduct(
     if (a.kind === "url") return r.src === a.src;
     return r.seed === a.seed && r.motif === a.motif && r.palette === a.palette;
   };
-  const kept = (existing?.images ?? []).filter((img) =>
-    (input.keepImages ?? []).some((k) => same(img, k)),
-  );
+  const upload = (b: unknown): ImageRef | null => {
+    const r = b as Partial<Record<string, unknown>> | null;
+    return r?.kind === "blob" && typeof r.id === "string" && /^[A-Za-z0-9_-]{1,80}$/.test(r.id)
+      ? { kind: "blob", id: r.id }
+      : null;
+  };
+  const kept = (input.keepImages ?? []).flatMap((k) => {
+    const had = existing?.images.find((img) => same(img, k));
+    const ref = had ?? upload(k);
+    return ref ? [ref] : [];
+  });
   const uploaded: ImageRef[] = input.imageIds.map((id) => ({ kind: "blob", id }));
-  const images = [...kept, ...uploaded].slice(0, 8);
+  const seen = new Set<string>();
+  const images = [...kept, ...uploaded]
+    .filter((img) => {
+      const key = JSON.stringify(img);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 8);
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? newId("p"),

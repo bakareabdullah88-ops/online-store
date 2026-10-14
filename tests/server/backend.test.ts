@@ -391,6 +391,36 @@ describe.skipIf(!url)("backend on Postgres", () => {
     expect((await buyer.call("catalog", "getProduct", product.slug)).variants[0]!.stock).toBe(10);
   });
 
+  it("keeps the photos the product editor sends, in order, and nothing made up", async () => {
+    const { seller, product } = await openShop();
+    const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
+    const a = (await (await seller.upload(png)).json()).data.ref;
+    const b = (await (await seller.upload(png)).json()).data.ref;
+    const input = {
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      priceKobo: product.priceKobo,
+      options: [],
+      variants: [{ key: "default", stock: 10, priceDeltaKobo: 0 }],
+      status: "published" as const,
+      // What the editor sends: every photo as a ref, none as imageIds.
+      imageIds: [],
+      keepImages: [b, a, { kind: "url", src: "https://evil.example/x.png" }],
+    };
+    const saved = await seller.call("studio", "updateProduct", product.id, input);
+    expect(saved.images).toEqual([b, a]);
+    // Reordering keeps both.
+    const again = await seller.call("studio", "updateProduct", product.id, {
+      ...input,
+      keepImages: [a, b],
+    });
+    expect(again.images).toEqual([a, b]);
+    // Buyers see them too.
+    const seen = await browser().call("catalog", "getProduct", product.slug);
+    expect(seen.images).toEqual([a, b]);
+  });
+
   it("only deletes photos their uploader owns", async () => {
     const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
     const { seller } = await openShop();
