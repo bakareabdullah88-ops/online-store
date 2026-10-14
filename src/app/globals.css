@@ -93,9 +93,10 @@
   /* Elevation */
   --shadow-xs: 0 1px 0 rgb(17 18 20 / 0.04);
   --shadow-sm: 0 1px 2px rgb(17 18 20 / 0.06), 0 1px 1px rgb(17 18 20 / 0.03);
-  --shadow-md: 0 8px 24px -10px rgb(17 18 20 / 0.14), 0 2px 4px rgb(17 18 20 / 0.04);
-  --shadow-lg: 0 24px 48px -16px rgb(17 18 20 / 0.2), 0 4px 10px rgb(17 18 20 / 0.05);
-  --shadow-xl: 0 40px 80px -20px rgb(17 18 20 / 0.28), 0 8px 18px rgb(17 18 20 / 0.06);
+  /* Three real levels: sm (controls), md (popovers, floating bits), lg (sheets, dialogs). */
+  --shadow-md: 0 4px 12px -4px rgb(17 18 20 / 0.1), 0 1px 2px rgb(17 18 20 / 0.04);
+  --shadow-lg: 0 12px 28px -10px rgb(17 18 20 / 0.16), 0 2px 6px rgb(17 18 20 / 0.04);
+  --shadow-xl: var(--shadow-lg);
 
   /* Z-index scale */
   --z-raised: 10;
@@ -110,7 +111,8 @@
 
   /* Layout */
   --header-h: 60px;
-  --tabbar-h: 84px;
+  /* Phones have no bottom bar any more (the menu is a sidebar). */
+  --tabbar-h: 0px;
   --rail-w: 76px;
   --sidebar-w: 248px;
   --gutter: 16px;
@@ -198,9 +200,9 @@
 
   --shadow-xs: 0 1px 0 rgb(0 0 0 / 0.3);
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 8px 20px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 20px 44px -14px rgb(0 0 0 / 0.7), 0 4px 10px rgb(0 0 0 / 0.35);
-  --shadow-xl: 0 36px 72px -18px rgb(0 0 0 / 0.8), 0 8px 18px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -4px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 28px -10px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-xl: var(--shadow-lg);
 
   color-scheme: dark;
 }
@@ -300,12 +302,13 @@
 
   /* Radii: deliberately small and varied */
   --radius-xs: 4px;
+  /* Tight radius scale: controls 8, cards 12, sheets 16. Pills stay rounded-full. */
   --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 28px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -670,7 +673,7 @@
 @utility pressable {
   transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
   &:active {
-    transform: scale(0.94);
+    transform: scale(0.97);
   }
 }
 

@@ -91,7 +91,7 @@ export function ArrivalBanner() {
           onPointerEnter={() => setPaused(true)}
           onPointerLeave={() => setPaused(false)}
         >
-          <div className="relative overflow-hidden rounded-[12px] border border-[color-mix(in_oklab,var(--accent)_20%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_5%,var(--surface))]">
+          <div className="relative overflow-hidden rounded-xl border border-[color-mix(in_oklab,var(--accent)_20%,var(--line))] bg-[color-mix(in_oklab,var(--accent)_5%,var(--surface))]">
             <div className="relative flex items-center gap-3.5 p-3.5 md:gap-4 md:p-4">
               <motion.span
                 className="relative shrink-0"
@@ -100,7 +100,7 @@ export function ArrivalBanner() {
                 transition={{ type: "spring", stiffness: 380, damping: 16, delay: 0.08 }}
               >
                 {selling && brand ? (
-                  <span className="block size-11 overflow-hidden rounded-[12px] md:size-12">
+                  <span className="block size-11 overflow-hidden rounded-xl md:size-12">
                     <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
                   </span>
                 ) : (

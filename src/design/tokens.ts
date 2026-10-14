@@ -33,7 +33,7 @@ export const color = {
 
 export type ColorToken = keyof typeof color;
 
-export const radius = { xs: 4, sm: 6, md: 10, lg: 16, xl: 24, "2xl": 32 } as const;
+export const radius = { xs: 4, sm: 6, md: 8, lg: 10, xl: 12, "2xl": 16, "3xl": 20 } as const;
 
 export const space = {
   0: 0,

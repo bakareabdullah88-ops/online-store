@@ -19,7 +19,7 @@ export function Logo({
       className={cn("group inline-flex items-center gap-2 rounded-xs", className)}
       aria-label={`${brand.name} home`}
     >
-      <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-on-primary shadow-sm transition-transform duration-300 group-hover:-rotate-6">
+      <span className="grid size-8 place-items-center rounded-lg bg-primary text-on-primary shadow-sm">
         <KamplugMark className="size-[18px]" />
       </span>
       <span className="text-[22px] leading-none font-bold tracking-[-0.03em] text-ink">

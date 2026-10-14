@@ -86,7 +86,7 @@ export function WorkspaceSwitch({
             }
             whileTap={{ scale: 0.95 }}
             className={cn(
-              "relative flex h-9 min-w-0 items-center gap-2 rounded-[10px] px-2 text-[13px] font-semibold transition-colors",
+              "relative flex h-9 min-w-0 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold transition-colors",
               active ? "text-ink" : "text-muted hover:text-ink",
             )}
           >
@@ -94,7 +94,7 @@ export function WorkspaceSwitch({
               <motion.span
                 layoutId="workspace-thumb"
                 transition={spring.snappy}
-                className="absolute inset-0 rounded-[10px] bg-surface ring-1 ring-line"
+                className="absolute inset-0 rounded-lg bg-surface ring-1 ring-line"
                 aria-hidden
               />
             )}

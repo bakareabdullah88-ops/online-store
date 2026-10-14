@@ -105,7 +105,7 @@ export function SignInError({ code }: { code: string | null }) {
   const message = code ? ERRORS[code] : undefined;
   if (!message) return null;
   return (
-    <p role="alert" className="mt-6 rounded-[10px] bg-danger-soft px-4 py-3 text-small text-danger">
+    <p role="alert" className="mt-6 rounded-lg bg-danger-soft px-4 py-3 text-small text-danger">
       {message}
     </p>
   );
