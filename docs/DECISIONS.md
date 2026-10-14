@@ -345,3 +345,14 @@ The site stopped being a demo. What changed and why:
   landing page.
 - **Opening a shop is celebrated.** Streamers draw themselves across the screen and keep waving
   while paper ribbons fall, behind the content (static ribbons with reduced motion).
+
+## 12. The market ⇄ shop switch
+
+- The slide-up curtain is replaced by a circle in the destination's colour (green for selling,
+  blue for buying) that grows from where you tapped, so the switch feels connected to your finger.
+- In the middle the bag turns into a shop (or back), the shop's name appears, and live numbers count
+  up: new orders waiting and money this month on the way in; orders on the way and bag items on the
+  way out. Zero values are left out.
+- The route swaps underneath; after at least ~650ms (so the numbers can be read) the circle shrinks
+  into the new page's logo. The cover has its own view-transition layer so the page cross-fade under
+  it never makes it see-through. Reduced motion: a quick crossfade.

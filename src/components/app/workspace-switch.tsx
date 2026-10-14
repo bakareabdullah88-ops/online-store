@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { Plus, ShoppingBag } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { useMode, type Mode } from "@/components/shell/mode";
+import { centerOf } from "@/components/shell/mode-curtain";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { useMyBrand } from "@/queries/studio";
@@ -65,7 +66,13 @@ export function WorkspaceSwitch({
             role="radio"
             aria-checked={active}
             aria-label={o.label}
-            onClick={() => go(o.value)}
+            onClick={(e) =>
+              // Keyboard clicks have no pointer position; grow from the button instead.
+              go(
+                o.value,
+                e.clientX || e.clientY ? { x: e.clientX, y: e.clientY } : centerOf(e.currentTarget),
+              )
+            }
             whileTap={{ scale: 0.95 }}
             className={cn(
               "relative flex h-9 min-w-0 items-center gap-2 rounded-[10px] px-2 text-[13px] font-semibold transition-colors",

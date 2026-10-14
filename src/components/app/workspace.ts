@@ -15,7 +15,7 @@ export function useSwitchWorkspace() {
   const { lastBuyingPath, lastSellingPath } = usePrefs();
   const hasShop = !!user && user.brandIds.length > 0;
 
-  return (next: Mode) => {
+  return (next: Mode, origin?: { x: number; y: number }) => {
     if (next === mode) return;
     if (next === "selling" && !hasShop) {
       router.push("/open-shop");
@@ -30,6 +30,7 @@ export function useSwitchWorkspace() {
         : lastBuyingPath && !lastBuyingPath.startsWith("/studio")
           ? lastBuyingPath
           : "/home",
+      origin,
     );
   };
 }

@@ -502,6 +502,18 @@
   isolation: isolate;
 }
 
+/* The market/shop switch cover stays solid and on top while the page swaps under it. */
+::view-transition-group(mode-curtain) {
+  animation: none;
+  z-index: 200;
+}
+::view-transition-old(mode-curtain) {
+  display: none;
+}
+::view-transition-new(mode-curtain) {
+  animation: none;
+}
+
 /* Persistent chrome never slides */
 ::view-transition-group(site-header),
 ::view-transition-group(tab-bar),
