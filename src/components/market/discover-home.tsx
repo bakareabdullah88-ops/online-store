@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -57,6 +56,7 @@ import { useUi } from "@/stores/ui";
 import { Clouds3D } from "@/components/landing/gate-scene";
 import { LagoonScene, SceneEdge } from "@/components/scenes/campus-scenes";
 import { RelationBadge, etaText } from "./nearby";
+import { CategoryArt, categoryTint } from "./category-art";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import { QuickAdd } from "./quick-add";
 
@@ -202,7 +202,7 @@ function OnTheWay({ order }: { order: Order }) {
   );
 }
 
-/** Wide photo tiles, one per category, packed close together; they scroll sideways on phones. */
+/** Wide illustrated tiles, one per category, packed close together; they scroll sideways on phones. */
 function Categories() {
   return (
     <section aria-labelledby="home-categories">
@@ -213,18 +213,20 @@ function Categories() {
         {categories.map((c) => (
           <li key={c.id} className="shrink-0">
             <Link href={`/explore?category=${c.id}`} className="group block w-[168px] md:w-full">
-              <span className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-surface-2 ring-1 ring-line transition-transform duration-300 group-hover:-translate-y-0.5">
-                <span className="relative block size-full">
-                  <Image
-                    src={`/discover/${c.id}.jpg`}
-                    alt=""
-                    fill
-                    sizes="(min-width: 768px) 25vw, 168px"
-                    quality={90}
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </span>
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2.5 pt-8 pb-2.5 text-[14px] font-bold text-white md:text-[15px]">
+              <span
+                className="relative block aspect-[16/10] w-full overflow-hidden rounded-2xl bg-(--tint) transition-transform duration-300 group-hover:-translate-y-0.5 dark:bg-(--tint-dark)"
+                style={
+                  {
+                    "--tint": categoryTint[c.id].bg,
+                    "--tint-dark": categoryTint[c.id].bgDark,
+                  } as React.CSSProperties
+                }
+              >
+                <CategoryArt
+                  id={c.id}
+                  className="absolute inset-0 size-full p-1.5 transition-transform duration-500 group-hover:scale-105"
+                />
+                <span className="absolute bottom-2.5 left-3 text-[15px] font-bold tracking-[-0.01em] text-ink md:text-[16px]">
                   {short[c.id]}
                 </span>
               </span>
