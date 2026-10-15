@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
 import { useUi } from "@/stores/ui";
 import { AppSync } from "./app-sync";
-import { ModeCurtain } from "./mode-curtain";
 import { OfflineBanner } from "./offline-banner";
 
 // Interaction-only overlays: their code loads when first opened (or when the
@@ -65,7 +64,6 @@ export function GlobalChrome() {
   return (
     <Suspense fallback={null}>
       <AppSync />
-      <ModeCurtain />
       <OfflineBanner />
       <Overlays />
     </Suspense>

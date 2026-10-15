@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { Plus, ShoppingBag } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { useMode, type Mode } from "@/components/shell/mode";
-import { centerOf } from "@/components/shell/mode-curtain";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { useMyBrand } from "@/queries/studio";
@@ -80,13 +79,7 @@ export function WorkspaceSwitch({
             aria-checked={active}
             aria-label={o.title}
             title={o.title}
-            onClick={(e) =>
-              // Keyboard clicks have no pointer position; grow from the button instead.
-              go(
-                o.value,
-                e.clientX || e.clientY ? { x: e.clientX, y: e.clientY } : centerOf(e.currentTarget),
-              )
-            }
+            onClick={() => go(o.value)}
             whileTap={{ scale: 0.95 }}
             className={cn(
               "relative flex h-9 min-w-0 shrink-0 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold transition-colors",

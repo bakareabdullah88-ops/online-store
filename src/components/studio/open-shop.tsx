@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, Loader2, X } from "lucide-react";
@@ -9,7 +10,6 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { ProgressBar } from "@/components/ui/misc";
 import { Ribbons } from "@/components/ui/ribbons";
 import { Celebration } from "@/components/checkout/celebration";
-import { useCurtain } from "@/components/shell/mode-curtain";
 import { categories, categoryById } from "@/config/categories";
 import { spring } from "@/design/motion";
 import { slugify } from "@/lib/ids";
@@ -94,15 +94,14 @@ export function OpenShopWizard() {
   const campus = useCampus(user?.campusId);
   const reduce = useReducedMotion();
   const create = useCreateBrand();
+  const router = useRouter();
   const checkHandle = useHandleAvailable();
-  const startCurtain = useCurtain((s) => s.start);
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [created, setCreated] = useState<Brand | null>(null);
-  const [handleState, setHandleState] = useState<"idle" | "checking" | "ok" | "taken" | "invalid">(
-    "idle",
-  );
+  // The last availability answer, for the handle it was about.
+  const [checked, setChecked] = useState<{ handle: string; ok: boolean } | null>(null);
   const [s, setS] = useState<State>({
     name: "",
     handle: "",
@@ -126,18 +125,26 @@ export function OpenShopWizard() {
   useEffect(() => () => useUi.setState({ shopJustOpened: false }), []);
 
   // Live handle availability (debounced).
-  const { mutate: check } = checkHandle;
+  const { mutate: check, mutateAsync: checkNow } = checkHandle;
   useEffect(() => {
     if (!s.handle) return;
     if (!handleSchema.safeParse(s.handle).success) return;
+    const handle = s.handle;
     const t = window.setTimeout(() => {
-      setHandleState("checking");
-      check(s.handle, { onSuccess: (ok) => setHandleState(ok ? "ok" : "taken") });
+      check(handle, { onSuccess: (ok) => setChecked({ handle, ok }) });
     }, 350);
     return () => window.clearTimeout(t);
   }, [s.handle, check]);
   const handleValid = !s.handle || handleSchema.safeParse(s.handle).success;
-  const shownHandleState = !s.handle ? "idle" : !handleValid ? "invalid" : handleState;
+  const shownHandleState = !s.handle
+    ? "idle"
+    : !handleValid
+      ? "invalid"
+      : checked?.handle === s.handle
+        ? checked.ok
+          ? "ok"
+          : "taken"
+        : "checking";
 
   // Default pickup point once the campus is known.
   const firstPoint = campus?.pickupPoints[0]?.id;
@@ -159,8 +166,6 @@ export function OpenShopWizard() {
       const h = handleSchema.safeParse(s.handle);
       if (!h.success) e.handle = h.error.issues[0]?.message ?? "Choose a handle";
       else if (shownHandleState === "taken") e.handle = "That handle is taken";
-      else if (shownHandleState !== "ok")
-        e.handle = "Checking that handle. One sec, then try again.";
     }
     if (step === 1 && !s.category) e.category = "Pick a category";
     if (step === 3 && s.tagline.trim().length < 4) e.tagline = "A short line about what you sell";
@@ -175,8 +180,28 @@ export function OpenShopWizard() {
     return Object.keys(e).length === 0;
   };
 
-  const next = () => {
+  // Continue pressed before the live check answered: check right away, then move on.
+  const [awaitingHandle, setAwaitingHandle] = useState(false);
+
+  const next = async () => {
     if (!validateStep()) return;
+    if (step === 0 && shownHandleState !== "ok") {
+      setAwaitingHandle(true);
+      try {
+        const handle = s.handle;
+        const ok = await checkNow(handle);
+        setChecked({ handle, ok });
+        if (!ok) {
+          setErrors({ handle: "That handle is taken" });
+          return;
+        }
+      } catch (e) {
+        toast.error("Couldn't check that handle", { description: errorMessage(e) });
+        return;
+      } finally {
+        setAwaitingHandle(false);
+      }
+    }
     if (step < steps.length - 1) go(step + 1);
   };
 
@@ -207,7 +232,7 @@ export function OpenShopWizard() {
         if (fields?.handle) {
           go(0);
           setErrors({ handle: fields.handle });
-          setHandleState("taken");
+          setChecked({ handle: s.handle, ok: false });
           return;
         }
         toast.error("Couldn't open your shop", { description: errorMessage(e) });
@@ -256,14 +281,10 @@ export function OpenShopWizard() {
             ordering.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button size="lg" onClick={() => startCurtain("selling", "/studio/products/new")}>
+            <Button size="lg" onClick={() => router.push("/studio/products/new")}>
               Add your first product
             </Button>
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => startCurtain("selling", "/studio")}
-            >
+            <Button size="lg" variant="secondary" onClick={() => router.push("/studio")}>
               Go to Shop Studio
             </Button>
           </div>
@@ -322,7 +343,7 @@ export function OpenShopWizard() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (step === steps.length - 1) launch();
-                else next();
+                else void next();
               }}
             >
               {step === 0 && (
@@ -372,7 +393,6 @@ export function OpenShopWizard() {
                       value={s.handle}
                       maxLength={24}
                       onChange={(e) => {
-                        setHandleState("idle");
                         setS((x) => ({
                           ...x,
                           handle: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""),
@@ -606,7 +626,7 @@ export function OpenShopWizard() {
                   type="submit"
                   size="lg"
                   className="ml-auto"
-                  loading={create.isPending}
+                  loading={create.isPending || awaitingHandle}
                   trailingIcon={
                     step < steps.length - 1 ? <ArrowRight className="size-4.5" /> : undefined
                   }

@@ -18,7 +18,6 @@ import { rangeLabel } from "@/domain/analytics";
 import { formatNaira, formatNairaCompact } from "@/domain/money";
 import { isActive, statusLabel } from "@/domain/orders";
 import { formatNumber } from "@/lib/format";
-import { greet } from "@/lib/greeting";
 import { useMounted } from "@/lib/hooks";
 import { useCampus } from "@/queries/catalog";
 import { usePlaces } from "@/queries/inbox";
@@ -29,11 +28,17 @@ import type { Order } from "@/services/types";
 
 const kobo = (n: number) => Math.round(n);
 
-/** A greeting picked once per visit: it changes with the time, the day and the mood. */
+/** A plain, one-line hello for the time of day. */
 function Greeting({ name }: { name: string }) {
-  const [text] = useState(() => greet(name));
+  const [text] = useState(() => {
+    const h = new Date().getHours();
+    const part = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+    return `${part}, ${name}`;
+  });
   return <>{text}</>;
 }
+
+const today = new Intl.DateTimeFormat("en-NG", { weekday: "long", day: "numeric", month: "long" });
 
 /** First steps for a new account, replaced by live tasks once they order. */
 function useStarterTodos(): Todo[] {
@@ -162,7 +167,11 @@ export function BuyerHome() {
       <PageHeader
         crumbs={[{ label: "Market", href: "/home" }, { label: "Home" }]}
         title={mounted && firstName ? <Greeting name={firstName} /> : "Home"}
-        description={campus ? `Shopping at ${campus.name}` : "Your orders and spending"}
+        description={
+          mounted
+            ? [today.format(new Date()), campus?.name].filter(Boolean).join(" · ")
+            : (campus?.name ?? "Your orders and spending")
+        }
         actions={<DateRangeControl preset={preset} range={range} onChange={setPreset} />}
       />
 

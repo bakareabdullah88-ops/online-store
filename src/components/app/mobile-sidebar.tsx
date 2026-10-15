@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { SidePanel } from "@/components/ui/sheet";
 import { useMode } from "@/components/shell/mode";
 import { isActive, marketNav, shopNav } from "@/config/nav";
 import { cn } from "@/lib/cn";
 import { useSession } from "@/queries/session";
+import { useUi } from "@/stores/ui";
 import { useNavBadges } from "./nav-badges";
 import { WorkspaceSwitch } from "./workspace-switch";
 
@@ -30,6 +31,7 @@ export function MobileSidebar({
       ? { href: "/studio/products/new", label: "Add a product" }
       : { href: "/open-shop", label: "Open a shop" };
   const close = () => onOpenChange(false);
+  const setCommandOpen = useUi((s) => s.setCommandOpen);
 
   return (
     <SidePanel
@@ -51,8 +53,18 @@ export function MobileSidebar({
       }
     >
       <div className="-mx-2 flex flex-col gap-5">
-        <div className="px-2">
+        <div className="flex flex-col gap-3 px-2">
           <WorkspaceSwitch />
+          <button
+            type="button"
+            onClick={() => {
+              close();
+              setCommandOpen(true);
+            }}
+            className="flex h-11 items-center gap-2.5 rounded-xl bg-surface-2 px-3.5 text-[14.5px] text-muted ring-1 ring-line transition-colors hover:text-ink"
+          >
+            <Search className="size-[18px]" /> Search Kamplug
+          </button>
         </div>
         {sections.map((s, si) => (
           <nav key={s.title ?? si} aria-label={s.title ?? (mode === "selling" ? "Shop" : "Market")}>

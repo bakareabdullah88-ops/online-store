@@ -3,7 +3,6 @@
 import { Suspense, type ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequireAuth } from "@/components/shell/require-auth";
-import { ArrivalBanner } from "./arrival";
 import { AppBackdrop } from "./backdrop";
 import { MobileTopBar } from "./mobile-top-bar";
 import { TopNav } from "./top-nav";
@@ -39,10 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <AppBackdrop />
           <TopNav />
           <MobileTopBar />
-          <div className="mx-auto w-full max-w-[1400px]">
-            <ArrivalBanner />
-            {children}
-          </div>
+          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
         </div>
       </RequireAuth>
     </Suspense>

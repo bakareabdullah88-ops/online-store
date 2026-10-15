@@ -1,16 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Menu, Search, ShoppingBag } from "lucide-react";
+import { Bell, Menu, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { useMode } from "@/components/shell/mode";
-import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
 import { MessagesButton } from "./messages-button";
 import { MobileSidebar } from "./mobile-sidebar";
 import { useNavBadges } from "./nav-badges";
 import { ModeLine } from "./mode-line";
-import { WorkspaceSwitch } from "./workspace-switch";
+import { KamplugTile } from "./kamplug-mark";
 
 const iconButton =
   "pressable relative grid size-10 shrink-0 place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink max-[380px]:size-9";
@@ -24,11 +23,11 @@ function Dot({ n }: { n: number }) {
   );
 }
 
-/** Phone header: menu, the buying/selling switch, then search, messages, alerts, bag, account. */
+/** Phone header, kept short: menu and logo, then messages, alerts, bag and account.
+ * Search and the buying/selling switch live at the top of the menu. */
 export function MobileTopBar() {
   const mode = useMode();
   const badges = useNavBadges();
-  const setCommandOpen = useUi((s) => s.setCommandOpen);
   const [menu, setMenu] = useState(false);
   const menuCount = mode === "selling" ? badges.newOrders : badges.activeOrders;
   return (
@@ -50,16 +49,14 @@ export function MobileTopBar() {
             <span className="absolute top-2 right-2 size-2 rounded-full bg-badge ring-2 ring-surface" />
           )}
         </button>
-        <WorkspaceSwitch compact tight className="ml-1 shrink-0" />
-        <span className="min-w-0 flex-1" />
-        <button
-          type="button"
-          aria-label="Search"
-          onClick={() => setCommandOpen(true)}
-          className={iconButton}
+        <Link
+          href={mode === "selling" ? "/studio" : "/home"}
+          aria-label="Kamplug home"
+          className="ml-1 flex shrink-0 items-center"
         >
-          <Search className="size-5" />
-        </button>
+          <KamplugTile className="size-8" />
+        </Link>
+        <span className="min-w-0 flex-1" />
         <MessagesButton />
         <Link
           href="/notifications"
