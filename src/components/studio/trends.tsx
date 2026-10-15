@@ -15,9 +15,9 @@ export function ShopTrends({ range }: { range: DayRange }) {
   if (!d) return null;
   const noTraffic = d.funnel.every((s) => s.value === 0 && s.prev === 0);
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <DashCard title="From views to orders" bodyClassName="px-0 pb-0 md:px-0 md:pb-0">
-        <div className="relative px-5 md:px-6">
+    <div className="grid grid-cols-1 gap-x-10 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <DashCard title="From views to orders" bodyClassName="pb-0 md:pb-0">
+        <div className="relative">
           <FunnelChart
             steps={d.funnel}
             unit={(s) => (s.key === "views" ? "views" : s.key === "bag" ? "adds to bag" : "orders")}
@@ -29,7 +29,7 @@ export function ShopTrends({ range }: { range: DayRange }) {
           )}
         </div>
       </DashCard>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1">
         <DashCard title="Busiest days">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <WeekdayDots days={d.weekdays} peak={d.peakDay} />

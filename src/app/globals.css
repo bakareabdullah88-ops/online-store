@@ -18,6 +18,8 @@
   --sand: #f0f1f3;
   --line: #e6e7ea;
   --line-strong: #d3d5da;
+  /* Very thin grey separators between open sections and rows (signed-in pages) */
+  --line-thin: rgb(0 0 0 / 0.08);
 
   /* Ink */
   --ink: #111214;
@@ -141,6 +143,7 @@
   --sand: #1e2125;
   --line: #24272c;
   --line-strong: #383c43;
+  --line-thin: rgb(255 255 255 / 0.08);
 
   --ink: #f2f3f5;
   --ink-2: #d0d3d8;
@@ -221,6 +224,7 @@
   --color-sand: var(--sand);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-line-thin: var(--line-thin);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
@@ -691,20 +695,13 @@
 /*  Liquid glass, cards and motion helpers                              */
 /* ------------------------------------------------------------------ */
 
-/* A plain card: the surface colour and a hairline border. No shadow, no blur. */
+/*
+ * An open section: no box, no fill, no radius, no shadow. Content sits on the
+ * page and is set apart from what comes before it by one very thin grey line.
+ */
 @utility card {
   position: relative;
-  border-radius: 12px;
-  background-color: var(--surface);
-  border: 1px solid var(--line);
-}
-
-/* Interactive cards: the border darkens on hover. */
-@utility lift {
-  transition: border-color 160ms ease;
-  &:hover {
-    border-color: var(--line-strong);
-  }
+  border-top: 1px solid var(--line-thin);
 }
 
 @utility glass-bar {

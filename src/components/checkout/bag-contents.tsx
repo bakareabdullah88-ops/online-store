@@ -80,7 +80,7 @@ function LineItem({
         onDragEnd={(_, info) => {
           if (info.offset.x < -110 || info.velocity.x < -600) removeWithUndo(item);
         }}
-        className="relative flex touch-pan-y gap-3.5 bg-surface py-3"
+        className="relative flex touch-pan-y gap-3.5 bg-[var(--row-bg,var(--surface))] py-3"
       >
         <Link
           href={p ? `/products/${p.slug}` : "#"}
@@ -152,14 +152,8 @@ function LineItem({
 function GroupCard({ group, onNavigate }: { group: BagGroupView; onNavigate?: () => void }) {
   const b = group.brand;
   return (
-    <motion.section
-      layout="position"
-      className={cn(
-        "rounded-lg bg-surface px-4 pt-3 pb-1 hairline",
-        group.blockedReason && "ring-1 ring-warning/40",
-      )}
-    >
-      <header className="flex items-center gap-3 border-b border-line pb-3">
+    <motion.section layout="position" className="card pt-4 pb-1">
+      <header className="flex items-center gap-3 border-b border-line-thin pb-3">
         <span className="size-8 shrink-0 overflow-hidden rounded-full">
           <AppImage image={b?.logo} alt="" variant="logo" name={b?.name ?? ""} />
         </span>
@@ -189,7 +183,7 @@ function GroupCard({ group, onNavigate }: { group: BagGroupView; onNavigate?: ()
           {group.blockedReason}
         </p>
       )}
-      <ul className="divide-y divide-line">
+      <ul className="divide-y divide-line-thin">
         <AnimatePresence initial={false}>
           {group.items.map((item, i) => (
             <LineItem key={item.id} item={item} index={i} onNavigate={onNavigate} />
@@ -202,10 +196,10 @@ function GroupCard({ group, onNavigate }: { group: BagGroupView; onNavigate?: ()
 
 export function BagSkeleton() {
   return (
-    <div className="flex flex-col gap-4" aria-hidden>
+    <div className="flex flex-col" aria-hidden>
       {[0, 1].map((g) => (
-        <div key={g} className="card px-4 pt-3 pb-3">
-          <div className="flex items-center gap-3 border-b border-line pb-3">
+        <div key={g} className="card pt-4 pb-3">
+          <div className="flex items-center gap-3 border-b border-line-thin pb-3">
             <Skeleton className="size-8" rounded="full" />
             <Skeleton className="h-4 w-32" />
           </div>
@@ -244,9 +238,9 @@ export function BagContents({ onNavigate }: { onNavigate?: () => void }) {
   }
   if (loading && groups.every((g) => g.items.every((i) => !i.product))) return <BagSkeleton />;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col">
       {groups.length > 1 && (
-        <p className="text-small text-muted">
+        <p className="pb-4 text-small text-muted">
           Your bag has items from {groups.length} brands, so you&apos;ll get {groups.length}{" "}
           separate orders, each tracked on its own.
         </p>

@@ -61,14 +61,14 @@ export function TodoList({ items, checklist = false }: { items: Todo[]; checklis
     );
   }
   return (
-    <ul className="-mx-2 flex flex-col">
+    <ul className="flex flex-col divide-y divide-line-thin">
       {shown.map((t) => {
         const done = t.count === 0;
         return (
           <li key={t.id}>
             <Link
               href={t.href}
-              className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors duration-150 hover:bg-surface-2"
+              className="flex items-center gap-3 py-3 transition-opacity duration-150 hover:opacity-75"
             >
               <Ring done={done} />
               <span className="min-w-0 flex-1">

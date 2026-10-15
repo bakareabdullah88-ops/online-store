@@ -45,7 +45,7 @@ export function CardMenu({ actions, label }: { actions: CardAction[]; label: str
   );
 }
 
-/** Card with a title and an optional "…" menu. */
+/** Open section with a title and an optional "…" menu, set off by a thin line on top. */
 export function DashCard({
   title,
   aside,
@@ -66,9 +66,9 @@ export function DashCard({
 }) {
   const label = typeof title === "string" ? title : "Card";
   return (
-    <section className={cn("card flex min-w-0 flex-col overflow-hidden", className)}>
+    <section className={cn("card flex min-w-0 flex-col overflow-x-clip", className)}>
       {(title || actions) && (
-        <header className="flex items-center gap-3 px-5 pt-5 md:px-6 md:pt-6">
+        <header className="flex items-center gap-3 pt-5 md:pt-6">
           {title && (
             <h2 className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.01em] md:text-[16px]">
               {title}
@@ -78,9 +78,7 @@ export function DashCard({
           {actions && actions.length > 0 && <CardMenu actions={actions} label={label} />}
         </header>
       )}
-      <div
-        className={cn("flex min-h-0 flex-1 flex-col px-5 pt-4 pb-5 md:px-6 md:pb-6", bodyClassName)}
-      >
+      <div className={cn("flex min-h-0 flex-1 flex-col pt-4 pb-5 md:pb-6", bodyClassName)}>
         {children}
       </div>
     </section>

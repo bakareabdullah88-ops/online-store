@@ -95,7 +95,7 @@ function BrandMatches({ q }: { q: string }) {
       <p className="mb-3 eyebrow text-muted">Brands</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {data.brands.map((b) => (
-          <BrandCard key={b.id} brand={b} variant="compact" className="bg-surface hairline" />
+          <BrandCard key={b.id} brand={b} variant="compact" />
         ))}
       </div>
     </section>
@@ -194,11 +194,11 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
 
       <div className="mt-5 grid grid-cols-1 gap-8 lg:mt-0 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="hidden lg:block" aria-label="Categories and filters">
-          <div className="sticky top-24 scrollbar-none flex max-h-[calc(100dvh-7rem)] flex-col gap-4 overflow-y-auto pb-4">
-            <div className="card p-3">
+          <div className="sticky top-24 scrollbar-none flex max-h-[calc(100dvh-7rem)] flex-col overflow-y-auto pb-4">
+            <div className="pb-4">
               <CategoryNav value={params.category} onChange={(v) => update({ category: v })} />
             </div>
-            <div className="card p-5">
+            <div className="card pt-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-title font-semibold">Filters</h2>
                 {filters > 0 && (
@@ -265,7 +265,10 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
               action={<Button onClick={() => void list.refetch()}>Try again</Button>}
             />
           ) : list.isPending ? (
-            <div className="flex flex-col gap-4" aria-busy>
+            <div
+              className="flex flex-col divide-y divide-line-thin border-y border-line-thin"
+              aria-busy
+            >
               {Array.from({ length: 5 }, (_, i) => (
                 <ProductRowSkeleton key={i} />
               ))}
@@ -293,7 +296,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
             <LayoutGroup>
               <ul
                 className={cn(
-                  "flex flex-col gap-4 transition-opacity",
+                  "flex flex-col divide-y divide-line-thin border-y border-line-thin transition-opacity",
                   list.isPlaceholderData && "opacity-60",
                 )}
               >

@@ -57,7 +57,7 @@ function DraftCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
       transition={spring.smooth}
-      className="relative overflow-hidden rounded-xl bg-surface-2 p-4 ring-1 ring-line"
+      className="relative border-t border-line-thin pt-4"
     >
       <div className="flex items-center gap-2 text-[13px] font-medium">
         <span
@@ -291,7 +291,7 @@ export function Conversation({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
               transition={spring.smooth}
-              className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-2/80 p-1.5 ring-1 ring-line sm:grid-cols-3"
+              className="grid grid-cols-2 gap-1.5 sm:grid-cols-3"
               role="group"
               aria-label="Quick replies"
             >
@@ -306,7 +306,7 @@ export function Conversation({
                     setTools(false);
                     setDraft(r);
                   }}
-                  className="flex flex-col items-start gap-3 rounded-xl px-3.5 py-3 text-left text-[13px] font-medium transition-colors hover:bg-surface hover:shadow-xs"
+                  className="flex flex-col items-start gap-3 rounded-xl px-3.5 py-3 text-left text-[13px] font-medium ring-1 ring-line transition-colors hover:bg-ink/[0.03]"
                 >
                   <span
                     className="grid size-6 place-items-center rounded-md"

@@ -93,7 +93,7 @@ function OnTheWay({ orders }: { orders: Order[] }) {
     );
   }
   return (
-    <ul className="divide-y divide-line">
+    <ul className="divide-y divide-line-thin">
       {orders.slice(0, 5).map((o) => (
         <li key={o.id}>
           <Link
@@ -180,7 +180,7 @@ export function BuyerHome() {
           <DashboardSkeleton />
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-4">
+        <div className="mt-6 flex flex-col">
           <HeroFigure
             label={`Spent, ${rangeLabel(range)}`}
             valueKobo={d.spent.value}
@@ -202,7 +202,7 @@ export function BuyerHome() {
             }
           />
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
             <DashCard
               title="On the way"
               aside={

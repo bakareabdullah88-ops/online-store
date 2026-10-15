@@ -367,9 +367,9 @@ function OrderDrawer({
               </span>
             </div>
             <ContactBuyer order={order} />
-            <ul className="divide-y divide-line rounded-md hairline">
+            <ul className="divide-y divide-line-thin border-y border-line-thin">
               {order.items.map((it) => (
-                <li key={it.productId + it.variantKey} className="flex items-center gap-3 p-3">
+                <li key={it.productId + it.variantKey} className="flex items-center gap-3 py-3">
                   <span className="size-12 shrink-0 overflow-hidden rounded-xs">
                     <AppImage image={it.image} alt="" />
                   </span>
@@ -570,7 +570,7 @@ export function OrdersBoard() {
             {o.items.slice(0, 3).map((it) => (
               <span
                 key={it.productId + it.variantKey}
-                className="size-7 overflow-hidden rounded-lg ring-2 ring-surface"
+                className="size-7 overflow-hidden rounded-lg ring-2 ring-canvas"
               >
                 <AppImage image={it.image} alt="" name={it.name} sizes="28px" />
               </span>

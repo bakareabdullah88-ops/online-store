@@ -40,7 +40,7 @@ const perfTone: Record<Performance, string> = {
 const stock = (p: Product) => p.variants.reduce((n, v) => n + v.stock, 0);
 
 function Divider() {
-  return <span className="hidden h-10 w-px shrink-0 bg-line lg:block" aria-hidden />;
+  return <span className="hidden h-10 w-px shrink-0 bg-line-thin lg:block" aria-hidden />;
 }
 
 function Row({ p, s, i }: { p: Product; s: ProductStat; i: number }) {
@@ -49,12 +49,12 @@ function Row({ p, s, i }: { p: Product; s: ProductStat; i: number }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...spring.smooth, delay: Math.min(i * 0.04, 0.4) }}
-      className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-3 border-b border-line py-4 last:border-0 lg:flex lg:gap-6"
+      className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-x-4 gap-y-3 py-4 lg:flex lg:gap-6"
     >
       <Link
         href={`/studio/products/${p.id}`}
         aria-label={`Edit ${p.name}`}
-        className="size-16 overflow-hidden rounded-2xl bg-surface-2 ring-1 ring-line"
+        className="size-16 overflow-hidden rounded-lg bg-sand"
       >
         <AppImage image={p.images[0]} alt="" name={p.name} sizes="64px" />
       </Link>
@@ -199,13 +199,13 @@ export function ShopInsights({ range }: { range: DayRange }) {
       {!data || !products ? (
         <DashboardSkeleton />
       ) : (
-        <Stagger className="grid grid-cols-1 gap-4">
+        <Stagger className="grid grid-cols-1">
           <StaggerItem>
             <ShopTrends range={range} />
           </StaggerItem>
-          <StaggerItem className="card p-5 md:p-6">
+          <StaggerItem className="card py-5 md:py-6">
             <h2 className="text-[19px] font-semibold">Products</h2>
-            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line">
+            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line-thin pt-5 lg:grid-cols-4 lg:divide-x lg:divide-line-thin">
               <div className="lg:pr-6">
                 <dt className="text-small text-muted">Active products</dt>
                 <dd className="mt-1.5 text-[26px] font-medium tabular">
@@ -220,7 +220,7 @@ export function ShopInsights({ range }: { range: DayRange }) {
                 <dd className="mt-1.5 flex min-w-0 items-center gap-2.5">
                   {winnerProduct ? (
                     <>
-                      <span className="size-9 shrink-0 overflow-hidden rounded-lg ring-1 ring-line">
+                      <span className="size-9 shrink-0 overflow-hidden rounded-lg">
                         <AppImage
                           image={winnerProduct.images[0]}
                           alt=""
@@ -256,8 +256,8 @@ export function ShopInsights({ range }: { range: DayRange }) {
             </dl>
           </StaggerItem>
 
-          <StaggerItem className="card p-1 md:p-2">
-            <div className="flex flex-col gap-3 px-4 pt-4 md:flex-row md:items-center md:px-4">
+          <StaggerItem className="card py-5 md:py-6">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <h2 className="flex-1 text-[19px] font-semibold">All product list</h2>
               <label className="flex h-10 items-center gap-2 rounded-xl bg-surface px-3 ring-1 ring-line focus-within:ring-2 focus-within:ring-accent/40 md:w-72">
                 <Search className="size-4 text-muted" />
@@ -281,16 +281,16 @@ export function ShopInsights({ range }: { range: DayRange }) {
               </div>
             </div>
             {products.length === 0 ? (
-              <div className="flex flex-col items-start gap-3 px-4 py-10">
+              <div className="flex flex-col items-start gap-3 py-10">
                 <p className="text-body text-muted">
                   Add a product and its views, adds to bag and sales will be scored here.
                 </p>
                 <ButtonLink href="/studio/products/new">Add a product</ButtonLink>
               </div>
             ) : rows.length === 0 ? (
-              <p className="px-4 py-10 text-body text-muted">No products match “{q}”.</p>
+              <p className="py-10 text-body text-muted">No products match “{q}”.</p>
             ) : (
-              <ul className="px-4">
+              <ul className="mt-2 divide-y divide-line-thin">
                 {rows.map((r, i) => (
                   <Row key={r.p.id} p={r.p} s={r.s} i={i} />
                 ))}
@@ -298,7 +298,7 @@ export function ShopInsights({ range }: { range: DayRange }) {
             )}
           </StaggerItem>
 
-          <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <StaggerItem className="grid grid-cols-1 gap-x-10 xl:grid-cols-2">
             <DashCard
               title="Views by hour"
               icon={<Clock />}

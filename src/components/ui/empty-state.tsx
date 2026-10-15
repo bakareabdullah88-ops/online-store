@@ -23,7 +23,7 @@ export function EmptyState({
     <div
       className={cn(
         "flex flex-col items-center text-center",
-        compact ? "gap-3 py-8" : "card gap-4 px-6 py-14 md:py-16",
+        compact ? "gap-3 py-8" : "card gap-4 py-14 md:py-16",
         className,
       )}
     >

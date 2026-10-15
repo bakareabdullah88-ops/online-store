@@ -89,7 +89,7 @@ function ThreadPane({
   const name = as === "buyer" ? thread.brandName : thread.buyerName;
   return (
     <>
-      <header className="flex items-center gap-3 border-b border-line px-4 py-3 md:px-5">
+      <header className="flex items-center gap-3 border-b border-line-thin py-3">
         <button
           type="button"
           onClick={onBack}
@@ -138,7 +138,7 @@ function ThreadPane({
         as={as}
         replies={replies}
         footnote={`Only you and ${name} can see this. Never share passwords or card details.`}
-        className="min-h-0 flex-1 px-4 pb-3 md:px-5"
+        className="min-h-0 flex-1 pb-3"
       />
     </>
   );
@@ -205,11 +205,11 @@ export function InboxView({
   ];
 
   return (
-    <div className="grid gap-3 lg:h-[calc(100dvh-210px)] lg:min-h-[560px] lg:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="grid border-t border-line-thin lg:h-[calc(100dvh-210px)] lg:min-h-[560px] lg:grid-cols-[minmax(0,1fr)_340px] lg:divide-x lg:divide-line-thin">
       <section
         aria-label="Conversation"
         className={cn(
-          "card flex min-h-[70dvh] flex-col overflow-hidden lg:min-h-0",
+          "flex min-h-[70dvh] flex-col overflow-hidden lg:min-h-0 lg:pr-6",
           !selected && "max-lg:hidden",
         )}
       >
@@ -221,7 +221,7 @@ export function InboxView({
           />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-            <span className="grid size-14 place-items-center rounded-2xl bg-surface-2 ring-1 ring-line">
+            <span className="grid size-14 place-items-center rounded-full bg-ink/[0.05]">
               <MessageCircle className="size-6 text-ink-2" />
             </span>
             <p className="text-small text-muted">Choose a conversation from the list.</p>
@@ -231,9 +231,9 @@ export function InboxView({
 
       <section
         aria-label="All messages"
-        className={cn("card flex min-h-0 flex-col overflow-hidden", selected && "max-lg:hidden")}
+        className={cn("flex min-h-0 flex-col overflow-hidden lg:pl-4", selected && "max-lg:hidden")}
       >
-        <header className="flex h-14 items-center gap-2 border-b border-line px-4">
+        <header className="flex h-14 items-center gap-2 border-b border-line-thin px-2">
           <AnimatePresence mode="wait" initial={false}>
             {searching ? (
               <motion.label
@@ -304,10 +304,10 @@ export function InboxView({
             )}
           </AnimatePresence>
         </header>
-        <ul className="min-h-0 flex-1 overflow-y-auto p-2">
+        <ul className="min-h-0 flex-1 overflow-y-auto py-2">
           {isPending
             ? [0, 1, 2, 3].map((i) => (
-                <li key={i} className="flex gap-3 p-3">
+                <li key={i} className="flex gap-3 px-2 py-3">
                   <Skeleton className="size-10" rounded="full" />
                   <div className="flex-1">
                     <Skeleton className="h-4 w-28" />
@@ -332,7 +332,7 @@ export function InboxView({
                       scroll={false}
                       aria-current={on ? "true" : undefined}
                       className={cn(
-                        "relative flex gap-3 rounded-2xl p-3 transition-colors",
+                        "relative flex gap-3 rounded-lg px-2 py-3 transition-colors",
                         on ? "" : "hover:bg-ink/[0.03]",
                       )}
                     >
@@ -340,7 +340,7 @@ export function InboxView({
                         <motion.span
                           layoutId="inbox-active"
                           transition={spring.snappy}
-                          className="absolute inset-0 rounded-2xl bg-surface-2 ring-1 ring-line"
+                          className="absolute inset-0 rounded-lg bg-ink/[0.04]"
                           aria-hidden
                         />
                       )}
@@ -398,7 +398,7 @@ export function InboxView({
                 );
               })}
           {!isPending && list.length === 0 && (
-            <li className="p-6 text-center text-small text-muted">
+            <li className="py-6 text-center text-small text-muted">
               {filter === "starred" ? "Star a conversation to keep it here." : "Nothing matches."}
             </li>
           )}

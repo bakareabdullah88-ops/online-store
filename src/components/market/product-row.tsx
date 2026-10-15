@@ -110,8 +110,8 @@ export function ProductRow({
   );
 
   return (
-    <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 overflow-hidden rounded-sm border border-line/70 bg-surface/55 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
-      <div className="relative bg-surface-2">
+    <article className="relative grid grid-cols-[minmax(0,44%)_minmax(0,1fr)] gap-3 py-4 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-6 sm:py-5 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
+      <div className="relative overflow-hidden rounded-lg bg-sand">
         {/* Sets the row's minimum height from the photo's shape (4:5 on phones, square
             above). When the details run longer, the photo grows with the row instead. */}
         <div className="aspect-[4/5] sm:aspect-square" aria-hidden />
@@ -139,7 +139,7 @@ export function ProductRow({
         />
       </div>
 
-      <div className="flex min-w-0 flex-col items-start justify-center gap-1 py-2.5 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
+      <div className="flex min-w-0 flex-col items-start justify-center gap-1 py-1 sm:gap-2 sm:py-2">
         <Link
           href={`/brands/${p.brand.handle}`}
           className="tap-area inline-flex max-w-full items-center gap-1 text-[12px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
@@ -276,11 +276,11 @@ export function ProductRow({
 export function ProductRowSkeleton() {
   return (
     <div
-      className="grid grid-cols-[44%_1fr] gap-3 overflow-hidden rounded-sm border border-line/70 bg-surface/55 sm:grid-cols-[220px_1fr] sm:gap-6 lg:grid-cols-[270px_1fr]"
+      className="grid grid-cols-[44%_1fr] gap-3 py-4 sm:grid-cols-[220px_1fr] sm:gap-6 sm:py-5 lg:grid-cols-[270px_1fr]"
       aria-hidden
     >
-      <Skeleton className="aspect-[4/5] w-full sm:aspect-square" rounded="none" />
-      <div className="flex flex-col gap-2.5 py-5 pr-6">
+      <Skeleton className="aspect-[4/5] w-full sm:aspect-square" rounded="lg" />
+      <div className="flex flex-col gap-2.5 py-2">
         <Skeleton className="h-3.5 w-28" />
         <Skeleton className="h-5 w-[85%]" />
         <Skeleton className="h-5 w-[60%]" />

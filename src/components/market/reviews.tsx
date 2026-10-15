@@ -55,7 +55,7 @@ export function RatingSummary({ breakdown }: { breakdown: RatingBreakdown }) {
 export function ReviewItem({ review, brandName }: { review: Review; brandName?: string }) {
   const now = useNow(60_000);
   return (
-    <article className="border-b border-line py-5 last:border-0">
+    <article className="border-b border-line-thin py-5 last:border-0">
       <header className="flex items-center gap-3">
         <Avatar name={review.authorName} size={32} />
         <div className="min-w-0 flex-1">
@@ -69,7 +69,7 @@ export function ReviewItem({ review, brandName }: { review: Review; brandName?: 
       </header>
       {review.body && <p className="mt-3 text-body text-ink-2">{review.body}</p>}
       {review.reply && (
-        <div className="mt-3 rounded-md bg-canvas-sunk px-4 py-3">
+        <div className="mt-3 border-l-2 border-line pl-4">
           <p className="eyebrow text-muted">Reply from {brandName ?? "the brand"}</p>
           <p className="mt-1 text-small text-ink-2">{review.reply.body}</p>
         </div>

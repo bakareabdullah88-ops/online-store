@@ -14,8 +14,8 @@ export function TableEmpty({
   action?: ReactNode;
 }) {
   return (
-    <div className="card flex flex-col items-center px-6 py-16 text-center">
-      <span className="grid size-14 place-items-center rounded-2xl bg-surface-2 ring-1 ring-line">
+    <div className="card flex flex-col items-center py-16 text-center">
+      <span className="grid size-14 place-items-center rounded-full bg-ink/[0.05]">
         <Icon className="size-6 text-ink-2" />
       </span>
       <h2 className="mt-5 text-[17px] font-semibold">{title}</h2>

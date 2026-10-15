@@ -60,12 +60,12 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
     seed,
   };
   return (
-    <div className="card overflow-hidden" aria-label="Live preview of your shop" role="img">
-      <div className="aspect-[16/7]">
+    <div className="card pt-5" aria-label="Live preview of your shop" role="img">
+      <div className="relative aspect-[16/7] overflow-hidden rounded-lg">
         <AppImage image={cover} alt="" variant="cover" />
       </div>
-      <div className="p-5">
-        <div className="-mt-12 size-16 overflow-hidden rounded-full ring-4 ring-surface">
+      <div className="pt-5">
+        <div className="relative -mt-12 ml-4 size-16 overflow-hidden rounded-full ring-4 ring-canvas">
           <AppImage image={logo} alt="" variant="logo" name={s.name || "Your brand"} />
         </div>
         <p className="mt-3 eyebrow text-muted">
@@ -586,7 +586,7 @@ export function OpenShopWizard() {
                   <div className="lg:hidden">
                     <Preview s={{ ...s, fulfilment }} campusName={campusName} />
                   </div>
-                  <dl className="card grid grid-cols-[120px_1fr] gap-y-2 p-5 text-small">
+                  <dl className="card grid grid-cols-[120px_1fr] gap-y-2 py-5 text-small">
                     <dt className="text-muted">Name</dt>
                     <dd>{s.name}</dd>
                     <dt className="text-muted">Link</dt>

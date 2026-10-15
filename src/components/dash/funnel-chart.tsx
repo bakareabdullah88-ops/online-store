@@ -82,7 +82,7 @@ export function FunnelChart({
                 onClick={() => setActive(i)}
                 aria-pressed={on}
                 aria-label={`${s.label}: ${s.value}${s.conversion !== null ? `, ${Math.round(s.conversion)}% of the step before` : ""}`}
-                className="group relative flex flex-col border-l border-line text-left outline-none focus-visible:bg-accent-soft/40"
+                className="group relative flex flex-col border-l border-line-thin text-left outline-none first:border-l-0 focus-visible:bg-accent-soft/40"
               >
                 {on && (
                   <motion.span

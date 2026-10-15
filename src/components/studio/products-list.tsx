@@ -277,7 +277,7 @@ export function StudioProducts() {
           className="flex min-w-0 items-center gap-3"
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="size-10 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+          <span className="size-10 shrink-0 overflow-hidden rounded-md bg-sand">
             <AppImage image={p.images[0]} alt="" name={p.name} sizes="40px" />
           </span>
           <span className="min-w-0">
@@ -472,7 +472,7 @@ export function StudioProducts() {
         ]}
         card={(p) => (
           <div className="flex items-center gap-3">
-            <span className="size-14 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+            <span className="size-14 shrink-0 overflow-hidden rounded-md bg-sand">
               <AppImage image={p.images[0]} alt="" name={p.name} sizes="56px" />
             </span>
             <div className="min-w-0 flex-1">

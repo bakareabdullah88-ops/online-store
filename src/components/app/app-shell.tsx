@@ -27,14 +27,15 @@ function ShellSkeleton() {
 }
 
 /**
- * Signed-in frame: a plain background, a full-width top bar on tablets and
+ * Signed-in frame: one flat page colour (content sits directly on it, set
+ * apart by thin grey lines rather than boxes), a full-width top bar on tablets and
  * up, and on phones a top bar whose menu opens a sidebar.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<ShellSkeleton />}>
       <RequireAuth fallback={<ShellSkeleton />}>
-        <div className="relative min-h-dvh bg-[var(--app-bg)]">
+        <div className="relative min-h-dvh bg-[var(--app-bg)] [--canvas:var(--app-bg)]">
           <AppBackdrop />
           <TopNav />
           <MobileTopBar />

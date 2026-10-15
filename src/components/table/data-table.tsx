@@ -431,13 +431,16 @@ export function DataTable<T>({
         <>
           {/* phones */}
           {card && (
-            <ul className="flex flex-col gap-2 md:hidden print:hidden" aria-label={label}>
+            <ul
+              className="flex flex-col divide-y divide-line-thin border-y border-line-thin md:hidden print:hidden"
+              aria-label={label}
+            >
               {shown.map((r) => (
                 <li
                   key={getId(r)}
                   className={cn(
-                    "flex items-start gap-3 rounded-2xl bg-surface p-3.5 ring-1 ring-line",
-                    onRowClick && "cursor-pointer active:bg-surface-2",
+                    "flex items-start gap-3 py-3.5",
+                    onRowClick && "cursor-pointer active:opacity-70",
                   )}
                   onClick={onRowClick ? () => onRowClick(r) : undefined}
                 >
@@ -455,14 +458,14 @@ export function DataTable<T>({
           {/* table */}
           <div
             className={cn(
-              "card overflow-x-auto print:overflow-visible print:shadow-none",
+              "overflow-x-auto border-b border-line-thin print:overflow-visible",
               card && "max-md:hidden print:block",
             )}
           >
-            <table className="w-full min-w-[760px] text-[13.5px]">
+            <table className="w-full min-w-[760px] text-[13.5px] [&_td:first-child]:pl-0 [&_td:last-child]:pr-0 [&_th:first-child]:pl-0 [&_th:last-child]:pr-0">
               <caption className="sr-only">{label}</caption>
               <thead>
-                <tr className="bg-surface-2 text-left text-[12.5px] font-medium text-ink-2">
+                <tr className="text-left text-[12.5px] font-medium text-muted">
                   {selectable && (
                     <th scope="col" className="w-12 py-3.5 pl-4 print:hidden">
                       <Box state={pageState} onClick={togglePage} label="Select all on this page" />
@@ -500,7 +503,7 @@ export function DataTable<T>({
                       transition={{ delay: Math.min(i * 0.025, 0.25) }}
                       onClick={onRowClick ? () => onRowClick(r) : undefined}
                       className={cn(
-                        "border-t border-line transition-colors",
+                        "border-t border-line-thin transition-colors",
                         on ? "bg-accent-soft/50" : "hover:bg-ink/[0.02]",
                         onRowClick && "cursor-pointer",
                       )}
@@ -579,7 +582,7 @@ export function StatusTag({
 /** Avatar + name chip (image 4's guest column). */
 export function PersonChip({ name, avatar }: { name: string; avatar?: ReactNode }) {
   return (
-    <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-surface py-1 pr-3 pl-1 shadow-xs ring-1 ring-line">
+    <span className="inline-flex max-w-full items-center gap-2">
       {avatar ?? (
         <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft text-[10.5px] font-semibold text-accent">
           {name

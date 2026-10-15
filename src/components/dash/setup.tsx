@@ -17,7 +17,7 @@ export function SetupStrip() {
   return (
     <section
       aria-labelledby="setup-title"
-      className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6"
+      className="card flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:gap-6"
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">

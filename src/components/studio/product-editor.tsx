@@ -517,7 +517,7 @@ function OptionsField({ draft, setDraft }: { draft: Draft; setDraft: SetDraft })
   return (
     <div className="flex flex-col gap-4">
       {draft.options.map((o, oi) => (
-        <div key={o.id} className="rounded-md bg-surface-2 p-4 hairline">
+        <div key={o.id} className="border-t border-line-thin pt-4 first:border-t-0 first:pt-0">
           <div className="flex items-start gap-3 max-sm:flex-wrap">
             <Field label="Option name" className="w-40 shrink-0">
               <Input
@@ -602,17 +602,17 @@ function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: SetDraft }
       </p>
     );
   return (
-    <TableScroll label="Stock per variant" className="rounded-md hairline">
+    <TableScroll label="Stock per variant" className="border-y border-line-thin">
       <table className="w-full min-w-[420px] text-small">
         <thead>
-          <tr className="border-b border-line text-left text-muted">
-            <th scope="col" className="px-4 py-2.5 eyebrow font-medium">
+          <tr className="border-b border-line-thin text-left text-muted">
+            <th scope="col" className="py-2.5 pr-3 eyebrow font-medium">
               Combination
             </th>
             <th scope="col" className="w-28 px-3 py-2.5 eyebrow font-medium">
               Stock
             </th>
-            <th scope="col" className="w-44 px-3 py-2.5 eyebrow font-medium">
+            <th scope="col" className="w-44 py-2.5 pl-3 eyebrow font-medium">
               Extra price (₦)
             </th>
           </tr>
@@ -621,8 +621,8 @@ function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: SetDraft }
           {draft.variants.map((v) => {
             const name = variantLabel(draft.options, v.key) || "Default";
             return (
-              <tr key={v.key} className="border-b border-line last:border-0">
-                <td className="px-4 py-2">{name}</td>
+              <tr key={v.key} className="border-b border-line-thin last:border-0">
+                <td className="py-2 pr-3">{name}</td>
                 <td className="px-3 py-2">
                   <CountInput
                     className="h-9 font-mono"
@@ -631,7 +631,7 @@ function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: SetDraft }
                     onChange={(stock) => update(v.key, { stock })}
                   />
                 </td>
-                <td className="px-3 py-2">
+                <td className="py-2 pl-3">
                   <PriceDeltaInput
                     label={`Extra price for ${name}`}
                     value={v.priceDeltaKobo}
@@ -659,7 +659,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card p-5 md:p-6">
+    <section className="card py-6 md:py-8">
       <h2 className="text-title font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-muted">{description}</p>}
       <div className="mt-5">{children}</div>
@@ -983,8 +983,8 @@ function EditorForm({
           </span>
         </p>
       )}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="flex min-w-0 flex-col gap-6">
+      <div className="grid grid-cols-1 gap-x-12 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="flex min-w-0 flex-col">
           <Section
             title="Photos"
             description="Bright, natural light works best. Square-ish framing crops nicely."
@@ -1033,7 +1033,7 @@ function EditorForm({
                 {draft.details.map((d, i) => (
                   <div
                     key={`${d}-${i}`}
-                    className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-small hairline"
+                    className="flex items-center gap-2 border-b border-line-thin py-2 text-small"
                   >
                     <span className="flex-1">{d}</span>
                     <button
@@ -1217,8 +1217,8 @@ function EditorForm({
           </Section>
         </div>
         <aside className="min-w-0">
-          <div className="sticky top-24 flex flex-col gap-4">
-            <div className="card p-5">
+          <div className="sticky top-24 flex flex-col">
+            <div className="card py-6">
               <p className="mb-4 eyebrow text-muted">Live preview</p>
               {preview ? (
                 <div className="pointer-events-none mx-auto max-w-56" aria-hidden inert>
@@ -1231,7 +1231,7 @@ function EditorForm({
                 This is exactly how buyers see it in Explore and search.
               </p>
             </div>
-            <div className="card p-5">
+            <div className="card py-6">
               <p className="mb-3 text-small font-medium">Visibility</p>
               <SegmentedControl
                 label="Visibility"
@@ -1271,7 +1271,7 @@ function EditorForm({
         </aside>
       </div>
       {/* One place to save on phones and tablets, always in reach. */}
-      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 mt-6 flex items-center justify-end gap-2 border-t border-line bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur xl:hidden">
+      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 mt-6 flex items-center justify-end gap-2 border-t border-line-thin bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur xl:hidden">
         <span className="mr-auto text-small text-muted">
           {publishing ? "Live when saved" : "Draft when saved"}
         </span>

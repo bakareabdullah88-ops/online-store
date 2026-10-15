@@ -116,7 +116,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="card scroll-mt-24 p-5 md:p-6">
+    <section id={id} className="card scroll-mt-24 py-6 md:py-8">
       <h2 className="text-title font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-muted">{description}</p>}
       <div className="mt-5">{children}</div>
@@ -207,7 +207,7 @@ function BrandForm({ brand }: { brand: Brand }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       <Section
         id="logo"
         title="Look"
@@ -313,7 +313,7 @@ function BrandForm({ brand }: { brand: Brand }) {
           errors={errors}
         />
       </Section>
-      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 flex items-center justify-end gap-3 border-t border-line bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 py-3 backdrop-blur">
+      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 flex items-center justify-end gap-3 border-t border-line-thin bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 py-3 backdrop-blur">
         {dirty && <span className="mr-auto text-small text-muted">Unsaved changes</span>}
         <Button loading={update.isPending} success={saved} onClick={save}>
           Save changes
@@ -329,12 +329,7 @@ function VacationCard({ brand }: { brand: Brand }) {
   // Flips at once; if saving fails it goes back to what the shop really is.
   const on = update.isPending ? (update.variables?.vacation ?? brand.vacation) : brand.vacation;
   return (
-    <div
-      className={cn(
-        "rounded-lg p-5 hairline transition-colors",
-        on ? "bg-warning-soft" : "bg-surface",
-      )}
-    >
+    <div className="card py-5">
       <Switch
         checked={on}
         onCheckedChange={(vacation) =>
@@ -387,9 +382,7 @@ export function StudioBrandSettings() {
           </ButtonLink>
         }
       />
-      <div className="mb-6">
-        <VacationCard brand={brand} />
-      </div>
+      <VacationCard brand={brand} />
       <BrandForm key={brand.id} brand={brand} />
     </div>
   );

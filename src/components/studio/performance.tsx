@@ -22,14 +22,14 @@ import { useMyBrand, useShopDashboard } from "@/queries/studio";
 import type { Brand } from "@/services/types";
 import { ShopInsights } from "./analytics";
 
-/** Your shop the way students see it: cover, logo, the counts that matter, and a way to share it. */
+/** Your shop the way students see it: cover photo, logo, the counts that matter, and a way to share it. No box around it. */
 function ShopFront({ brand }: { brand: Brand | null | undefined }) {
   if (!brand) {
     return <Skeleton className="h-[188px] w-full md:h-[210px]" rounded="lg" />;
   }
   return (
-    <section className="card overflow-hidden">
-      <div className="relative h-24 bg-surface-2 md:h-32">
+    <section>
+      <div className="relative h-24 overflow-hidden rounded-xl bg-surface-2 md:h-32">
         <AppImage
           image={brand.cover}
           alt=""
@@ -37,9 +37,9 @@ function ShopFront({ brand }: { brand: Brand | null | undefined }) {
           sizes="(min-width: 1280px) 1200px, 100vw"
         />
       </div>
-      <div className="flex flex-col gap-4 px-4 pb-4 md:flex-row md:items-end md:px-6 md:pb-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex min-w-0 flex-1 items-end gap-3.5">
-          <span className="-mt-9 size-[72px] shrink-0 overflow-hidden rounded-2xl bg-surface ring-4 ring-surface md:-mt-11 md:size-20">
+          <span className="relative -mt-9 ml-4 size-[72px] shrink-0 overflow-hidden rounded-2xl bg-surface ring-4 ring-(--app-bg) md:-mt-11 md:ml-6 md:size-20">
             <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
           </span>
           <div className="min-w-0 pb-0.5">
@@ -146,7 +146,7 @@ export function ShopPerformance() {
           <DashboardSkeleton />
         </div>
       ) : (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-col">
           <HeroFigure
             label={`Revenue, ${rangeLabel(range)}`}
             valueKobo={d.revenue.value}
@@ -171,7 +171,7 @@ export function ShopPerformance() {
 
           <SetupStrip />
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
             <DashCard
               title="Needs your attention"
               aside={
@@ -211,7 +211,7 @@ export function ShopPerformance() {
                   </ButtonLink>
                 </div>
               ) : (
-                <ol className="divide-y divide-line">
+                <ol className="divide-y divide-line-thin">
                   {d.topProducts.map((p, i) => (
                     <li key={p.productId} className="flex items-center gap-3 py-3">
                       <span className="w-5 text-small text-muted tabular">{i + 1}</span>

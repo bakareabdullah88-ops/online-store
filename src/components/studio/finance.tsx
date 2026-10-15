@@ -86,7 +86,7 @@ function PayoutForm({
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
       {saved && (
-        <div className="flex items-center gap-3 rounded-2xl bg-surface p-3.5 ring-1 ring-line">
+        <div className="flex items-center gap-3 border-y border-line-thin py-3.5">
           <span className="grid size-10 place-items-center rounded-xl bg-success-soft text-success">
             <CheckCircle2 className="size-5" />
           </span>
@@ -136,8 +136,8 @@ export function StudioFinance() {
       {!data ? (
         <DashboardSkeleton />
       ) : (
-        <Stagger className="grid grid-cols-1 gap-4">
-          <StaggerItem className="grid gap-3 sm:grid-cols-3">
+        <Stagger className="grid grid-cols-1">
+          <StaggerItem className="grid gap-x-6 sm:grid-cols-3">
             {[
               {
                 icon: <Banknote />,
@@ -158,7 +158,7 @@ export function StudioFinance() {
                 note: "All time",
               },
             ].map((s) => (
-              <section key={s.label} className="card lift p-5">
+              <section key={s.label} className="card py-5">
                 <p className="flex items-center gap-2 text-[13.5px] font-medium text-ink-2 [&_svg]:size-4 [&_svg]:text-muted">
                   {s.icon}
                   {s.label}
@@ -170,7 +170,7 @@ export function StudioFinance() {
               </section>
             ))}
           </StaggerItem>
-          <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <StaggerItem className="grid grid-cols-1 gap-x-10 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             <DashCard
               title="Earnings by month"
               icon={<TrendingUp />}

@@ -58,7 +58,11 @@ export function BarChart({
           aria-hidden
         >
           {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="h-px w-full bg-line" style={{ opacity: i === 3 ? 1 : 0.6 }} />
+            <span
+              key={i}
+              className="h-px w-full bg-line-thin"
+              style={{ opacity: i === 3 ? 1 : 0.6 }}
+            />
           ))}
         </div>
         {data.map((d, i) => {

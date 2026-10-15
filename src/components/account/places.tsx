@@ -165,7 +165,7 @@ export function PlacesView() {
           action={<Button onClick={() => setEditing(blank)}>Add a place</Button>}
         />
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => {
               const campus = campuses.data?.find((c) => c.id === p.campusId);
@@ -177,7 +177,7 @@ export function PlacesView() {
                   layout
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={spring.smooth}
-                  className="card flex flex-col p-5"
+                  className="card flex flex-col py-5"
                 >
                   <div className="flex items-start gap-3">
                     <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
@@ -194,7 +194,7 @@ export function PlacesView() {
                       {point && <p className="mt-1 text-small text-muted">Pickup: {point.name}</p>}
                     </div>
                   </div>
-                  <div className="mt-4 flex gap-1 border-t border-line pt-3">
+                  <div className="-mx-3 mt-3 flex gap-1">
                     <Button
                       size="sm"
                       variant="ghost"

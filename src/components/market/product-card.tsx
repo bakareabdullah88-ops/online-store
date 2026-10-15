@@ -55,7 +55,7 @@ export function ProductCard({
         href={`/products/${p.slug}`}
         className="block rounded-md focus-visible:outline-offset-4"
       >
-        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-2">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-sand">
           {morph ? (
             <ViewTransition name={productTransitionName(p.id)} share="morph" default="none">
               {image}

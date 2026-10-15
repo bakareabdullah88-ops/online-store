@@ -59,9 +59,9 @@ export function SuccessView() {
           : `${formatNaira(total)} · Each brand will accept and update its order. We'll keep you posted.`}
       </motion.p>
 
-      <ul className="mt-10 flex flex-col gap-3 text-left">
+      <ul className="mt-10 flex flex-col border-b border-line-thin text-left">
         {isPending
-          ? [0, 1].map((i) => <Skeleton key={i} className="h-24 w-full" rounded="lg" />)
+          ? [0, 1].map((i) => <Skeleton key={i} className="my-3 h-20 w-full" rounded="lg" />)
           : orders.map((o, i) => (
               <motion.li
                 key={o.id}
@@ -69,10 +69,7 @@ export function SuccessView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...spring.smooth, delay: 0.3 + stagger(i, 0.06) }}
               >
-                <Link
-                  href={`/orders/${o.id}`}
-                  className="group card flex items-center gap-4 lift p-4"
-                >
+                <Link href={`/orders/${o.id}`} className="group card flex items-center gap-4 py-4">
                   <span className="size-12 shrink-0 overflow-hidden rounded-full">
                     <AppImage image={o.brandLogo} alt="" variant="logo" name={o.brandName} />
                   </span>

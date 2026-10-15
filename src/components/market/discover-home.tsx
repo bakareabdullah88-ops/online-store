@@ -164,7 +164,7 @@ function OnTheWay({ order }: { order: Order }) {
   return (
     <Link
       href={`/orders/${order.id}`}
-      className="group flex items-center gap-3 rounded-2xl bg-accent-soft p-3.5 pr-4 ring-1 ring-accent/20"
+      className="group flex items-center gap-3 border-y border-line-thin py-3.5"
     >
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand text-white">
         <Bike className="size-5" aria-hidden />
@@ -198,8 +198,8 @@ function Categories() {
               href={`/explore?category=${c.id}`}
               className="group flex w-[76px] flex-col items-center gap-2 md:w-full"
             >
-              <span className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface p-1 shadow-sm ring-1 ring-line transition-transform duration-300 group-hover:-translate-y-1">
-                <span className="relative block size-full overflow-hidden rounded-[12px]">
+              <span className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface-2 transition-transform duration-300 group-hover:-translate-y-1">
+                <span className="relative block size-full">
                   <Image
                     src={`/discover/${c.id}.jpg`}
                     alt=""
@@ -220,7 +220,7 @@ function Categories() {
   );
 }
 
-/** A shop card in the style of a restaurant tile: photo with a badge and heart, then name and rating. */
+/** A shop in the style of a restaurant tile: a rounded photo with a badge and heart, then name and rating. No box around it. */
 function ShopTile({ brand: b }: { brand: Brand }) {
   const { user } = useSession();
   const follow = useToggleFollow();
@@ -234,7 +234,7 @@ function ShopTile({ brand: b }: { brand: Brand }) {
         ? "Verified shop"
         : null;
   return (
-    <article className="group relative w-[280px] rounded-2xl bg-surface p-1.5 shadow-sm ring-1 ring-line transition-shadow hover:shadow-md md:w-auto">
+    <article className="group relative w-[280px] md:w-auto">
       <Link href={`/brands/${b.handle}`} className="block">
         <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-surface-2">
           <div className="size-full transition-transform duration-500 group-hover:scale-[1.04]">
@@ -258,7 +258,7 @@ function ShopTile({ brand: b }: { brand: Brand }) {
             </span>
           )}
         </div>
-        <div className="flex items-start gap-2.5 px-2 pt-2.5 pb-2">
+        <div className="flex items-start gap-2.5 pt-3">
           <span className="size-10 shrink-0 overflow-hidden rounded-full ring-1 ring-line">
             <AppImage image={b.logo} alt="" variant="logo" name={b.name} />
           </span>
@@ -290,7 +290,7 @@ function ShopTile({ brand: b }: { brand: Brand }) {
           aria-pressed={following}
           aria-label={following ? `Unfollow ${b.name}` : `Follow ${b.name}`}
           onClick={() => follow.mutate({ id: b.id, handle: b.handle })}
-          className="absolute top-4 right-4 grid size-9 pressable place-items-center rounded-full bg-black/25 backdrop-blur-sm"
+          className="absolute top-2.5 right-2.5 grid size-9 pressable place-items-center rounded-full bg-black/25 backdrop-blur-sm"
         >
           <Heart
             className={cn(
@@ -327,7 +327,7 @@ function Shops({ campusId }: { campusId: string | undefined }) {
   const local = !!near && near.length > 0 && !!campusId;
   if (shops && shops.length === 0) return null;
   return (
-    <section>
+    <section className="border-t border-line-thin pt-5 md:pt-6">
       <SectionHead title={local ? "Shops near you" : "Popular shops"} href="/explore" />
       <ul className="-mx-(--gutter) scrollbar-none flex snap-x scroll-px-(--gutter) gap-4 overflow-x-auto px-(--gutter) pb-1 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 xl:grid-cols-4">
         {shops
@@ -362,7 +362,7 @@ function ProductGrid({
   const items = data?.items.filter((p) => !skip.includes(p.id)).slice(0, 10);
   if (items && items.length === 0) return null;
   return (
-    <section>
+    <section className="border-t border-line-thin pt-5 md:pt-6">
       <SectionHead title={title} href={href} />
       <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {items
@@ -383,7 +383,7 @@ function ProductGrid({
 /** Nothing on Kamplug yet: say so plainly and offer to be first. */
 function EmptyMarket() {
   return (
-    <section className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-strong px-6 py-12 text-center">
+    <section className="flex flex-col items-center gap-3 border-t border-line-thin py-12 text-center">
       <span className="grid size-12 place-items-center rounded-full bg-accent-soft text-accent-ink">
         <Store className="size-6" />
       </span>
@@ -449,7 +449,7 @@ export function DiscoverHome() {
 
       <Link
         href="/account"
-        className="flex items-center gap-3 rounded-2xl bg-surface-2 p-4 ring-1 ring-line transition-colors hover:bg-ink/[0.04] sm:hidden"
+        className="flex items-center gap-3 border-t border-line-thin pt-5 transition-opacity hover:opacity-80 sm:hidden"
       >
         <span className="grid size-10 place-items-center rounded-full bg-accent-soft text-accent-ink">
           <Gauge className="size-5" />

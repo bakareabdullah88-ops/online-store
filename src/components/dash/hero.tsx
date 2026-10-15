@@ -75,8 +75,8 @@ export function HeroFigure({
   className?: string;
 }) {
   return (
-    <section className={cn("card overflow-hidden", className)}>
-      <div className="grid gap-6 p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-end md:p-7">
+    <section className={cn("card overflow-x-clip", className)}>
+      <div className="grid gap-6 py-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:items-end md:py-7">
         <div>
           <p className="text-small font-medium text-muted">{label}</p>
           <p className="mt-2 text-[44px] leading-none font-semibold tracking-[-0.04em] tabular md:text-[56px]">
@@ -86,7 +86,7 @@ export function HeroFigure({
             <DeltaBadge change={change} />
             {compare}
           </p>
-          <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-line pt-5">
+          <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-line-thin pt-5">
             {stats.map((s) => (
               <div key={s.label} className="min-w-0">
                 <dt className="truncate text-[12.5px] text-muted">{s.label}</dt>
@@ -97,11 +97,11 @@ export function HeroFigure({
             ))}
           </dl>
         </div>
-        <div className="-mx-1">
+        <div>
           <AreaChart points={points} />
         </div>
       </div>
-      {footer && <div className="border-t border-line px-5 py-3 md:px-7">{footer}</div>}
+      {footer && <div className="pb-5 md:pb-6">{footer}</div>}
     </section>
   );
 }

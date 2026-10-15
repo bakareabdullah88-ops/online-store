@@ -378,9 +378,9 @@ export function ProductView() {
           </div>
 
           {fulfilment && (
-            <div className="card mt-8 divide-y divide-line">
+            <div className="card mt-8 divide-y divide-line-thin border-b border-line-thin">
               {fulfilment.delivery && (
-                <div className="flex gap-3 p-4">
+                <div className="flex gap-3 py-4">
                   <Bike className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
                     <p className="font-medium">
@@ -393,7 +393,7 @@ export function ProductView() {
                 </div>
               )}
               {fulfilment.pickup && (
-                <div className="flex gap-3 p-4">
+                <div className="flex gap-3 py-4">
                   <MapPin className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
                     <p className="font-medium">Free pickup</p>
@@ -403,7 +403,7 @@ export function ProductView() {
                   </div>
                 </div>
               )}
-              <div className="flex gap-3 p-4">
+              <div className="flex gap-3 py-4">
                 <Clock className="mt-0.5 size-5 shrink-0" />
                 <div className="text-small">
                   <p className="font-medium">
@@ -421,7 +421,7 @@ export function ProductView() {
           )}
 
           {p.details.length > 0 && (
-            <details className="group mt-8 border-t border-line pt-5" open>
+            <details className="group mt-8 border-t border-line-thin pt-5" open>
               <summary className="flex cursor-pointer list-none items-center justify-between text-title font-semibold [&::-webkit-details-marker]:hidden">
                 Details
                 <span className="text-muted transition-transform group-open:rotate-45" aria-hidden>
@@ -440,7 +440,7 @@ export function ProductView() {
           )}
 
           {!own && (
-            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line pt-6">
+            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line-thin pt-6">
               <Button
                 variant="ghost"
                 leadingIcon={<MessageCircle className="size-4.5" />}
@@ -461,7 +461,7 @@ export function ProductView() {
       <section
         id="reviews"
         aria-labelledby="reviews-title"
-        className="mt-20 scroll-mt-24 border-t border-line pt-12"
+        className="mt-20 scroll-mt-24 border-t border-line-thin pt-12"
       >
         <h2 id="reviews-title" className="mb-8 font-display text-display-sm">
           What students say
@@ -480,7 +480,7 @@ export function ProductView() {
       <div className="h-24 lg:hidden" aria-hidden />
       <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden",
+          "fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line-thin bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden",
           // Out of the way while typing (a review, a message): the keyboard would lift it over the field.
           typing && "hidden",
         )}

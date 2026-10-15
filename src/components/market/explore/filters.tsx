@@ -25,7 +25,7 @@ function FilterGroup({
   aside?: React.ReactNode;
 }) {
   return (
-    <fieldset className="border-b border-line py-5 first:pt-0 last:border-0">
+    <fieldset className="border-b border-line-thin py-5 first:pt-0 last:border-0">
       <div className="mb-3 flex items-center justify-between">
         <legend className="eyebrow text-muted">{title}</legend>
         {aside}

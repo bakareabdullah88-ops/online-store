@@ -24,7 +24,7 @@ function ReplyBox({ review }: { review: Review }) {
   const reply = useReplyToReview();
   if (review.reply) {
     return (
-      <div className="mt-3 rounded-md bg-canvas-sunk px-4 py-3">
+      <div className="mt-3 border-l-2 border-line pl-4">
         <p className="eyebrow text-muted">Your reply</p>
         <p className="mt-1 text-small text-ink-2">{review.reply.body}</p>
       </div>
@@ -128,8 +128,8 @@ export function StudioReviews() {
           body="Buyers can review after their order is delivered."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[280px_1fr]">
-          <div className="card p-5 xl:sticky xl:top-24 xl:self-start">
+        <div className="grid grid-cols-1 gap-x-12 gap-y-8 xl:grid-cols-[280px_1fr]">
+          <div className="card py-5 xl:sticky xl:top-24 xl:self-start">
             {breakdown && <RatingSummary breakdown={breakdown} />}
           </div>
           <div>
@@ -153,11 +153,11 @@ export function StudioReviews() {
                 body="You're all caught up."
               />
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col border-b border-line-thin">
                 {list.map((r) => {
                   const p = products.data?.find((x) => x.id === r.productId);
                   return (
-                    <li key={r.id} className="card p-5">
+                    <li key={r.id} className="card py-5">
                       <div className="flex items-start gap-3">
                         <Avatar name={r.authorName} size={36} />
                         <div className="min-w-0 flex-1">

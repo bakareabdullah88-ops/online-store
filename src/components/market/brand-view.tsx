@@ -158,8 +158,8 @@ function BrandAbout({ brand }: { brand: Brand }) {
           On {campus?.name ?? "campus"} since {formatDate(brand.createdAt, { year: true })}
         </p>
       </div>
-      <dl className="flex flex-col gap-6 md:col-span-5">
-        <div className="card p-5">
+      <dl className="flex flex-col border-b border-line-thin md:col-span-5">
+        <div className="card py-5">
           <dt className="flex items-center gap-2 text-small font-semibold">
             <Clock className="size-4" /> Opening hours
           </dt>
@@ -169,7 +169,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
           </dd>
         </div>
         {brand.fulfilment.pickup && (
-          <div className="card p-5">
+          <div className="card py-5">
             <dt className="flex items-center gap-2 text-small font-semibold">
               <MapPin className="size-4" /> Pickup points · free
             </dt>
@@ -186,7 +186,7 @@ function BrandAbout({ brand }: { brand: Brand }) {
           </div>
         )}
         {brand.fulfilment.delivery && (
-          <div className="card p-5">
+          <div className="card py-5">
             <dt className="flex items-center gap-2 text-small font-semibold">
               <Bike className="size-4" /> Delivery · {formatNaira(brand.fulfilment.deliveryFeeKobo)}
             </dt>
@@ -322,7 +322,7 @@ export function BrandView() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line pb-6 text-small">
+        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line-thin pb-6 text-small">
           <OpenBadge brand={brand} />
           {brand.ratingCount > 0 && (
             <button
