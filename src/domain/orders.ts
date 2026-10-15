@@ -177,14 +177,17 @@ export function etaSeconds(order: Order, now: number): number | null {
 }
 
 /** Apply a seller transition, appending to the timeline. Throws on an illegal move. */
-export function transition(order: Order, to: OrderStatus, now: number): Order {
+export function transition(order: Order, to: OrderStatus, now: number, note?: string): Order {
   if (!canTransition(order, to)) {
     throw new Error(`Can't move an order from ${order.status} to ${to}`);
   }
   return {
     ...order,
     status: to,
-    timeline: [...order.timeline, { status: to, at: new Date(now).toISOString() }],
+    timeline: [
+      ...order.timeline,
+      { status: to, at: new Date(now).toISOString(), ...(note ? { note } : {}) },
+    ],
     payment:
       to === "delivered" && order.payment.method === "pay_on_pickup"
         ? { ...order.payment, status: "paid" }

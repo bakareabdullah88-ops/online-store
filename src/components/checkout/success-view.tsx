@@ -17,8 +17,10 @@ import { Celebration } from "./celebration";
 export function SuccessView() {
   const params = useSearchParams();
   const checkoutId = params.get("checkout");
-  const { data, isPending } = useMyOrders();
-  const orders = (data ?? []).filter((o) => o.checkoutId === checkoutId);
+  const query = useMyOrders();
+  const orders = (query.data ?? []).filter((o) => o.checkoutId === checkoutId);
+  // Not found yet while the list is still loading or refreshing: wait before saying so.
+  const isPending = orders.length === 0 && (query.isPending || query.isFetching);
 
   if (!isPending && orders.length === 0) {
     return (

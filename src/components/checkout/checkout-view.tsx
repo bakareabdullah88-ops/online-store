@@ -4,7 +4,8 @@ import { pagePad } from "@/components/app/layout";
 import { NavPageHeader } from "@/components/app/nav-header";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffectEvent, useLayoutEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   AlertCircle,
   Banknote,
@@ -13,12 +14,14 @@ import {
   CreditCard,
   Lock,
   MapPin,
+  RotateCcw,
   Tag,
   X,
 } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { RadioCards } from "@/components/ui/controls";
+import { Chip } from "@/components/ui/chip";
+import { Checkbox, RadioCards } from "@/components/ui/controls";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input } from "@/components/ui/input";
 import { NumberTicker } from "@/components/ui/misc";
@@ -30,13 +33,14 @@ import { spring } from "@/design/motion";
 import { formatNaira } from "@/domain/money";
 import type { GroupQuote } from "@/domain/checkout";
 import { cn } from "@/lib/cn";
+import { useTextEntryFocus } from "@/lib/hooks";
 import { useCampuses } from "@/queries/catalog";
-import { usePlaces } from "@/queries/inbox";
+import { usePlaces, useSavePlace } from "@/queries/inbox";
 import { useCreateOrders, useQuote } from "@/queries/orders";
 import { useSession } from "@/queries/session";
 import { errorMessage } from "@/services/errors";
 import type { CheckoutInput } from "@/services/inputs";
-import type { Campus, PaymentMethod } from "@/services/types";
+import type { Campus, PaymentMethod, SavedPlace } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
 import { features } from "@/config/features";
@@ -49,7 +53,18 @@ type GroupState = {
   addressLine: string;
   note: string;
   promoInput: string;
+  /** The saved place picked for delivery, if any. */
+  placeId: string;
+  /** Save a newly typed delivery address to the buyer's places after ordering. */
+  saveAddress: boolean;
 };
+
+/** Each order is paid to its seller on handover; how depends on how it gets to you. */
+function payLine(method: GroupState["method"]) {
+  return method === "delivery"
+    ? { title: "Pay when you receive it", hint: "Cash or transfer to the seller on delivery" }
+    : { title: "Pay at pickup", hint: "Cash or transfer to the seller when you collect it" };
+}
 
 function SummaryRow({
   label,
@@ -86,8 +101,10 @@ function GroupSection({
   quote,
   errors,
   index,
+  places,
 }: {
   group: BagGroupView;
+  places: SavedPlace[];
   campus: Campus | undefined;
   state: GroupState;
   onChange: (patch: Partial<GroupState>) => void;
@@ -102,6 +119,18 @@ function GroupSection({
   const zones = campus?.zones.filter((z) => b.fulfilment.zoneIds.includes(z.id)) ?? [];
   const points =
     campus?.pickupPoints.filter((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? [];
+  // Saved places on this campus, in zones this shop delivers to.
+  const savedHere = places.filter(
+    (p) => p.campusId === b.campusId && b.fulfilment.zoneIds.includes(p.zoneId),
+  );
+  const typedNew =
+    !state.placeId &&
+    state.addressLine.trim().length >= 3 &&
+    !places.some(
+      (p) =>
+        p.zoneId === state.zoneId &&
+        p.addressLine.trim().toLowerCase() === state.addressLine.trim().toLowerCase(),
+    );
   const methods = [
     ...(b.fulfilment.delivery
       ? [
@@ -118,7 +147,11 @@ function GroupSection({
   ];
 
   return (
-    <section aria-labelledby={`g-${group.brandId}`} className="card">
+    <section
+      id={`group-${group.brandId}`}
+      aria-labelledby={`g-${group.brandId}`}
+      className="card scroll-mt-24"
+    >
       <header className="flex items-center gap-3 border-b border-line p-4 md:p-5">
         <span className="font-mono text-label text-muted">0{index + 2}</span>
         <span className="size-9 shrink-0 overflow-hidden rounded-full">
@@ -173,25 +206,57 @@ function GroupSection({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={spring.snappy}
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+              className="flex flex-col gap-4"
             >
-              <Field label="Deliver to" error={errors.zoneId}>
-                <Select
-                  label="Delivery zone"
-                  value={state.zoneId || undefined}
-                  onValueChange={(v) => onChange({ zoneId: v })}
-                  placeholder="Choose a zone"
-                  options={zones.map((z) => ({ value: z.id, label: z.name }))}
+              {savedHere.length > 0 && (
+                <div role="group" aria-label="Your saved places" className="flex flex-wrap gap-2">
+                  {savedHere.map((p) => (
+                    <Chip
+                      key={p.id}
+                      selected={state.placeId === p.id}
+                      icon={<MapPin className="size-3.5" />}
+                      onClick={() =>
+                        onChange({
+                          placeId: p.id,
+                          zoneId: p.zoneId,
+                          addressLine: p.addressLine,
+                          saveAddress: false,
+                        })
+                      }
+                    >
+                      {p.label}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Deliver to" error={errors.zoneId}>
+                  <Select
+                    label="Delivery zone"
+                    value={state.zoneId || undefined}
+                    onValueChange={(v) => onChange({ zoneId: v, placeId: "" })}
+                    placeholder="Choose a zone"
+                    options={zones.map((z) => ({ value: z.id, label: z.name }))}
+                  />
+                </Field>
+                <Field label="Room, block or landmark" error={errors.addressLine}>
+                  <Input
+                    value={state.addressLine}
+                    onChange={(e) => onChange({ addressLine: e.target.value, placeId: "" })}
+                    placeholder="e.g. Room 12, Block C"
+                    autoComplete="address-line1"
+                    maxLength={120}
+                  />
+                </Field>
+              </div>
+              {typedNew && (
+                <Checkbox
+                  checked={state.saveAddress}
+                  onCheckedChange={(saveAddress) => onChange({ saveAddress })}
+                  label="Save this address"
+                  description="Pick it in one tap next time."
                 />
-              </Field>
-              <Field label="Room, block or landmark" error={errors.addressLine}>
-                <Input
-                  value={state.addressLine}
-                  onChange={(e) => onChange({ addressLine: e.target.value })}
-                  placeholder="e.g. Room 12, Block C"
-                  maxLength={120}
-                />
-              </Field>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -220,6 +285,7 @@ function GroupSection({
             value={state.note}
             onChange={(e) => onChange({ note: e.target.value })}
             placeholder="e.g. Please call when you're at the gate"
+            autoComplete="off"
             maxLength={200}
           />
         </Field>
@@ -236,7 +302,7 @@ function GroupSection({
               <button
                 type="button"
                 onClick={() => setPromo(group.brandId, null)}
-                className="flex size-7 items-center justify-center rounded-sm hover:bg-success/10"
+                className="relative flex size-7 items-center justify-center rounded-sm after:absolute after:-inset-2 after:content-[''] hover:bg-success/10"
                 aria-label={`Remove code ${quote.promo.code}`}
               >
                 <X className="size-4" />
@@ -303,15 +369,31 @@ export function CheckoutView() {
   const removeBrand = useBag((s) => s.removeBrand);
   const setPromo = useBag((s) => s.setPromo);
   const create = useCreateOrders();
+  const savePlace = useSavePlace();
   const router = useRouter();
+  const typing = useTextEntryFocus();
 
   const [phoneInput, setPhone] = useState<string | null>(null);
   const phone = phoneInput ?? user?.phone ?? "";
   const [overrides, setOverrides] = useState<Record<string, GroupState>>({});
-  const [paymentChoice, setPayment] = useState<PaymentMethod | null>(null);
+  const [payOnline, setPayOnline] = useState(false);
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const [placed, setPlaced] = useState(false);
+
+  // The router keeps this screen mounted after leaving it. Clear what shouldn't come back:
+  // old errors, and after an order, everything (so Back shows the empty bag, not a skeleton).
+  const onHide = useEffectEvent(() => {
+    setErrors({});
+    setPhoneError(undefined);
+    if (placed) {
+      setPlaced(false);
+      setOverrides({});
+      setPhone(null);
+      setPayOnline(false);
+    }
+  });
+  useLayoutEffect(() => () => onHide(), []);
 
   const campusById = useMemo(
     () => new Map((campuses.data ?? []).map((c) => [c.id, c])),
@@ -326,16 +408,16 @@ export function CheckoutView() {
     const place =
       places.data?.find((p) => p.isDefault && p.campusId === b.campusId) ??
       places.data?.find((p) => p.campusId === b.campusId);
+    const served = !!place && b.fulfilment.zoneIds.includes(place.zoneId);
     return {
       method: b.fulfilment.delivery ? "delivery" : "pickup",
-      zoneId:
-        place && b.fulfilment.zoneIds.includes(place.zoneId)
-          ? place.zoneId
-          : (b.fulfilment.zoneIds[0] ?? ""),
+      zoneId: served ? place.zoneId : (b.fulfilment.zoneIds[0] ?? ""),
       pickupPointId: b.fulfilment.pickupPointIds[0] ?? "",
       addressLine: place?.addressLine ?? "",
       note: "",
       promoInput: promoCodes[g.brandId] ?? "",
+      placeId: served ? place.id : "",
+      saveAddress: false,
     };
   };
   const state: Record<string, GroupState> = {};
@@ -350,8 +432,14 @@ export function CheckoutView() {
     !places.isPending;
   const blockedGroup = groups.find((g) => g.blockedReason);
   const anyDelivery = groups.some((g) => state[g.brandId]?.method === "delivery");
+  // Offline payment is per order: the server records "pay at pickup" or "pay on delivery"
+  // for each one from its own fulfilment method.
   const payment: PaymentMethod =
-    paymentChoice ?? (anyDelivery ? "pay_on_delivery" : "pay_on_pickup");
+    payOnline && features.onlinePayments
+      ? "card"
+      : anyDelivery
+        ? "pay_on_delivery"
+        : "pay_on_pickup";
 
   const buildInput = (forQuote: boolean): CheckoutInput | null => {
     if (!ready || !user) return null;
@@ -426,6 +514,21 @@ export function CheckoutView() {
     }
     const input = buildInput(false);
     if (!input) return;
+    if (create.isPending) return;
+    const toSave = groups.flatMap((g) => {
+      const s = state[g.brandId];
+      const b = g.brand;
+      if (!s || !b || s.method !== "delivery" || !s.saveAddress || s.placeId) return [];
+      const zone = campusById.get(b.campusId)?.zones.find((z) => z.id === s.zoneId);
+      return [
+        {
+          label: (zone?.name ?? "Delivery").slice(0, 30),
+          campusId: b.campusId,
+          zoneId: s.zoneId,
+          addressLine: s.addressLine.trim(),
+        },
+      ];
+    });
     create.mutate(input, {
       onSuccess: (res) => {
         setPlaced(true);
@@ -433,12 +536,22 @@ export function CheckoutView() {
           removeBrand(g.brandId);
           setPromo(g.brandId, null);
         }
+        for (const p of toSave)
+          savePlace.mutate(p, {
+            onError: (e) =>
+              toast.error("Your order is in, but we couldn't save that address", {
+                description: errorMessage(e),
+              }),
+          });
         router.push(`/checkout/success?checkout=${res.checkoutId}`);
       },
-      onError: (e) => toast.error("Couldn't place your order", { description: errorMessage(e) }),
+      onError: (e) =>
+        toast.error("That didn't go through. Try again?", { description: errorMessage(e) }),
     });
   };
 
+  // Empty and nothing on its way. An order being placed, or just placed and heading to the
+  // success page, shows the skeleton instead.
   if (isEmpty && !placed && !create.isPending) {
     return (
       <div className="container-page">
@@ -465,29 +578,25 @@ export function CheckoutView() {
     );
   }
 
-  const payOptions = [
-    {
-      value: "pay_on_delivery" as const,
-      title: "Pay on delivery",
-      description: "Cash or transfer to the seller when your order arrives",
-      icon: <Banknote className="size-5" />,
-    },
-    {
-      value: "pay_on_pickup" as const,
-      title: "Pay at pickup",
-      description: "Pay the seller when you collect it",
-      icon: <Building2 className="size-5" />,
-    },
-    {
-      value: "card" as const,
-      title: "Pay online",
-      description: features.onlinePayments
-        ? "Card or bank transfer"
-        : "Card and transfer payments are coming soon",
-      icon: <CreditCard className="size-5" />,
-      disabled: !features.onlinePayments,
-    },
-  ];
+  const disabled = !!blockedGroup || problems || !quote.data;
+  const problemGroup = (quote.data?.groups ?? []).find((g) => g.problems.length > 0);
+  /** Why "Place order" is greyed out, in one line, and where tapping it takes you. */
+  const reason: { text: string; brandId?: string; retry?: boolean } | null = !disabled
+    ? null
+    : blockedGroup
+      ? { text: blockedGroup.blockedReason ?? "", brandId: blockedGroup.brandId }
+      : problemGroup
+        ? { text: problemGroup.problems[0]?.reason ?? "", brandId: problemGroup.brandId }
+        : quote.isError
+          ? { text: "We couldn't work out your total. Tap to try again.", retry: true }
+          : { text: "Working out your total…" };
+  const showReason = () => {
+    if (reason?.retry) void quote.refetch();
+    else if (reason?.brandId)
+      document
+        .getElementById(`group-${reason.brandId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className={pagePad}>
@@ -508,8 +617,23 @@ export function CheckoutView() {
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Name">
-                <Input value={user?.name ?? ""} readOnly className="bg-surface-2" />
+              <Field
+                label="Name"
+                aside={
+                  <Link
+                    href="/account/settings?next=/checkout"
+                    className="-my-2 inline-flex min-h-11 items-center text-small font-medium text-accent-ink underline underline-offset-4"
+                  >
+                    Edit
+                  </Link>
+                }
+              >
+                <Input
+                  value={user?.name ?? ""}
+                  readOnly
+                  autoComplete="name"
+                  className="bg-surface-2"
+                />
               </Field>
               <Field label="Phone for delivery" error={phoneError}>
                 <Input
@@ -529,6 +653,7 @@ export function CheckoutView() {
               group={g}
               index={i}
               campus={g.brand ? campusById.get(g.brand.campusId) : undefined}
+              places={places.data ?? []}
               state={state[g.brandId]!}
               onChange={(patch) =>
                 setOverrides((o) => ({
@@ -548,12 +673,62 @@ export function CheckoutView() {
                 Payment
               </h2>
             </div>
-            <RadioCards
-              label="Payment method"
-              value={payment}
-              onChange={setPayment}
-              options={payOptions}
-            />
+            {features.onlinePayments && (
+              <RadioCards
+                label="Payment method"
+                value={payOnline ? "online" : "seller"}
+                onChange={(v) => setPayOnline(v === "online")}
+                className="mb-4"
+                options={[
+                  {
+                    value: "seller",
+                    title: "Pay the seller",
+                    description: "When you get your order",
+                    icon: <Banknote className="size-5" />,
+                  },
+                  {
+                    value: "online",
+                    title: "Pay online",
+                    description: "Card or bank transfer",
+                    icon: <CreditCard className="size-5" />,
+                  },
+                ]}
+              />
+            )}
+            {!payOnline && (
+              <ul className="flex flex-col gap-2">
+                {groups.map((g) => {
+                  const method = state[g.brandId]?.method ?? "pickup";
+                  const line = payLine(method);
+                  return (
+                    <li
+                      key={g.brandId}
+                      className="flex items-start gap-3 rounded-md bg-surface-2 px-3.5 py-3 hairline"
+                    >
+                      <span className="mt-0.5 text-muted">
+                        {method === "delivery" ? (
+                          <Banknote className="size-5" />
+                        ) : (
+                          <Building2 className="size-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 text-small">
+                        <span className="block font-medium">
+                          {groups.length > 1 ? `${g.brand?.name ?? "Order"}: ` : ""}
+                          {line.title}
+                        </span>
+                        <span className="text-muted">{line.hint}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {!features.onlinePayments && (
+              <p className="mt-3 flex items-center gap-2 text-small text-muted">
+                <CreditCard className="size-4" /> Card and transfer payments are coming soon.
+              </p>
+            )}
           </section>
         </div>
 
@@ -596,11 +771,28 @@ export function CheckoutView() {
                 {blockedGroup.blockedReason} Remove it from your bag to continue.
               </p>
             )}
+            {quote.isError && !quote.isFetching && (
+              <div
+                role="alert"
+                className="mt-4 flex items-center gap-3 rounded-md bg-danger-soft px-3 py-2 text-small text-danger"
+              >
+                <AlertCircle className="size-4 shrink-0" />
+                <span className="flex-1">We couldn&apos;t work out your total.</span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  leadingIcon={<RotateCcw className="size-3.5" />}
+                  onClick={() => void quote.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
             <Button
               size="lg"
               className="mt-6 hidden w-full lg:flex"
               loading={create.isPending}
-              disabled={!!blockedGroup || problems || !quote.data}
+              disabled={disabled}
               onClick={place}
             >
               Place {groups.length > 1 ? `${groups.length} orders` : "order"} · {formatNaira(total)}
@@ -615,7 +807,23 @@ export function CheckoutView() {
 
       {/* Sticky place-order bar on phones */}
       <div className="h-24 lg:hidden" aria-hidden />
-      <div className="fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden",
+          // Out of the way while typing: the keyboard would push it over the field.
+          typing && "hidden",
+        )}
+      >
+        {reason && (
+          <button
+            type="button"
+            onClick={showReason}
+            className="mx-auto mb-2 flex min-h-8 w-full max-w-2xl items-center gap-2 text-left text-small text-warning"
+          >
+            <AlertCircle className="size-4 shrink-0" />
+            <span className="truncate">{reason.text}</span>
+          </button>
+        )}
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <div>
             <p className="text-small text-muted">Total</p>
@@ -627,7 +835,7 @@ export function CheckoutView() {
             size="lg"
             className="ml-auto max-w-72 flex-1"
             loading={create.isPending}
-            disabled={!!blockedGroup || problems || !quote.data}
+            disabled={disabled}
             onClick={place}
           >
             Place {groups.length > 1 ? `${groups.length} orders` : "order"}

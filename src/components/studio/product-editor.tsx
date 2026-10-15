@@ -19,8 +19,16 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, GripVertical, ImagePlus, Plus, Trash2, X } from "lucide-react";
+import {
+  useEffectEvent,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
+import { ArrowLeft, Copy, GripVertical, ImagePlus, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
@@ -29,6 +37,7 @@ import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/overlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SegmentedControl } from "@/components/ui/tabs";
+import { useUnsavedChangesGuard } from "@/components/ui/unsaved-guard";
 import { ProductCard } from "@/components/market/product-card";
 import { categories } from "@/config/categories";
 import { spring } from "@/design/motion";
@@ -64,7 +73,13 @@ type Draft = {
   status: "published" | "draft";
 };
 
+type Images = Draft["images"];
+type Errors = Record<string, string>;
+
 const uid = (p: string) => `${p}_${Math.random().toString(36).slice(2, 9)}`;
+
+/** One-off pieces (thrift) usually come in ones; everything else starts at 10. */
+const defaultStock = (category: CategoryId) => (category === "thrift" ? 1 : 10);
 
 function toDraft(p: Product | undefined, fallbackCategory: CategoryId): Draft {
   if (!p) {
@@ -78,7 +93,7 @@ function toDraft(p: Product | undefined, fallbackCategory: CategoryId): Draft {
       compareAt: "",
       images: [],
       options: [],
-      variants: [{ key: "default", stock: 10, priceDeltaKobo: 0 }],
+      variants: [{ key: "default", stock: defaultStock(fallbackCategory), priceDeltaKobo: 0 }],
       status: "published",
     };
   }
@@ -97,9 +112,112 @@ function toDraft(p: Product | undefined, fallbackCategory: CategoryId): Draft {
   };
 }
 
+/** A new product prefilled from another one. Only uploaded photos carry over; the server keeps those. */
+function copyDraft(p: Product): Draft {
+  const d = toDraft(p, p.category);
+  return { ...d, images: d.images.filter((i) => i.ref.kind === "blob"), status: "published" };
+}
+
 function syncVariants(options: ProductOption[], previous: Variant[]): Variant[] {
   return allVariantKeys(options).map(
     (key) => previous.find((v) => v.key === key) ?? { key, stock: 10, priceDeltaKobo: 0 },
+  );
+}
+
+/* ---------------------------- Number inputs ----------------------------- */
+
+type NumberInputProps = Omit<ComponentProps<typeof Input>, "value" | "onChange" | "inputMode">;
+
+/**
+ * A whole-number field (stock) that keeps what the user typed while they type,
+ * so clearing it to type a new number doesn't snap back to 0.
+ */
+function CountInput({
+  value,
+  onChange,
+  max = 9999,
+  ...rest
+}: NumberInputProps & { value: number; onChange: (n: number) => void; max?: number }) {
+  const [text, setText] = useState<string | null>(null);
+  return (
+    <Input
+      {...rest}
+      inputMode="numeric"
+      value={text ?? String(value)}
+      onChange={(e) => {
+        const clean = e.target.value.replace(/\D/g, "").slice(0, 4);
+        setText(clean);
+        if (clean) onChange(Math.min(max, Number(clean)));
+      }}
+      onBlur={(e) => {
+        if (text !== null) onChange(text ? Math.min(max, Number(text)) : 0);
+        setText(null);
+        rest.onBlur?.(e);
+      }}
+    />
+  );
+}
+
+/**
+ * Extra price per variant, in naira. It can be negative (a smaller size that
+ * costs less): the sign button flips it, and typing "-" works too. The text is
+ * kept while typing and read properly on blur.
+ */
+function PriceDeltaInput({
+  value,
+  onChange,
+  label,
+}: {
+  value: number;
+  onChange: (kobo: number) => void;
+  label: string;
+}) {
+  const [text, setText] = useState<string | null>(null);
+  const [negative, setNegative] = useState(value < 0);
+  const neg = value < 0 || (value === 0 && negative);
+  const magnitude = Math.abs(value) / 100;
+  const commit = (raw: string, isNeg: boolean) => {
+    const n = raw === "" || raw === "." ? 0 : Number(raw);
+    if (Number.isFinite(n)) onChange(Math.round(n * 100) * (isNeg ? -1 : 1));
+  };
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => {
+          setNegative(!neg);
+          onChange(-value);
+        }}
+        aria-pressed={neg}
+        aria-label={`${label}: ${neg ? "cheaper than the base price" : "more than the base price"}. Tap to switch.`}
+        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-sm bg-surface-2 font-mono text-body font-semibold hairline after:absolute after:-inset-1 after:content-[''] hover:bg-ink/[0.06]"
+      >
+        {neg ? "−" : "+"}
+      </button>
+      <Input
+        className="h-9 font-mono"
+        inputMode="decimal"
+        aria-label={label}
+        value={text ?? (magnitude ? String(magnitude) : "0")}
+        onFocus={(e) => e.currentTarget.select()}
+        onChange={(e) => {
+          let raw = e.target.value.replace(/[₦,\s]/g, "");
+          let isNeg = neg;
+          if (raw.startsWith("-")) {
+            isNeg = !neg;
+            raw = raw.replace(/-/g, "");
+            setNegative(isNeg);
+          }
+          if (!/^\d*(\.\d{0,2})?$/.test(raw)) return;
+          setText(raw);
+          commit(raw, isNeg);
+        }}
+        onBlur={() => {
+          if (text !== null) commit(text, neg);
+          setText(null);
+        }}
+      />
+    </div>
   );
 }
 
@@ -159,37 +277,43 @@ function ImagesField({
   images,
   onChange,
 }: {
-  images: Draft["images"];
-  onChange: (v: Draft["images"]) => void;
+  images: Images;
+  /** Functional, so uploads finishing one by one never undo a removal or reorder made meanwhile. */
+  onChange: (fn: (prev: Images) => Images) => void;
 }) {
   const upload = useUploadImage();
   const input = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [adding, setAdding] = useState(0);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  const addFiles = async (files: FileList | File[]) => {
-    const list = Array.from(files).slice(0, 8 - images.length);
-    const added: Draft["images"] = [];
+  const addFiles = async (files: File[]) => {
+    const list = files.slice(0, Math.max(0, 8 - images.length));
+    setAdding((n) => n + list.length);
     for (const f of list) {
       try {
         const r = await upload.mutateAsync(f);
-        added.push({ key: uid("img"), ref: r.ref });
+        const item = { key: uid("img"), ref: r.ref };
+        onChange((prev) => (prev.length >= 8 ? prev : [...prev, item]));
       } catch (e) {
         toast.error(`Couldn't add ${f.name}`, { description: errorMessage(e) });
+      } finally {
+        setAdding((n) => n - 1);
       }
     }
-    if (added.length) onChange([...images, ...added]);
   };
 
   const onDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
-    const from = images.findIndex((i) => i.key === active.id);
-    const to = images.findIndex((i) => i.key === over.id);
-    onChange(arrayMove(images, from, to));
+    onChange((prev) => {
+      const from = prev.findIndex((i) => i.key === active.id);
+      const to = prev.findIndex((i) => i.key === over.id);
+      return from < 0 || to < 0 ? prev : arrayMove(prev, from, to);
+    });
   };
 
   return (
@@ -203,7 +327,7 @@ function ImagesField({
                 id={img.key}
                 img={img.ref}
                 index={i}
-                onRemove={() => onChange(images.filter((x) => x.key !== img.key))}
+                onRemove={() => onChange((prev) => prev.filter((x) => x.key !== img.key))}
               />
             ))}
             {images.length < 8 && (
@@ -219,7 +343,7 @@ function ImagesField({
                   onDrop={(e) => {
                     e.preventDefault();
                     setDragOver(false);
-                    void addFiles(e.dataTransfer.files);
+                    void addFiles(Array.from(e.dataTransfer.files));
                   }}
                   className={cn(
                     "flex aspect-[4/5] w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed text-small text-muted transition-colors",
@@ -228,13 +352,13 @@ function ImagesField({
                       : "border-line-strong hover:border-ink hover:text-ink",
                   )}
                 >
-                  {upload.isPending ? (
+                  {adding > 0 ? (
                     <Skeleton className="size-8" rounded="full" />
                   ) : (
                     <ImagePlus className="size-6" />
                   )}
                   <span className="px-2 text-center">
-                    {upload.isPending ? "Adding…" : "Drop or tap to add"}
+                    {adding > 0 ? "Adding…" : "Drop or tap to add"}
                   </span>
                 </button>
               </li>
@@ -249,7 +373,12 @@ function ImagesField({
         multiple
         className="sr-only"
         aria-label="Add product images"
-        onChange={(e) => e.target.files && void addFiles(e.target.files)}
+        onChange={(e) => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          // Clear it so picking the same photo again (after removing it) still fires.
+          e.currentTarget.value = "";
+          if (files.length) void addFiles(files);
+        }}
       />
       <p className="mt-2 text-small text-muted">
         Up to 8 images · drag to reorder · the first is the cover. Real photos sell far better than
@@ -292,12 +421,19 @@ function TagInput({
   placeholder,
   label,
   max = 12,
+  id,
+  "aria-describedby": describedBy,
+  "aria-invalid": invalid,
 }: {
   values: string[];
   onChange: (v: string[]) => void;
   placeholder: string;
   label: string;
   max?: number;
+  /** Set by <Field>, so its label and error point at the text box. */
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
 }) {
   const [text, setText] = useState("");
   const add = () => {
@@ -305,6 +441,10 @@ function TagInput({
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
+    if (!parts.length) {
+      setText("");
+      return;
+    }
     const next = [...values];
     for (const p of parts)
       if (!next.some((v) => v.toLowerCase() === p.toLowerCase()) && next.length < max) next.push(p);
@@ -312,7 +452,12 @@ function TagInput({
     setText("");
   };
   return (
-    <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-md bg-surface px-2 py-1.5 shadow-[inset_0_0_0_1px_var(--line-strong)] focus-within:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)]">
+    <div
+      className={cn(
+        "flex min-h-11 flex-wrap items-center gap-1.5 rounded-md bg-surface px-2 py-1.5 shadow-[inset_0_0_0_1px_var(--line-strong)] focus-within:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)]",
+        invalid && "shadow-[inset_0_0_0_1.5px_var(--danger)]",
+      )}
+    >
       <AnimatePresence initial={false}>
         {values.map((v) => (
           <motion.span
@@ -328,7 +473,8 @@ function TagInput({
             <button
               type="button"
               onClick={() => onChange(values.filter((x) => x !== v))}
-              className="flex size-5 items-center justify-center rounded-full hover:bg-ink/10"
+              // Small to look at, 44px to tap.
+              className="relative flex size-5 items-center justify-center rounded-full after:absolute after:-inset-3 after:content-[''] hover:bg-ink/10"
               aria-label={`Remove ${v}`}
             >
               <X className="size-3" />
@@ -337,6 +483,9 @@ function TagInput({
         ))}
       </AnimatePresence>
       <input
+        id={id}
+        aria-describedby={describedBy}
+        aria-invalid={invalid || undefined}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
@@ -347,7 +496,7 @@ function TagInput({
         }}
         onBlur={add}
         placeholder={values.length ? "" : placeholder}
-        aria-label={label}
+        aria-label={id ? undefined : label}
         className="h-8 min-w-24 flex-1 bg-transparent px-1 text-body outline-none placeholder:text-faint"
       />
     </div>
@@ -356,20 +505,20 @@ function TagInput({
 
 /* ------------------------------ Options --------------------------------- */
 
-function OptionsField({
-  draft,
-  setDraft,
-}: {
-  draft: Draft;
-  setDraft: (fn: (d: Draft) => Draft) => void;
-}) {
+type SetDraft = (fn: (d: Draft) => Draft, ...clear: string[]) => void;
+
+function OptionsField({ draft, setDraft }: { draft: Draft; setDraft: SetDraft }) {
   const setOptions = (options: ProductOption[]) =>
-    setDraft((d) => ({ ...d, options, variants: syncVariants(options, d.variants) }));
+    setDraft(
+      (d) => ({ ...d, options, variants: syncVariants(options, d.variants) }),
+      "options",
+      "variants",
+    );
   return (
     <div className="flex flex-col gap-4">
       {draft.options.map((o, oi) => (
         <div key={o.id} className="rounded-md bg-surface-2 p-4 hairline">
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 max-sm:flex-wrap">
             <Field label="Option name" className="w-40 shrink-0">
               <Input
                 value={o.name}
@@ -436,18 +585,15 @@ function OptionsField({
   );
 }
 
-function VariantsTable({
-  draft,
-  setDraft,
-}: {
-  draft: Draft;
-  setDraft: (fn: (d: Draft) => Draft) => void;
-}) {
+function VariantsTable({ draft, setDraft }: { draft: Draft; setDraft: SetDraft }) {
   const update = (key: string, patch: Partial<Variant>) =>
-    setDraft((d) => ({
-      ...d,
-      variants: d.variants.map((v) => (v.key === key ? { ...v, ...patch } : v)),
-    }));
+    setDraft(
+      (d) => ({
+        ...d,
+        variants: d.variants.map((v) => (v.key === key ? { ...v, ...patch } : v)),
+      }),
+      "variants",
+    );
   const valid = draft.options.every((o) => o.values.length > 0);
   if (!valid)
     return (
@@ -461,51 +607,40 @@ function VariantsTable({
         <thead>
           <tr className="border-b border-line text-left text-muted">
             <th scope="col" className="px-4 py-2.5 eyebrow font-medium">
-              {draft.options.length ? "Combination" : "Item"}
+              Combination
             </th>
             <th scope="col" className="w-28 px-3 py-2.5 eyebrow font-medium">
               Stock
             </th>
-            <th scope="col" className="w-36 px-3 py-2.5 eyebrow font-medium">
+            <th scope="col" className="w-44 px-3 py-2.5 eyebrow font-medium">
               Extra price (₦)
             </th>
           </tr>
         </thead>
         <tbody>
-          {draft.variants.map((v) => (
-            <tr key={v.key} className="border-b border-line last:border-0">
-              <td className="px-4 py-2">{variantLabel(draft.options, v.key) || "Default"}</td>
-              <td className="px-3 py-2">
-                <Input
-                  className="h-9 font-mono"
-                  inputMode="numeric"
-                  aria-label={`Stock for ${variantLabel(draft.options, v.key) || "default"}`}
-                  value={String(v.stock)}
-                  onChange={(e) =>
-                    update(v.key, {
-                      stock: Math.max(
-                        0,
-                        Math.min(9999, Number(e.target.value.replace(/\D/g, "")) || 0),
-                      ),
-                    })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2">
-                <Input
-                  className="h-9 font-mono"
-                  inputMode="numeric"
-                  aria-label={`Extra price for ${variantLabel(draft.options, v.key) || "default"}`}
-                  value={String(v.priceDeltaKobo / 100)}
-                  onChange={(e) =>
-                    update(v.key, {
-                      priceDeltaKobo: (Number(e.target.value.replace(/[^\d]/g, "")) || 0) * 100,
-                    })
-                  }
-                />
-              </td>
-            </tr>
-          ))}
+          {draft.variants.map((v) => {
+            const name = variantLabel(draft.options, v.key) || "Default";
+            return (
+              <tr key={v.key} className="border-b border-line last:border-0">
+                <td className="px-4 py-2">{name}</td>
+                <td className="px-3 py-2">
+                  <CountInput
+                    className="h-9 font-mono"
+                    aria-label={`Stock for ${name}`}
+                    value={v.stock}
+                    onChange={(stock) => update(v.key, { stock })}
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <PriceDeltaInput
+                    label={`Extra price for ${name}`}
+                    value={v.priceDeltaKobo}
+                    onChange={(priceDeltaKobo) => update(v.key, { priceDeltaKobo })}
+                  />
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </TableScroll>
@@ -532,30 +667,96 @@ function Section({
   );
 }
 
-function EditorForm({ product }: { product: Product | undefined }) {
+function FieldError({ id, children }: { id: string; children: string | undefined }) {
+  if (!children) return null;
+  return (
+    <p id={id} role="alert" className="mt-2 text-small font-medium text-danger">
+      {children}
+    </p>
+  );
+}
+
+/** Which form field each validation error belongs to (zod paths use the input names). */
+const errorKey = (path: PropertyKey | undefined) => {
+  const k = String(path ?? "form");
+  return k === "keepImages" || k === "imageIds" ? "images" : k;
+};
+
+function EditorForm({
+  product,
+  template,
+}: {
+  product: Product | undefined;
+  /** A product to copy from ("Duplicate"); only for new products. */
+  template?: Product | undefined;
+}) {
   const { data: brand } = useMyBrand();
   const save = useSaveProduct();
   const router = useRouter();
-  const [draft, setDraftState] = useState<Draft>(() =>
-    toDraft(product, brand?.category ?? "fashion"),
+  const brandCategory = brand?.category ?? "fashion";
+  const [copiedFrom, setCopiedFrom] = useState<Product | null>(product ? null : (template ?? null));
+  const initial = () =>
+    product ? toDraft(product, brandCategory) : copiedFrom ? copyDraft(copiedFrom) : null;
+  const [draft, setDraftState] = useState<Draft>(
+    () => initial() ?? toDraft(undefined, brandCategory),
   );
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Errors>({});
   const [dirty, setDirty] = useState(false);
   const [detailText, setDetailText] = useState("");
-  const setDraft = (fn: (d: Draft) => Draft) => {
+  /** Left with unsaved changes and came back: ask before carrying on. */
+  const [leftUnsaved, setLeftUnsaved] = useState(false);
+  const [seededAt, setSeededAt] = useState(product?.updatedAt);
+  const [anotherPending, setAnotherPending] = useState(false);
+  const submitting = useRef(false);
+  const formRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const detailsId = useId();
+
+  /** An error goes away as soon as its field is edited. */
+  const clearErrors = (...keys: string[]) =>
+    setErrors((e) => {
+      if (!keys.some((k) => k in e)) return e;
+      const next = { ...e };
+      for (const k of keys) delete next[k];
+      return next;
+    });
+  const setDraft: SetDraft = (fn, ...clear) => {
     setDirty(true);
     setDraftState(fn);
+    if (clear.length) clearErrors(...clear);
   };
 
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  /** Back to a clean form: the saved product, or an empty one (keeping the category). */
+  const reset = (opts: { fresh?: boolean; category?: CategoryId } = {}) => {
+    const fresh = opts.fresh || (!product && !copiedFrom);
+    if (opts.fresh) setCopiedFrom(null);
+    setDraftState((fresh ? null : initial()) ?? toDraft(undefined, opts.category ?? brandCategory));
+    setErrors({});
+    setDetailText("");
+    setDirty(false);
+    setLeftUnsaved(false);
+    setSeededAt(product?.updatedAt);
+  };
+
+  // The saved product changed (saved elsewhere, refetched) and nothing here is edited: show it.
+  if (product && product.updatedAt !== seededAt && !dirty) {
+    setSeededAt(product.updatedAt);
+    setDraftState(toDraft(product, brandCategory));
+  }
+
+  // The router keeps this screen mounted (hidden) after navigating away. When it hides, start
+  // clean next time unless there are unsaved changes; those wait behind a "Keep editing?" banner.
+  const onHide = useEffectEvent(() => {
+    if (dirty) setLeftUnsaved(true);
+    else reset();
+  });
+  useLayoutEffect(() => () => onHide(), []);
+
+  const guard = useUnsavedChangesGuard(dirty, { onDiscard: () => reset() });
 
   const priceKobo = parseNairaInput(draft.price);
   const compareKobo = draft.compareAt ? parseNairaInput(draft.compareAt) : null;
+  const noOptions = draft.options.length === 0;
 
   const preview = useMemo<ProductWithBrand | null>(() => {
     if (!brand) return null;
@@ -593,11 +794,32 @@ function EditorForm({ product }: { product: Product | undefined }) {
     };
   }, [brand, draft, priceKobo, compareKobo, product]);
 
-  const submit = (status: "published" | "draft") => {
+  const focusFirstError = (keys: string[]) =>
+    requestAnimationFrame(() => {
+      const fields = formRef.current?.querySelectorAll<HTMLElement>("[data-field]") ?? [];
+      const el = Array.from(fields).find((f) => keys.includes(f.dataset.field ?? ""));
+      if (!el) return;
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      el.querySelector<HTMLElement>(
+        "input:not([type=file]), textarea, button[role=combobox], button",
+      )?.focus({ preventScroll: true });
+    });
+
+  const submit = (status: "published" | "draft", { another = false } = {}) => {
+    // One save at a time: a double tap must not create the product twice.
+    if (submitting.current || save.isPending) return;
+    // A detail typed but not yet added with Enter still counts.
+    const pendingDetail = detailText.trim();
+    const details =
+      pendingDetail && draft.details.length < 8 ? [...draft.details, pendingDetail] : draft.details;
+    if (details !== draft.details) {
+      setDraftState((d) => ({ ...d, details }));
+      setDetailText("");
+    }
     const input = {
       name: draft.name,
       description: draft.description,
-      details: draft.details,
+      details,
       category: draft.category,
       tags: draft.tags,
       priceKobo: priceKobo ?? 0,
@@ -609,25 +831,47 @@ function EditorForm({ product }: { product: Product | undefined }) {
       status,
     };
     const parsed = productInputSchema.safeParse(input);
-    const e: Record<string, string> = {};
+    const e: Errors = {};
     if (priceKobo === null) e.priceKobo = "Enter a price, e.g. 4500";
     if (draft.compareAt && compareKobo === null) e.compareAtKobo = "Enter a number";
     if (compareKobo !== null && priceKobo !== null && compareKobo <= priceKobo)
       e.compareAtKobo = "Must be higher than the price";
     if (draft.options.some((o) => !o.name.trim() || o.values.length === 0))
       e.options = "Every option needs a name and at least one value";
-    if (!parsed.success) for (const i of parsed.error.issues) e[String(i.path[0])] ??= i.message;
+    if (!parsed.success) for (const i of parsed.error.issues) e[errorKey(i.path[0])] ??= i.message;
     if (Object.keys(e).length) {
       setErrors(e);
       toast.error("Check the highlighted fields", { description: Object.values(e)[0] });
+      focusFirstError(Object.keys(e));
       return;
     }
     setErrors({});
+    submitting.current = true;
+    setAnotherPending(another);
+    const category = draft.category;
     save.mutate(
       { ...(product ? { id: product.id } : {}), input },
       {
         onSuccess: (p) => {
-          setDirty(false);
+          const view =
+            status === "published"
+              ? { label: "View", onClick: () => router.push(`/products/${p.slug}`) }
+              : undefined;
+          if (another) {
+            reset({ fresh: true, category });
+            toast.success(
+              status === "published"
+                ? "Published. Ready for the next one."
+                : "Saved as draft. Ready for the next one.",
+              { action: view },
+            );
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            nameRef.current?.focus({ preventScroll: true });
+            return;
+          }
+          if (product) setDirty(false);
+          // A new product is saved: this screen stays mounted, so clear it for next time.
+          else reset({ fresh: true, category });
           toast.success(
             product
               ? "Changes saved"
@@ -636,21 +880,66 @@ function EditorForm({ product }: { product: Product | undefined }) {
                 : "Saved as draft",
             {
               description: status === "published" ? "Buyers can find it now." : undefined,
-              action:
-                status === "published"
-                  ? { label: "View", onClick: () => router.push(`/products/${p.slug}`) }
-                  : undefined,
+              action: view,
             },
           );
           router.push("/studio/products");
         },
-        onError: (err) => toast.error("Couldn't save", { description: errorMessage(err) }),
+        onError: (err) => {
+          const fields = (err as { fields?: Record<string, string> }).fields;
+          if (fields) {
+            const mapped: Errors = {};
+            for (const [k, v] of Object.entries(fields)) mapped[errorKey(k.split(".")[0])] ??= v;
+            setErrors(mapped);
+            focusFirstError(Object.keys(mapped));
+          }
+          toast.error("That didn't go through. Try again?", { description: errorMessage(err) });
+        },
+        onSettled: () => {
+          submitting.current = false;
+        },
       },
     );
   };
 
+  const publishing = draft.status === "published";
+  const primaryLabel = publishing
+    ? product?.status === "published"
+      ? "Save changes"
+      : "Publish"
+    : "Save draft";
+  const showSaveDraft = publishing && product?.status !== "published";
+  const busy = save.isPending;
+  const pendingStatus = busy ? save.variables?.input.status : undefined;
+  const addingAnother = busy && anotherPending;
+
+  const primary = (className?: string) => (
+    <Button
+      className={className}
+      loading={busy && pendingStatus === draft.status && !addingAnother}
+      disabled={busy}
+      onClick={() => submit(draft.status)}
+    >
+      {primaryLabel}
+    </Button>
+  );
+  const saveDraft = (className?: string) =>
+    showSaveDraft && (
+      <Button
+        variant="secondary"
+        className={className}
+        loading={busy && pendingStatus === "draft" && !addingAnother}
+        disabled={busy}
+        onClick={() => submit("draft")}
+      >
+        Save draft
+      </Button>
+    );
+
+  const stock = draft.variants[0]?.stock ?? 0;
+
   return (
-    <div>
+    <div ref={formRef}>
       <Link
         href="/studio/products"
         className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink"
@@ -660,157 +949,270 @@ function EditorForm({ product }: { product: Product | undefined }) {
       <NavPageHeader
         eyebrow={product ? "Edit product" : "New product"}
         title={product ? product.name : "Add a product"}
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              loading={save.isPending && save.variables?.input.status === "draft"}
-              onClick={() => submit("draft")}
-            >
-              Save draft
-            </Button>
-            <Button
-              loading={save.isPending && save.variables?.input.status === "published"}
-              onClick={() => submit("published")}
-            >
-              {product?.status === "published" ? "Save & keep live" : "Publish"}
-            </Button>
-          </>
-        }
       />
+      <AnimatePresence initial={false}>
+        {leftUnsaved && dirty && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={spring.snappy}
+            role="status"
+            className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-warning-soft px-4 py-3 text-small text-warning"
+          >
+            <span className="min-w-0 flex-1 font-medium">
+              {product
+                ? "You have unsaved changes to this product."
+                : "You have an unsaved product."}
+            </span>
+            <Button size="sm" variant="secondary" onClick={() => setLeftUnsaved(false)}>
+              Keep editing
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => reset({ fresh: !product })}>
+              {product ? "Discard changes" : "Start fresh"}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {copiedFrom && !product && (
+        <p className="mb-6 flex items-center gap-2 rounded-md bg-accent-soft px-4 py-3 text-small text-accent-ink">
+          <Copy className="size-4 shrink-0" />
+          <span>
+            Copied from <strong className="font-semibold">{copiedFrom.name}</strong>. Change
+            what&apos;s different, then save.
+          </span>
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-6">
           <Section
             title="Photos"
             description="Bright, natural light works best. Square-ish framing crops nicely."
           >
-            <ImagesField
-              images={draft.images}
-              onChange={(images) => setDraft((d) => ({ ...d, images }))}
-            />
+            <div data-field="images">
+              <ImagesField
+                images={draft.images}
+                onChange={(fn) => setDraft((d) => ({ ...d, images: fn(d.images) }), "images")}
+              />
+              <FieldError id={`${detailsId}-images`}>{errors.images}</FieldError>
+            </div>
           </Section>
           <Section title="Basics">
             <div className="flex flex-col gap-5">
-              <Field label="Name" error={errors.name}>
-                <Input
-                  value={draft.name}
-                  onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                  placeholder="Indigo Àdìrẹ Boxy Tee"
-                  maxLength={80}
-                />
-              </Field>
-              <Field
-                label="Description"
-                error={errors.description}
-                hint="What is it, why is it good, how do people use it?"
-              >
-                <Textarea
-                  value={draft.description}
-                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-                  maxLength={1200}
-                />
-              </Field>
-              <Field
-                label="Details"
-                optional
-                hint="Short facts: materials, size guide, allergens. Press Enter to add."
-              >
-                <div className="flex flex-col gap-2">
-                  {draft.details.map((d, i) => (
-                    <div
-                      key={`${d}-${i}`}
-                      className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-small hairline"
+              <div data-field="name">
+                <Field label="Name" error={errors.name}>
+                  <Input
+                    ref={nameRef}
+                    value={draft.name}
+                    onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }), "name")}
+                    placeholder="Indigo Àdìrẹ Boxy Tee"
+                    maxLength={80}
+                  />
+                </Field>
+              </div>
+              <div data-field="description">
+                <Field
+                  label="Description"
+                  error={errors.description}
+                  hint="What is it, why is it good, how do people use it?"
+                >
+                  <Textarea
+                    value={draft.description}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, description: e.target.value }), "description")
+                    }
+                    maxLength={1200}
+                  />
+                </Field>
+              </div>
+              <div data-field="details" className="flex flex-col gap-1.5">
+                <label htmlFor={detailsId} className="text-small font-medium text-ink">
+                  Details
+                  <span className="ml-1.5 font-normal text-muted"> (optional)</span>
+                </label>
+                {draft.details.map((d, i) => (
+                  <div
+                    key={`${d}-${i}`}
+                    className="flex items-center gap-2 rounded-md bg-surface-2 px-3 py-2 text-small hairline"
+                  >
+                    <span className="flex-1">{d}</span>
+                    <button
+                      type="button"
+                      className="relative flex size-7 items-center justify-center rounded-sm after:absolute after:-inset-2 after:content-[''] hover:bg-ink/[0.06]"
+                      aria-label={`Remove detail ${d}`}
+                      onClick={() =>
+                        setDraft(
+                          (x) => ({ ...x, details: x.details.filter((_, j) => j !== i) }),
+                          "details",
+                        )
+                      }
                     >
-                      <span className="flex-1">{d}</span>
-                      <button
-                        type="button"
-                        className="flex size-7 items-center justify-center rounded-sm hover:bg-ink/[0.06]"
-                        aria-label={`Remove detail ${d}`}
-                        onClick={() =>
-                          setDraft((x) => ({ ...x, details: x.details.filter((_, j) => j !== i) }))
-                        }
-                      >
-                        <X className="size-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                  {draft.details.length < 8 && (
-                    <Input
-                      value={detailText}
-                      onChange={(e) => setDetailText(e.target.value)}
-                      placeholder="e.g. 100% cotton, 220gsm"
-                      maxLength={120}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && detailText.trim()) {
-                          e.preventDefault();
-                          setDraft((x) => ({ ...x, details: [...x.details, detailText.trim()] }));
-                          setDetailText("");
-                        }
-                      }}
-                    />
-                  )}
-                </div>
-              </Field>
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <Input
+                  id={detailsId}
+                  value={detailText}
+                  onChange={(e) => {
+                    setDetailText(e.target.value);
+                    setDirty(true);
+                    clearErrors("details");
+                  }}
+                  placeholder={
+                    draft.details.length < 8
+                      ? "e.g. 100% cotton, 220gsm"
+                      : "That's the most details you can add"
+                  }
+                  disabled={draft.details.length >= 8}
+                  maxLength={120}
+                  aria-invalid={errors.details ? true : undefined}
+                  aria-describedby={errors.details ? `${detailsId}-error` : `${detailsId}-hint`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && detailText.trim()) {
+                      e.preventDefault();
+                      setDraft(
+                        (x) => ({ ...x, details: [...x.details, detailText.trim()] }),
+                        "details",
+                      );
+                      setDetailText("");
+                    }
+                  }}
+                />
+                {errors.details ? (
+                  <p
+                    id={`${detailsId}-error`}
+                    role="alert"
+                    className="text-small font-medium text-danger"
+                  >
+                    {errors.details}
+                  </p>
+                ) : (
+                  <p id={`${detailsId}-hint`} className="text-small text-muted">
+                    Short facts: materials, size guide, allergens. Press Enter to add.
+                  </p>
+                )}
+              </div>
             </div>
           </Section>
           <Section title="Pricing">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Price (₦)" error={errors.priceKobo}>
-                <Input
-                  value={draft.price}
-                  onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))}
-                  inputMode="decimal"
-                  placeholder="4,500"
-                  className="font-mono"
-                />
-              </Field>
-              <Field
-                label="Compare-at price (₦)"
-                optional
-                error={errors.compareAtKobo}
-                hint="Shows a strike-through and a % off badge"
-              >
-                <Input
-                  value={draft.compareAt}
-                  onChange={(e) => setDraft((d) => ({ ...d, compareAt: e.target.value }))}
-                  inputMode="decimal"
-                  placeholder="6,000"
-                  className="font-mono"
-                />
-              </Field>
+              <div data-field="priceKobo">
+                <Field label="Price (₦)" error={errors.priceKobo}>
+                  <Input
+                    value={draft.price}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, price: e.target.value }), "priceKobo")
+                    }
+                    inputMode="decimal"
+                    placeholder="4,500"
+                    className="font-mono"
+                  />
+                </Field>
+              </div>
+              <div data-field="compareAtKobo">
+                <Field
+                  label="Compare-at price (₦)"
+                  optional
+                  error={errors.compareAtKobo}
+                  hint="Shows a strike-through and a % off badge"
+                >
+                  <Input
+                    value={draft.compareAt}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, compareAt: e.target.value }), "compareAtKobo")
+                    }
+                    inputMode="decimal"
+                    placeholder="6,000"
+                    className="font-mono"
+                  />
+                </Field>
+              </div>
+              {noOptions && (
+                <div data-field="variants">
+                  <Field
+                    label="How many do you have?"
+                    error={errors.variants}
+                    hint={
+                      draft.category === "thrift"
+                        ? "One-off pieces: leave it at 1."
+                        : "Buyers can't order more than this. It goes down with each order."
+                    }
+                  >
+                    <CountInput
+                      className="font-mono"
+                      value={stock}
+                      onChange={(n) =>
+                        setDraft(
+                          (d) => ({
+                            ...d,
+                            variants: d.variants.map((v, i) =>
+                              i === 0 ? { ...v, stock: n, priceDeltaKobo: 0 } : v,
+                            ),
+                          }),
+                          "variants",
+                        )
+                      }
+                    />
+                  </Field>
+                </div>
+              )}
             </div>
           </Section>
           <Section
             title="Options & stock"
-            description="Add sizes, colours or flavours. Each combination gets its own stock."
+            description="Add sizes, colours or flavours. Each combination gets its own stock and can cost more or less."
           >
-            <OptionsField draft={draft} setDraft={setDraft} />
-            {errors.options && (
-              <p className="mt-3 text-small font-medium text-danger">{errors.options}</p>
-            )}
-            <div className="mt-5">
-              <VariantsTable draft={draft} setDraft={setDraft} />
+            <div data-field="options">
+              <OptionsField draft={draft} setDraft={setDraft} />
+              <FieldError id={`${detailsId}-options`}>{errors.options}</FieldError>
             </div>
+            {!noOptions && (
+              <div className="mt-5" data-field="variants">
+                <VariantsTable draft={draft} setDraft={setDraft} />
+                <FieldError id={`${detailsId}-variants`}>{errors.variants}</FieldError>
+              </div>
+            )}
           </Section>
           <Section title="Organisation">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Category">
-                <Select
-                  label="Category"
-                  value={draft.category}
-                  onValueChange={(v) => setDraft((d) => ({ ...d, category: v as CategoryId }))}
-                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
-                />
-              </Field>
-              <Field label="Tags" optional hint="Helps search, e.g. vintage, gift">
-                <TagInput
+              <div data-field="category">
+                <Field label="Category" error={errors.category}>
+                  <Select
+                    label="Category"
+                    value={draft.category}
+                    onValueChange={(v) =>
+                      setDraft((d) => {
+                        const category = v as CategoryId;
+                        // Stock still at the old category's starting number: follow the new one.
+                        const only = d.options.length === 0 ? d.variants[0] : undefined;
+                        const variants =
+                          !product && only && only.stock === defaultStock(d.category)
+                            ? [{ ...only, stock: defaultStock(category) }]
+                            : d.variants;
+                        return { ...d, category, variants };
+                      }, "category")
+                    }
+                    options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                  />
+                </Field>
+              </div>
+              <div data-field="tags">
+                <Field
                   label="Tags"
-                  values={draft.tags}
-                  onChange={(tags) => setDraft((d) => ({ ...d, tags }))}
-                  placeholder="vintage, gift"
-                  max={8}
-                />
-              </Field>
+                  optional
+                  error={errors.tags}
+                  hint="Helps search, e.g. vintage, gift"
+                >
+                  <TagInput
+                    label="Tags"
+                    values={draft.tags}
+                    onChange={(tags) => setDraft((d) => ({ ...d, tags }), "tags")}
+                    placeholder="vintage, gift"
+                    max={8}
+                  />
+                </Field>
+              </div>
             </div>
           </Section>
         </div>
@@ -841,17 +1243,24 @@ function EditorForm({ product }: { product: Product | undefined }) {
                 ]}
                 className="w-full [&>button]:flex-1"
               />
-              <Button
-                className="mt-4 w-full"
-                loading={save.isPending}
-                onClick={() => submit(draft.status)}
-              >
-                {draft.status === "published"
-                  ? product
-                    ? "Save changes"
-                    : "Publish"
-                  : "Save draft"}
-              </Button>
+              <p className="mt-3 text-small text-muted">
+                {publishing ? "Buyers can find and order it." : "Only you can see it for now."}
+              </p>
+              <div className="mt-4 flex flex-col gap-2 max-xl:hidden">
+                {primary("w-full")}
+                {saveDraft("w-full")}
+              </div>
+              {!product && (
+                <Button
+                  variant="ghost"
+                  className="mt-2 w-full"
+                  loading={addingAnother}
+                  disabled={busy}
+                  onClick={() => submit(draft.status, { another: true })}
+                >
+                  {publishing ? "Publish & add another" : "Save & add another"}
+                </Button>
+              )}
               {priceKobo !== null && (
                 <p className="mt-3 text-center text-small text-muted">
                   Sells for {formatNaira(priceKobo)} · you keep 95%
@@ -861,14 +1270,30 @@ function EditorForm({ product }: { product: Product | undefined }) {
           </div>
         </aside>
       </div>
+      {/* One place to save on phones and tablets, always in reach. */}
+      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 mt-6 flex items-center justify-end gap-2 border-t border-line bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur xl:hidden">
+        <span className="mr-auto text-small text-muted">
+          {publishing ? "Live when saved" : "Draft when saved"}
+        </span>
+        {saveDraft()}
+        {primary("min-w-32")}
+      </div>
+      {guard.dialog}
     </div>
   );
 }
 
-export function ProductEditor({ id }: { id: string | null }) {
+export function ProductEditor({
+  id,
+  fromId = null,
+}: {
+  id: string | null;
+  fromId?: string | null;
+}) {
   const { data, isPending, error } = useStudioProduct(id);
+  const source = useStudioProduct(id ? null : fromId);
   const { data: brand, isPending: brandPending } = useMyBrand();
-  if ((id && isPending) || brandPending) {
+  if ((id && isPending) || (!id && fromId && source.isPending) || brandPending) {
     return (
       <div className="flex flex-col gap-6" aria-hidden>
         <Skeleton className="h-12 w-72" />
@@ -887,5 +1312,11 @@ export function ProductEditor({ id }: { id: string | null }) {
       />
     );
   }
-  return <EditorForm key={data?.id ?? `new-${brand?.id}`} product={data} />;
+  return (
+    <EditorForm
+      key={data?.id ?? `new-${brand?.id}-${source.data?.id ?? ""}`}
+      product={data}
+      template={source.data}
+    />
+  );
 }

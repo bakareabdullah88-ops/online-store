@@ -246,7 +246,15 @@ export const mockOrders: OrderService = {
         totalKobo: g.quote.totalKobo,
         ...(g.quote.promo?.status === "applied" ? { promoCode: g.quote.promo.code } : {}),
         // Offline payments are collected by the seller on handover and marked paid on delivery.
-        payment: { method: parsed.paymentMethod, status: online ? "paid" : "pending" },
+        // How depends on each order's own fulfilment, whatever single method the client sent.
+        payment: {
+          method: online
+            ? parsed.paymentMethod
+            : f.method === "pickup"
+              ? "pay_on_pickup"
+              : "pay_on_delivery",
+          status: online ? "paid" : "pending",
+        },
         status: "placed",
         timeline: [{ status: "placed", at: placedAt }],
         autoProgress: false,
@@ -446,13 +454,19 @@ function shortName(full: string) {
 }
 
 /** Seller-side transition with notification (used by Studio). */
-export function applySellerTransition(db: DbSnapshot, orderId: string, to: Order["status"]): Order {
+/** `note`: the seller's reason, kept on the timeline and passed to the buyer (decline / cancel). */
+export function applySellerTransition(
+  db: DbSnapshot,
+  orderId: string,
+  to: Order["status"],
+  note?: string,
+): Order {
   const idx = db.orders.findIndex((o) => o.id === orderId);
   const order = db.orders[idx];
   if (!order) throw new ServiceError("NOT_FOUND", "Order not found.");
   let next: Order;
   try {
-    next = transition({ ...order, autoProgress: false }, to, Date.now());
+    next = transition({ ...order, autoProgress: false }, to, Date.now(), note);
     if (to === "delivered" && next.payment.status === "pending") {
       next = { ...next, payment: { ...next.payment, status: "paid" } };
     }
@@ -467,6 +481,6 @@ export function applySellerTransition(db: DbSnapshot, orderId: string, to: Order
     }
   }
   db.orders[idx] = next;
-  notifyBuyerOfStatus(db, next, to);
+  notifyBuyerOfStatus(db, next, to, undefined, note);
   return next;
 }
