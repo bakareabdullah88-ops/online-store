@@ -160,7 +160,7 @@ export function SpotPicker() {
                 setOpen(false);
               }
             }}
-            placeholder="Your hall, faculty or a UNILAG landmark"
+            placeholder="Your hostel, faculty or address"
             autoComplete="off"
             className="h-full min-w-0 flex-1 bg-transparent text-[16px] text-[#1b1f3b] outline-none placeholder:text-[#6b6f86] md:text-[17px]"
           />
@@ -191,7 +191,7 @@ export function SpotPicker() {
       <ul
         id={listId}
         role="listbox"
-        aria-label="Places at UNILAG"
+        aria-label="Places on campus"
         className={cn(
           "absolute inset-x-0 top-[calc(100%+10px)] z-20 max-h-[320px] origin-top overflow-auto rounded-2xl bg-white p-2 shadow-[0_10px_0_rgba(27,31,59,0.08),0_24px_48px_-16px_rgba(27,31,59,0.35)] ring-1 ring-[#1b1f3b]/10 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           open && !picked && options.length > 0

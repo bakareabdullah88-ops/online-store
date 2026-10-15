@@ -22,12 +22,15 @@ import { Page } from "@/components/shell/page";
 import { brand } from "@/config/brand";
 import { BUDDY_COLORS, BUDDY_SHAPES } from "@/domain/buddy";
 import { cn } from "@/lib/cn";
+import { seedCampuses } from "@/services/mock/seed/campuses";
 
 export const metadata: Metadata = {
   title: { absolute: `${brand.name} · Your campus plug` },
   description: brand.description,
   alternates: { canonical: "/" },
 };
+
+const campuses = seedCampuses();
 
 const steps = [
   {
@@ -65,8 +68,11 @@ const faqs = [
     a: "Create an account, tap Open a shop and follow five short steps: name, handle, category, how you deliver, and your first product.",
   },
   {
-    q: "Where is Kamplug available?",
-    a: "Right now Kamplug runs at the University of Lagos: every hall, faculty and landmark from the Main Gate to the Lagoon Front. Other campuses are coming next.",
+    q: "Which campuses are on Kamplug?",
+    a: `You can pick from ${campuses.length} campuses when you sign up, including ${campuses
+      .slice(0, 3)
+      .map((c) => c.shortName)
+      .join(", ")} and more, with others on the way.`,
   },
   {
     q: "Is Kamplug only for food?",
@@ -152,7 +158,7 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-4xl px-5 text-center">
             <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold shadow-[0_3px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10">
               <span className="size-2 rounded-full bg-[#3ddc97]" aria-hidden />
-              Live at UNILAG
+              Live on {campuses.length} campuses
             </p>
             <h1 className="mt-5 text-[clamp(52px,9vw,116px)] leading-[0.9] font-extrabold tracking-[-0.06em]">
               Wetin you <span className="text-[#3a5bff]">need?</span>
@@ -181,7 +187,7 @@ export default function LandingPage() {
                 on campus
               </h2>
               <p className="max-w-sm text-[18px] leading-snug">
-                Whatever you need between lectures, someone at UNILAG is selling it.
+                Whatever you need between lectures, someone in your school is selling it.
               </p>
             </Reveal>
             <CategoryStrip />
