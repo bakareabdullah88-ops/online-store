@@ -1286,3 +1286,58 @@ html {
     animation: none !important;
   }
 }
+
+/* Clouds drifting the other way, swelling, and slowly rising and sinking. */
+.lp-cloud-rev {
+  animation: lp-drift-rev var(--lp-dur, 34s) linear infinite;
+  animation-delay: var(--lp-delay, 0s);
+}
+.lp-puff {
+  transform-origin: 50% 80%;
+  animation: lp-puff 7s ease-in-out infinite;
+}
+.lp-rise {
+  animation: lp-rise 11s ease-in-out infinite;
+}
+@keyframes lp-drift-rev {
+  from {
+    transform: translateX(120vw);
+  }
+  to {
+    transform: translateX(-40vw);
+  }
+}
+@keyframes lp-puff {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.08, 1.12);
+  }
+}
+@keyframes lp-rise {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-22px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-cloud-rev,
+  .lp-puff,
+  .lp-rise {
+    animation: none !important;
+  }
+}
+/* The landing headline flipping down to the next language. */
+@keyframes lp-flip {
+  from {
+    transform: rotateX(-85deg) translateY(-12px);
+  }
+  to {
+    transform: rotateX(0deg) translateY(0);
+  }
+}

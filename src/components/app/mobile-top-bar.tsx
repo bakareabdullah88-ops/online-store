@@ -8,7 +8,6 @@ import { AccountMenu } from "./account-menu";
 import { MessagesButton } from "./messages-button";
 import { MobileSidebar } from "./mobile-sidebar";
 import { useNavBadges } from "./nav-badges";
-import { ModeLine } from "./mode-line";
 import { KamplugWordmark } from "./kamplug-mark";
 
 const iconButton =
@@ -36,7 +35,6 @@ export function MobileTopBar() {
       style={{ viewTransitionName: "site-header" }}
       className="sticky top-0 z-(--z-header) border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur-md md:hidden"
     >
-      <ModeLine />
       <div className="flex h-14 items-center gap-0.5 px-2">
         <button
           type="button"

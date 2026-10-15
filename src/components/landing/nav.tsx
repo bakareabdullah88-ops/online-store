@@ -50,32 +50,55 @@ export function LandingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const pill =
+    "rounded-full bg-white shadow-[0_6px_20px_-12px_rgba(27,31,59,0.35)] ring-1 ring-[#1b1f3b]/[0.06]";
   const cta =
-    "flex h-11 items-center gap-1.5 rounded-xl bg-[#3a5bff] px-5 text-[15px] font-bold text-white shadow-[0_4px_0_#1f37b8] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_2px_0_#1f37b8] active:translate-y-[4px] active:shadow-none";
+    "flex h-12 items-center gap-1.5 rounded-full bg-[#3a5bff] px-6 text-[15px] font-bold text-white shadow-[0_4px_0_#1f37b8] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_2px_0_#1f37b8] active:translate-y-[4px] active:shadow-none md:h-14 md:text-[16px]";
 
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-(--z-header) transition-[background-color,box-shadow,backdrop-filter] duration-300",
-        scrolled || open
-          ? "bg-white/85 shadow-[0_1px_0_rgba(27,31,59,0.08)] backdrop-blur-md"
-          : "bg-transparent",
+        "pointer-events-none fixed inset-x-0 top-0 z-(--z-header) px-4 transition-[padding] duration-300 md:px-8",
+        scrolled ? "pt-3" : "pt-4 md:pt-6",
       )}
     >
-      <div className="relative mx-auto flex h-[72px] max-w-[1240px] items-center gap-6 px-5 md:h-20 md:px-8">
-        <LogoText />
-        <nav aria-label="Main" className="mx-auto hidden items-center gap-1 lg:flex">
+      <AnimatePresence>
+        {open && (
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-auto fixed inset-0 bg-[#1b1f3b]/30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+      <div className="relative mx-auto flex max-w-[1240px] items-center gap-3">
+        {/* The wordmark stays plain text; only the links and buttons are pills. */}
+        <div className="pointer-events-auto flex h-12 items-center md:h-14">
+          <LogoText />
+        </div>
+        <nav
+          aria-label="Main"
+          className={cn(
+            "pointer-events-auto absolute left-1/2 hidden h-14 -translate-x-1/2 items-center gap-1 px-3 lg:flex",
+            pill,
+          )}
+        >
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-lg px-4 py-2 text-[16px] font-semibold text-[#1b1f3b] transition-colors hover:text-[#3a5bff]"
+              className="flex h-10 items-center rounded-full px-5 text-[16px] font-semibold text-[#1b1f3b] transition-colors hover:bg-[#1b1f3b]/[0.05] hover:text-[#3a5bff]"
             >
               {l.label}
             </Link>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+        <div className="pointer-events-auto ml-auto flex items-center gap-2">
           {isReady && user ? (
             <Link href="/home" className={cta}>
               Open Kamplug <ArrowRight className="size-4" />
@@ -84,7 +107,10 @@ export function LandingNav() {
             <>
               <Link
                 href="/login"
-                className="hidden h-11 items-center px-3 text-[16px] font-semibold text-[#1b1f3b] hover:text-[#3a5bff] sm:flex"
+                className={cn(
+                  "hidden h-14 items-center px-6 text-[16px] font-semibold text-[#1b1f3b] transition-colors hover:text-[#3a5bff] sm:flex",
+                  pill,
+                )}
               >
                 Log in
               </Link>
@@ -99,30 +125,29 @@ export function LandingNav() {
             aria-expanded={open}
             aria-controls="landing-menu"
             aria-label={open ? "Close menu" : "Open menu"}
-            className="grid size-11 place-items-center rounded-xl text-[#1b1f3b] hover:bg-[#1b1f3b]/[0.06] lg:hidden"
+            className={cn("grid size-12 place-items-center text-[#1b1f3b] lg:hidden", pill)}
           >
-            {open ? <X className="size-6" /> : <MenuIcon className="size-6" />}
+            {open ? <X className="size-5" /> : <MenuIcon className="size-5" />}
           </button>
         </div>
-      </div>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.nav
-            id="landing-menu"
-            aria-label="Main"
-            initial={{ height: 0 }}
-            animate={{ height: "auto" }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-[#1b1f3b]/10 lg:hidden"
-          >
-            <div className="flex flex-col px-5 pt-2 pb-5">
+        <AnimatePresence>
+          {open && (
+            <motion.nav
+              id="landing-menu"
+              aria-label="Main"
+              initial={{ opacity: 0, y: -10, rotateX: -20 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              exit={{ opacity: 0, y: -10, rotateX: -20 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              style={{ transformPerspective: 800, transformOrigin: "top" }}
+              className="pointer-events-auto absolute top-[calc(100%+10px)] right-0 left-0 rounded-[24px] bg-white p-3 shadow-xl lg:hidden"
+            >
               {links.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="flex h-12 items-center border-b border-[#1b1f3b]/[0.07] text-[18px] font-bold text-[#1b1f3b]"
+                  className="flex h-12 items-center rounded-xl px-4 text-[17px] font-bold text-[#1b1f3b] hover:bg-[#f4f5f8]"
                 >
                   {l.label}
                 </Link>
@@ -131,15 +156,15 @@ export function LandingNav() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="mt-4 flex h-12 items-center justify-center rounded-xl text-[16px] font-bold text-[#1b1f3b] ring-2 ring-[#1b1f3b] sm:hidden"
+                  className="mt-2 flex h-12 items-center justify-center rounded-full text-[16px] font-bold text-[#1b1f3b] ring-2 ring-[#1b1f3b] sm:hidden"
                 >
                   Log in
                 </Link>
               )}
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      </div>
     </header>
   );
 }

@@ -16,6 +16,7 @@ import {
   TakeawaySet,
   TuckShop,
 } from "@/components/landing/illustrations";
+import { HeroHeadline } from "@/components/landing/hero-headline";
 import { LandingNav } from "@/components/landing/nav";
 import { Reveal } from "@/components/landing/reveal";
 import { Page } from "@/components/shell/page";
@@ -95,28 +96,6 @@ const btn = {
     "inline-flex h-14 items-center gap-2 rounded-xl bg-white px-7 text-[16px] font-bold text-[#1b1f3b] shadow-[0_5px_0_rgba(27,31,59,0.25)] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_3px_0_rgba(27,31,59,0.25)] active:translate-y-[5px] active:shadow-none",
 };
 
-/** A raised coloured stage that holds an illustration, with a darker edge under it. */
-function Stage({
-  bg,
-  edge,
-  className,
-  children,
-}: {
-  bg: string;
-  edge: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn("relative overflow-hidden rounded-[32px]", className)}
-      style={{ background: bg, boxShadow: `0 12px 0 ${edge}` }}
-    >
-      {children}
-    </div>
-  );
-}
-
 /** "SEE MORE →" link under each feature card. */
 function SeeMore({ href }: { href: string }) {
   return (
@@ -160,9 +139,7 @@ export default function LandingPage() {
               <span className="size-2 rounded-full bg-[#3ddc97]" aria-hidden />
               Live on {campuses.length} campuses
             </p>
-            <h1 className="mt-5 text-[clamp(38px,11.5vw,116px)] leading-[0.9] font-extrabold tracking-[-0.06em] whitespace-nowrap">
-              Wetin you <span className="text-[#3a5bff]">need?</span>
-            </h1>
+            <HeroHeadline />
             <p className="mx-auto mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
               Your campus, one plug away. Food, thrift, beauty and more from students near you.
             </p>
@@ -194,12 +171,17 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Sell */}
-        <section id="sell" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
-          <div className="mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-2">
-            <Reveal from="top" className="md:order-2">
+        {/* Sell: a full-width sunny band with the tuck shop standing on its bottom edge */}
+        <section
+          id="sell"
+          className="relative scroll-mt-20 overflow-hidden bg-[#ffe9a8] px-4 pt-20 md:px-8 md:pt-28"
+        >
+          <Burst className="lp-twinkle absolute top-10 left-[6%] size-9" color="#ff6a4d" />
+          <Sparkle className="lp-twinkle absolute top-16 right-[8%] size-8" color="#3a5bff" />
+          <div className="mx-auto grid max-w-[1240px] items-end gap-10 md:grid-cols-2">
+            <Reveal from="top" className="md:order-2 md:pb-28">
               <h2 className={h2}>
-                Open a shop for <span className="text-[#3a5bff]">₦0</span>
+                Open a shop for <span className="text-[#2a3fc4]">₦0</span>
               </h2>
               <p className="mt-5 max-w-md text-[18px] leading-snug md:text-[20px]">
                 No setup fee and no monthly fee. List what you sell, take orders with pay on
@@ -210,11 +192,7 @@ export default function LandingPage() {
               </Link>
             </Reveal>
             <Reveal from="top" delay={120}>
-              <Stage bg="#ffe9a8" edge="#e0b000" className="px-6 pt-10">
-                <Burst className="lp-twinkle absolute top-6 left-6 size-8" color="#ff6a4d" />
-                <Sparkle className="lp-twinkle absolute top-10 right-8 size-7" color="#3a5bff" />
-                <TuckShop className="relative block w-full translate-y-1" />
-              </Stage>
+              <TuckShop className="relative block w-full translate-y-1" />
             </Reveal>
           </div>
         </section>
@@ -277,12 +255,26 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Delivery */}
-        <section id="delivery" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
-          <div className="mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-2">
+        {/* Delivery: a full-width coral band with stripes racing behind the keke */}
+        <section
+          id="delivery"
+          className="relative scroll-mt-20 overflow-hidden bg-[#ffd9cf] px-4 py-20 md:px-8 md:py-28"
+        >
+          <div
+            aria-hidden
+            className="lp-stripes pointer-events-none absolute inset-y-0 left-0 flex w-[200%]"
+          >
+            {Array.from({ length: 10 }, (_, i) => (
+              <span
+                key={i}
+                className="mx-[4%] h-full w-[6%] shrink-0 -skew-x-[24deg] bg-white/35"
+              />
+            ))}
+          </div>
+          <div className="relative mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-2">
             <Reveal from="top">
               <h2 className={h2}>
-                Delivered to <span className="text-[#d9472a]">your hall</span>
+                Delivered to <span className="text-[#a8321b]">your hall</span>
               </h2>
               <p className="mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
                 Shops deliver across campus or set a pickup spot. Follow your order from placed to
@@ -298,45 +290,26 @@ export default function LandingPage() {
               </div>
             </Reveal>
             <Reveal from="top" delay={120}>
-              <Stage bg="#ffd9cf" edge="#e8917c" className="px-6 py-10">
-                <div
-                  aria-hidden
-                  className="lp-stripes pointer-events-none absolute inset-y-0 left-0 flex w-[200%]"
-                >
-                  {Array.from({ length: 8 }, (_, i) => (
-                    <span
-                      key={i}
-                      className="mx-[6%] h-full w-[8%] shrink-0 -skew-x-[24deg] bg-white/35"
-                    />
-                  ))}
-                </div>
-                <DeliveryKeke className="relative w-full" />
-              </Stage>
+              <DeliveryKeke className="relative w-full" />
             </Reveal>
           </div>
         </section>
 
-        {/* Order, chat, track: night in the hostel */}
-        <section className="bg-white px-4 py-20 md:px-8 md:py-28">
-          <Reveal from="top" className="mx-auto max-w-[1240px]">
-            <Stage
-              bg={INK}
-              edge="#000"
-              className="grid items-end text-white md:grid-cols-[1fr_1.25fr]"
-            >
-              <div className="px-7 pt-14 pb-8 md:px-12 md:py-20">
-                <h2 className={h2}>Order, chat and track in one place</h2>
-                <p className="mt-5 max-w-md text-[18px] leading-snug md:text-[20px]">
-                  Ask about sizes, agree a pickup time, and get a ping the moment your order is on
-                  the way. All without leaving your room.
-                </p>
-                <Link href="/signup" className={cn(btn.white, "mt-8")}>
-                  Create your account
-                </Link>
-              </div>
-              <HostelRoom className="block w-full" />
-            </Stage>
-          </Reveal>
+        {/* Order, chat, track: night in the hostel, the full width of the page */}
+        <section className="relative overflow-hidden bg-[#1b1f3b] text-white">
+          <div className="mx-auto grid max-w-[1400px] items-end md:grid-cols-[1fr_1.25fr]">
+            <Reveal from="top" className="px-5 pt-20 pb-8 md:px-12 md:py-28">
+              <h2 className={h2}>Order, chat and track in one place</h2>
+              <p className="mt-5 max-w-md text-[18px] leading-snug md:text-[20px]">
+                Ask about sizes, agree a pickup time, and get a ping the moment your order is on the
+                way. All without leaving your room.
+              </p>
+              <Link href="/signup" className={cn(btn.white, "mt-8")}>
+                Create your account
+              </Link>
+            </Reveal>
+            <HostelRoom className="block w-full" />
+          </div>
         </section>
 
         {/* Get started in 3 steps */}
@@ -371,31 +344,25 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Be the plug */}
-        <section className="bg-white px-4 py-20 md:px-8 md:py-28">
-          <Reveal from="top" className="mx-auto max-w-[1240px]">
-            <Stage
-              bg="#3a5bff"
-              edge="#1f37b8"
-              className="px-6 pt-16 text-center text-white md:pt-20"
-            >
-              <Sparkle className="lp-twinkle absolute top-10 left-[12%] size-9" color="#ffd23f" />
-              <Burst className="lp-twinkle absolute top-24 right-[10%] size-10" color="#ff6a4d" />
-              <h2 className={h2}>Be the plug</h2>
-              <p className="mx-auto mt-4 max-w-lg text-[18px] leading-snug md:text-[20px]">
-                Your campus is already buying. One free account for buying and selling.
-              </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Link href="/signup" className={btn.white}>
-                  Create your account
-                </Link>
-                <Link href="/login" className={btn.ink}>
-                  Log in
-                </Link>
-              </div>
-              <TakeawaySet className="mx-auto mt-10 block w-full max-w-[600px] translate-y-2" />
-            </Stage>
+        {/* Be the plug: a full-width cobalt band */}
+        <section className="relative overflow-hidden bg-[#3a5bff] px-5 pt-20 text-center text-white md:pt-28">
+          <Sparkle className="lp-twinkle absolute top-12 left-[10%] size-9" color="#ffd23f" />
+          <Burst className="lp-twinkle absolute top-28 right-[9%] size-10" color="#ff6a4d" />
+          <Reveal from="top" className="relative mx-auto max-w-3xl">
+            <h2 className={h2}>Be the plug</h2>
+            <p className="mx-auto mt-4 max-w-lg text-[18px] leading-snug md:text-[20px]">
+              Your campus is already buying. One free account for buying and selling.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link href="/signup" className={btn.white}>
+                Create your account
+              </Link>
+              <Link href="/login" className={btn.ink}>
+                Log in
+              </Link>
+            </div>
           </Reveal>
+          <TakeawaySet className="relative mx-auto mt-10 block w-full max-w-[640px] translate-y-2" />
         </section>
 
         {/* FAQs */}

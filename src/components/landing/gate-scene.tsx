@@ -105,54 +105,168 @@ export function useParallax(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-/** Puffy clouds with a lit top and a shaded underside; three depths, three speeds. */
+/** Three cloud shapes, each with a lit top and a shaded underside. */
+const cloudShapes = {
+  puffy: {
+    vb: "0 0 240 110",
+    top: "M24 96 a30 30 0 0 1 10 -54 a44 44 0 0 1 80 -18 a38 38 0 0 1 66 14 a32 32 0 0 1 36 58 Z",
+    under: "M24 96 a30 30 0 0 1 -6 -24 q90 26 196 0 a32 32 0 0 1 2 24 Z",
+  },
+  long: {
+    vb: "0 0 340 80",
+    top: "M20 70 a24 24 0 0 1 22 -34 a34 34 0 0 1 60 -12 a40 40 0 0 1 74 -4 a30 30 0 0 1 54 8 a28 28 0 0 1 72 18 a20 20 0 0 1 18 24 Z",
+    under: "M20 70 a24 24 0 0 1 -4 -16 q150 22 304 0 a20 20 0 0 1 0 16 Z",
+  },
+  round: {
+    vb: "0 0 150 100",
+    top: "M18 88 a28 28 0 0 1 14 -44 a40 40 0 0 1 76 -8 a30 30 0 0 1 24 52 Z",
+    under: "M18 88 a28 28 0 0 1 -4 -18 q60 20 120 -2 a30 30 0 0 1 -2 20 Z",
+  },
+} as const;
+
+type CloudSpec = {
+  top: string;
+  w: number;
+  shape: keyof typeof cloudShapes;
+  /** 1 drifts left to right, -1 right to left. */
+  dir: 1 | -1;
+  dur: string;
+  delay: string;
+  depth: "far" | "mid" | "near";
+  /** How it moves while drifting: bobs, swells and shrinks, or rises and sinks slowly. */
+  motion: "bob" | "puff" | "rise";
+};
+
+const clouds: CloudSpec[] = [
+  {
+    top: "6%",
+    w: 110,
+    shape: "round",
+    dir: 1,
+    dur: "58s",
+    delay: "-12s",
+    depth: "far",
+    motion: "puff",
+  },
+  {
+    top: "22%",
+    w: 180,
+    shape: "long",
+    dir: -1,
+    dur: "70s",
+    delay: "-30s",
+    depth: "far",
+    motion: "rise",
+  },
+  {
+    top: "3%",
+    w: 210,
+    shape: "puffy",
+    dir: 1,
+    dur: "38s",
+    delay: "-6s",
+    depth: "mid",
+    motion: "bob",
+  },
+  {
+    top: "34%",
+    w: 140,
+    shape: "round",
+    dir: -1,
+    dur: "44s",
+    delay: "-20s",
+    depth: "mid",
+    motion: "puff",
+  },
+  {
+    top: "14%",
+    w: 300,
+    shape: "long",
+    dir: 1,
+    dur: "30s",
+    delay: "-18s",
+    depth: "near",
+    motion: "rise",
+  },
+  {
+    top: "44%",
+    w: 90,
+    shape: "puffy",
+    dir: -1,
+    dur: "24s",
+    delay: "-8s",
+    depth: "near",
+    motion: "bob",
+  },
+  {
+    top: "10%",
+    w: 70,
+    shape: "round",
+    dir: -1,
+    dur: "52s",
+    delay: "-40s",
+    depth: "far",
+    motion: "bob",
+  },
+  {
+    top: "28%",
+    w: 250,
+    shape: "puffy",
+    dir: 1,
+    dur: "48s",
+    delay: "-36s",
+    depth: "mid",
+    motion: "puff",
+  },
+];
+
+/**
+ * Clouds at three depths: different shapes and sizes, some drifting left and
+ * some right at their own speed, each bobbing, swelling or rising as it goes.
+ * Far ones are smaller, paler and slower; near ones are big and quick.
+ */
 export function Clouds3D() {
-  const clouds = [
-    { top: "8%", w: 120, dur: "52s", delay: "-10s", depth: "far" },
-    { top: "26%", w: 90, dur: "60s", delay: "-40s", depth: "far" },
-    { top: "4%", w: 200, dur: "36s", delay: "-4s", depth: "mid" },
-    { top: "38%", w: 170, dur: "40s", delay: "-24s", depth: "mid" },
-    { top: "16%", w: 280, dur: "26s", delay: "-16s", depth: "near" },
-  ];
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      {clouds.map((c, i) => (
-        <div
-          key={i}
-          data-depth={c.depth}
-          className="lp-layer absolute inset-x-0"
-          style={{ top: c.top }}
-        >
+      {clouds.map((c, i) => {
+        const shape = cloudShapes[c.shape];
+        return (
           <div
-            className="lp-cloud"
-            style={
-              {
-                width: c.w,
-                ["--lp-dur" as string]: c.dur,
-                ["--lp-delay" as string]: c.delay,
-                opacity: c.depth === "far" ? 0.7 : 1,
-                filter: c.depth === "far" ? "blur(0.6px)" : undefined,
-              } as React.CSSProperties
-            }
+            key={i}
+            data-depth={c.depth}
+            className="lp-layer absolute inset-x-0"
+            style={{ top: c.top }}
           >
-            <div className="lp-float" style={{ animationDelay: `${i * -1.1}s` }}>
-              <svg
-                viewBox="0 0 240 110"
-                className="w-full drop-shadow-[0_14px_14px_rgba(27,31,59,0.12)]"
+            <div
+              className={c.dir === 1 ? "lp-cloud" : "lp-cloud-rev"}
+              style={
+                {
+                  width: c.w,
+                  ["--lp-dur" as string]: c.dur,
+                  ["--lp-delay" as string]: c.delay,
+                  opacity: c.depth === "far" ? 0.65 : c.depth === "mid" ? 0.9 : 1,
+                  filter: c.depth === "far" ? "blur(0.8px)" : undefined,
+                } as React.CSSProperties
+              }
+            >
+              <div
+                className={
+                  c.motion === "bob" ? "lp-float" : c.motion === "puff" ? "lp-puff" : "lp-rise"
+                }
+                style={{ animationDelay: `${i * -1.3}s` }}
               >
-                <path
-                  d="M24 96 a30 30 0 0 1 10 -54 a44 44 0 0 1 80 -18 a38 38 0 0 1 66 14 a32 32 0 0 1 36 58 Z"
-                  fill="#ffffff"
-                />
-                <path
-                  d="M24 96 a30 30 0 0 1 -6 -24 q90 26 196 0 a32 32 0 0 1 2 24 Z"
-                  fill="#dfe5f2"
-                />
-              </svg>
+                <svg
+                  viewBox={shape.vb}
+                  className="w-full drop-shadow-[0_14px_14px_rgba(27,31,59,0.12)]"
+                >
+                  <path d={shape.top} fill="#ffffff" />
+                  <path d={shape.under} fill="#dfe5f2" />
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

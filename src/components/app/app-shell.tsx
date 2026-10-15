@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<ShellSkeleton />}>
       <RequireAuth fallback={<ShellSkeleton />}>
-        <div className="relative min-h-dvh bg-[var(--app-bg)] [--canvas:var(--app-bg)]">
+        <div className="relative min-h-dvh overflow-x-clip bg-[var(--app-bg)] [--canvas:var(--app-bg)]">
           <AppBackdrop />
           <TopNav />
           <MobileTopBar />

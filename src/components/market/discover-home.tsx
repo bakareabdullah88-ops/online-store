@@ -25,7 +25,6 @@ import { formatNaira } from "@/domain/money";
 import { isActive, statusLabel } from "@/domain/orders";
 import { cn } from "@/lib/cn";
 import { formatCompact } from "@/lib/format";
-import { useMounted } from "@/lib/hooks";
 import { useBrands, useCampus, useProducts } from "@/queries/catalog";
 import { useMyOrders } from "@/queries/orders";
 import { usePlaces } from "@/queries/inbox";
@@ -103,7 +102,7 @@ function Hero({
   shopCount: number | undefined;
 }) {
   return (
-    <section className="relative -mx-4 -mt-5 overflow-hidden bg-[#eef1fb] text-ink md:mx-0 md:mt-0 md:rounded-[28px] dark:bg-[#161936]">
+    <section className="relative -mt-5 ml-[calc(50%-50vw)] w-screen overflow-hidden bg-[#eef1fb] text-ink md:-mt-7 dark:bg-[#161936]">
       <Clouds3D />
       <Link
         href="/account"
@@ -122,29 +121,23 @@ function Hero({
             <span className="truncate">{spotName ?? "Choose your spot"}</span>
           </span>
         </Link>
-        <div className="mt-4 flex items-center gap-3 md:mt-5">
+        <h1 className="mt-4 text-[clamp(30px,8.4vw,72px)] leading-none font-extrabold tracking-[-0.05em] whitespace-nowrap md:mt-5">
           {shopCount ? (
             <>
-              <span className="text-[60px] leading-none font-extrabold tracking-[-0.05em] text-accent tabular md:text-[84px]">
-                {shopCount}
-              </span>
-              <span className="text-left text-[22px] leading-[1.02] font-extrabold tracking-[-0.03em] uppercase md:text-[32px]">
-                {shopCount === 1 ? "Shop" : "Shops"}
-                <br />
-                at UNILAG
-              </span>
+              <span className="text-accent tabular">{shopCount}</span>{" "}
+              {shopCount === 1 ? "shop" : "shops"} at UNILAG
             </>
           ) : (
-            <span className="text-[34px] leading-[1.02] font-extrabold tracking-[-0.045em] md:text-[48px]">
+            <>
               Wetin you <span className="text-accent">need?</span>
-            </span>
+            </>
           )}
-        </div>
+        </h1>
         <div className="mt-6 w-full max-w-2xl md:mt-7">
           <SearchBar />
         </div>
       </div>
-      <LagoonScene className="relative mt-2 h-[170px] w-full sm:h-[230px] md:h-[24vw] md:max-h-[340px]" />
+      <LagoonScene className="relative mt-2 h-[190px] w-full sm:h-[240px] md:h-[24vw] md:max-h-[380px]" />
     </section>
   );
 }
@@ -397,7 +390,6 @@ function EmptyMarket() {
  * like opening a delivery app. Spending and to-dos live on the dashboard.
  */
 export function DiscoverHome() {
-  const mounted = useMounted();
   const { user } = useSession();
   const campus = useCampus(user?.campusId);
   const orders = useMyOrders().data;
@@ -408,7 +400,6 @@ export function DiscoverHome() {
   const onTheWay = (orders ?? [])
     .filter((o) => isActive(o.status))
     .sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt))[0];
-  const firstName = user?.name.split(" ")[0];
   const empty = anyProducts && anyProducts.items.length === 0;
   // Where things get delivered: the default saved place, else the campus.
   const places = usePlaces().data;
@@ -419,9 +410,6 @@ export function DiscoverHome() {
 
   return (
     <div className={cn(pagePad, "flex flex-col gap-7 md:gap-9")}>
-      <h1 className="sr-only">
-        {mounted && firstName ? `What do you need, ${firstName}?` : "Home"}
-      </h1>
       <Hero spotName={spotName} shopCount={campusShops?.length} />
       {onTheWay && <OnTheWay order={onTheWay} />}
       <Categories />

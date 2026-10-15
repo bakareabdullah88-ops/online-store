@@ -603,7 +603,7 @@ export function SceneBanner({
     <section
       aria-hidden
       className={cn(
-        "relative -mx-4 overflow-hidden bg-[#eef1fb] md:mx-0 md:rounded-[28px] dark:bg-[#161936]",
+        "relative ml-[calc(50%-50vw)] w-screen overflow-hidden bg-[#eef1fb] dark:bg-[#161936]",
         className,
       )}
     >

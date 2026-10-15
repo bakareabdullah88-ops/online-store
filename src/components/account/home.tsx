@@ -165,7 +165,7 @@ export function BuyerHome() {
 
   return (
     <div className={pagePad}>
-      <SceneBanner className="-mt-5 mb-6 h-[160px] sm:h-[200px] md:mt-0 md:h-[240px]">
+      <SceneBanner className="-mt-5 mb-6 h-[170px] sm:h-[210px] md:-mt-7 md:h-[22vw] md:max-h-[320px]">
         <LibraryScene className="absolute inset-0" />
       </SceneBanner>
       <PageHeader
