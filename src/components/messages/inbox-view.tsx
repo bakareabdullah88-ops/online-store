@@ -217,7 +217,7 @@ export function InboxView({
           <ThreadPane
             thread={selected}
             as={as}
-            onBack={() => router.push(pathname, { scroll: false })}
+            onBack={() => router.replace(pathname, { scroll: false })}
           />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
@@ -287,7 +287,7 @@ export function InboxView({
                   <MenuTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 items-center gap-1 rounded-full px-2.5 text-[12.5px] font-medium text-chart-violet hover:bg-ink/[0.04]"
+                      className="flex h-8 items-center gap-1 rounded-full px-2.5 text-[12.5px] font-medium text-accent-ink hover:bg-ink/[0.04]"
                     >
                       Filter <ChevronDown className="size-3.5" />
                     </button>
@@ -385,7 +385,7 @@ export function InboxView({
                           </span>
                           <span className="ml-auto flex shrink-0 items-center gap-1">
                             {unread > 0 && (
-                              <span className="grid size-5 place-items-center rounded-full bg-chart-violet text-[10.5px] font-semibold text-white tabular">
+                              <span className="grid size-5 place-items-center rounded-full bg-accent text-[10.5px] font-semibold text-on-accent tabular">
                                 {unread}
                               </span>
                             )}

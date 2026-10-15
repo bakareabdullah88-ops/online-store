@@ -44,7 +44,7 @@ export function MobileSidebar({
         <Link
           href={action.href}
           onClick={close}
-          className="flex h-11 items-center justify-center gap-2 rounded-lg bg-primary text-[14px] font-semibold text-on-primary"
+          className="flex h-11 items-center justify-center gap-2 rounded-lg bg-accent text-[14px] font-semibold text-on-accent transition-colors hover:bg-accent-hover"
         >
           <Plus className="size-4" /> {action.label}
         </Link>

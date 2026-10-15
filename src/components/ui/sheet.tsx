@@ -178,7 +178,9 @@ export function SidePanel({
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">{children}</div>
                 {footer && (
-                  <div className="border-t border-line px-6 py-4 safe-bottom">{footer}</div>
+                  <div className="shrink-0 border-t border-line bg-surface px-6 pt-4 safe-bottom">
+                    {footer}
+                  </div>
                 )}
               </motion.div>
             </RDialog.Content>

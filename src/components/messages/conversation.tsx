@@ -13,6 +13,12 @@ import { errorMessage } from "@/services/errors";
 import { toast } from "@/stores/toast";
 import type { QuickReply } from "./quick-replies";
 
+/** Unsent text per conversation, kept for this visit. */
+const drafts = new Map<string, string>();
+
+const finePointer = () =>
+  typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
+
 /** Draft card: the chosen reply types itself in, then can be edited, swapped or sent. */
 function DraftCard({
   reply,
@@ -164,7 +170,13 @@ export function Conversation({
 }) {
   const { data: thread, isPending } = useThread(threadId, as);
   const send = useSendMessage(as);
-  const [body, setBody] = useState("");
+  const [body, setBodyState] = useState(() => drafts.get(threadId) ?? "");
+  // Half-typed replies survive switching conversations.
+  const setBody = (v: string) => {
+    if (v) drafts.set(threadId, v);
+    else drafts.delete(threadId);
+    setBodyState(v);
+  };
   const [tools, setTools] = useState(false);
   const [draft, setDraft] = useState<QuickReply | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -183,7 +195,7 @@ export function Conversation({
       { threadId, body: text },
       {
         onSuccess: after,
-        onError: (e) => toast.error("Message not sent", { description: errorMessage(e) }),
+        onError: (e) => toast.error("That didn't send", { description: errorMessage(e) }),
       },
     );
   };
@@ -191,7 +203,16 @@ export function Conversation({
     const text = body.trim();
     if (!text) return;
     setBody("");
-    deliver(text);
+    send.mutate(
+      { threadId, body: text },
+      {
+        onError: (e) => {
+          // Put the text back so nothing typed is lost.
+          setBody(text);
+          toast.error("That didn't send", { description: errorMessage(e) });
+        },
+      },
+    );
   };
 
   let lastStamp = "";
@@ -226,7 +247,7 @@ export function Conversation({
                   <motion.li
                     key={m.id}
                     layout={!reduce}
-                    initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10, filter: "blur(4px)" }}
+                    initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={spring.smooth}
                     className={cn("flex flex-col", mine ? "items-end" : "items-start")}
@@ -238,8 +259,8 @@ export function Conversation({
                       className={cn(
                         "max-w-[78%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed",
                         mine
-                          ? "rounded-tr-md bg-[color-mix(in_oklab,var(--chart-violet)_12%,var(--surface))] text-ink"
-                          : "rounded-tl-md bg-[color-mix(in_oklab,var(--chart-blue)_9%,var(--surface))] text-ink",
+                          ? "rounded-tr-md bg-accent-soft text-ink"
+                          : "rounded-tl-md bg-surface-2 text-ink ring-1 ring-line",
                       )}
                     >
                       <p className="break-words whitespace-pre-wrap">{m.body}</p>
@@ -269,9 +290,9 @@ export function Conversation({
           replies && (
             <motion.div
               key="tools"
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6, filter: "blur(6px)" }}
+              exit={{ opacity: 0, y: 6 }}
               transition={spring.smooth}
               className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-2/80 p-1.5 ring-1 ring-line sm:grid-cols-3"
               role="group"
@@ -322,7 +343,8 @@ export function Conversation({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            // Enter sends on a keyboard; on phones it adds a new line and the button sends.
+            if (e.key === "Enter" && !e.shiftKey && finePointer()) {
               e.preventDefault();
               submit();
             }
@@ -353,9 +375,7 @@ export function Conversation({
             aria-label={tools ? "Hide quick replies" : "Show quick replies"}
             className={cn(
               "grid size-10 shrink-0 place-items-center rounded-xl transition-colors",
-              tools || draft
-                ? "bg-accent-soft text-accent"
-                : "text-chart-violet hover:bg-ink/[0.05]",
+              tools || draft ? "bg-accent-soft text-accent" : "text-accent-ink hover:bg-ink/[0.05]",
             )}
           >
             <Wand2 className="size-[18px]" />
