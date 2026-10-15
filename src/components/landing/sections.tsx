@@ -2,28 +2,7 @@
 
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import { ChevronDown } from "lucide-react";
-import { useRef, type ReactNode } from "react";
-import { cn } from "@/lib/cn";
-
-/** Tilts its child back as it enters the screen and lays it flat as you scroll to it. */
-export function ScrollTilt({ children, className }: { children: ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 30%"] });
-  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 26, mass: 0.4 });
-  const rotateX = useTransform(p, [0, 1], [16, 0]);
-  const scale = useTransform(p, [0, 1], [0.92, 1]);
-  return (
-    <div ref={ref} className={cn("[perspective:1400px]", className)}>
-      <motion.div
-        style={reduce ? undefined : { rotateX, scale, transformOrigin: "50% 0%" }}
-        className="will-change-transform"
-      >
-        {children}
-      </motion.div>
-    </div>
-  );
-}
+import { useRef } from "react";
 
 /** A slow, endless row of campus names. Pauses on hover; still when motion is reduced. */
 export function CampusMarquee({

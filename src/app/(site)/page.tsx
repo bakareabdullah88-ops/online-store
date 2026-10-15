@@ -14,8 +14,7 @@ import { ChatComposite, FoundComposite, OrderComposite } from "@/components/land
 import { LandingHero } from "@/components/landing/hero";
 import { LandingNav } from "@/components/landing/nav";
 import { Reveal } from "@/components/landing/reveal";
-import { CampusMarquee, Faq, HowSteps, ScrollTilt } from "@/components/landing/sections";
-import { StudioPreview } from "@/components/landing/studio-preview";
+import { CampusMarquee, Faq, HowSteps } from "@/components/landing/sections";
 import { Logo } from "@/components/shell/logo";
 import { Page } from "@/components/shell/page";
 import { brand } from "@/config/brand";
@@ -137,20 +136,10 @@ export default function LandingPage() {
       <Page>
         <LandingHero />
 
-        {/* The product, tilting into place as you scroll to it. */}
-        <section aria-label="Shop Studio preview" className="mx-auto max-w-6xl px-4 md:px-6">
-          <ScrollTilt>
-            <StudioPreview />
-          </ScrollTilt>
-          <p className="mt-4 text-center text-[12.5px] text-muted">
-            Shop Studio, where sellers run their shop. Names and amounts are examples.
-          </p>
-        </section>
-
         {/* Campuses */}
         <section
           aria-labelledby="campuses-title"
-          className="mt-24 border-y border-line bg-surface-2 py-10"
+          className="border-y border-line bg-surface-2 py-10"
           id="campuses"
         >
           <h2
@@ -245,14 +234,16 @@ export default function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-28 md:px-6">
-          <Reveal>
-            <SectionLabel>Getting started</SectionLabel>
-            <h2 className="mt-3 text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
-              How it works
-            </h2>
-          </Reveal>
-          <HowSteps steps={steps} />
+        <section id="how" className="scroll-mt-24 border-y border-line bg-surface-2 py-28">
+          <div className="mx-auto max-w-6xl px-4 md:px-6">
+            <Reveal>
+              <SectionLabel>Getting started</SectionLabel>
+              <h2 className="mt-3 text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
+                How it works
+              </h2>
+            </Reveal>
+            <HowSteps steps={steps} />
+          </div>
         </section>
 
         {/* FAQ */}
@@ -304,7 +295,7 @@ export default function LandingPage() {
         </section>
       </Page>
 
-      <footer className="border-t border-line">
+      <footer className="border-t border-line bg-surface-2">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:px-6">
           <div>
             <Logo />
