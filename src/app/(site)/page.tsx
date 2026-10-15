@@ -1,23 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { BuddyAvatar } from "@/components/app/buddy";
+import { CategoryStrip } from "@/components/landing/category-strip";
+import { FaqPanel } from "@/components/landing/faq-panel";
+import { Clouds3D, GateScene, RoadStrip } from "@/components/landing/gate-scene";
+import { HeroSearch } from "@/components/landing/hero-search";
 import {
-  ArrowRight,
-  BadgeCheck,
-  BarChart3,
-  Bike,
-  Globe2,
-  HandCoins,
-  ShieldCheck,
-} from "lucide-react";
-import { KamplugMark } from "@/components/app/kamplug-mark";
-import { ChatComposite, FoundComposite, OrderComposite } from "@/components/landing/composites";
-import { LandingHero } from "@/components/landing/hero";
+  Burst,
+  DeliveryKeke,
+  HostelRoom,
+  SellPanel,
+  ShopPanel,
+  Sparkle,
+  TakeawaySet,
+  TuckShop,
+} from "@/components/landing/illustrations";
 import { LandingNav } from "@/components/landing/nav";
 import { Reveal } from "@/components/landing/reveal";
-import { CampusMarquee, Faq, HowSteps } from "@/components/landing/sections";
-import { Logo } from "@/components/shell/logo";
 import { Page } from "@/components/shell/page";
 import { brand } from "@/config/brand";
+import { BUDDY_COLORS, BUDDY_SHAPES } from "@/domain/buddy";
+import { cn } from "@/lib/cn";
 import { seedCampuses } from "@/services/mock/seed/campuses";
 
 export const metadata: Metadata = {
@@ -26,70 +30,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-/** A small green label that names each section, so they read as distinct parts. */
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-center text-[12.5px] font-semibold tracking-[0.12em] text-brand-ink uppercase">
-      {children}
-    </p>
-  );
-}
-
-const campuses = seedCampuses().map((c) => ({ name: c.name, short: c.shortName, city: c.city }));
-
-const features = [
-  {
-    id: "buy",
-    kicker: "For buyers",
-    title: "Find it on your campus, not across town",
-    body: "Search what students near you are selling. See how far each shop is and whether they deliver to your hall.",
-    points: [
-      "Search and browse by category",
-      "Delivery to your hall, or pick up",
-      "Follow shops for their new drops",
-    ],
-    art: <FoundComposite />,
-  },
-  {
-    id: "sell",
-    kicker: "For sellers",
-    title: "Turn your DMs into real orders",
-    body: "Open a free shop, list what you sell and take orders with pay on delivery. Each order tells you exactly what to make and where it's going.",
-    points: [
-      "Pay on delivery or at pickup",
-      "Your own promo codes",
-      "Live status your buyers can follow",
-    ],
-    art: <OrderComposite />,
-  },
-  {
-    id: "chat",
-    kicker: "In between",
-    title: "Sort out the details in one chat",
-    body: "Sizes, colours, pickup times. Talk it through next to the order, and get notified the moment someone replies.",
-    points: ["One inbox for every conversation", "Unread counts right in the top bar"],
-    art: <ChatComposite />,
-  },
-];
-
-const benefits = [
-  {
-    icon: HandCoins,
-    title: "Free to open",
-    body: "No setup fee and no monthly fee. Five short steps.",
-  },
-  { icon: ShieldCheck, title: "No card needed", body: "Buyers pay when the order reaches them." },
-  {
-    icon: Bike,
-    title: "Delivery or pickup",
-    body: "Pick the halls you deliver to and your pickup spots.",
-  },
-  {
-    icon: BarChart3,
-    title: "Know your numbers",
-    body: "Revenue, orders and repeat buyers from your own shop.",
-  },
-];
+const campuses = seedCampuses();
 
 const steps = [
   {
@@ -100,7 +41,7 @@ const steps = [
   {
     n: "2",
     title: "Shop or open a shop",
-    body: "Browse student brands near you, or set up your own.",
+    body: "Browse student shops near you, or set up your own.",
   },
   {
     n: "3",
@@ -111,195 +52,367 @@ const steps = [
 
 const faqs = [
   {
-    q: "How do I join?",
-    a: "Create an account with your email or Google. It takes about a minute.",
+    q: "What is Kamplug?",
+    a: "Kamplug is a marketplace for Nigerian campuses. Students sell food, thrift, beauty, tech, books and more, and other students order from them for delivery to their hall or pickup.",
   },
-  { q: "Does it cost anything?", a: "No. Using Kamplug and opening a shop are both free." },
   {
-    q: "How do buyers pay?",
+    q: "Does it cost anything?",
+    a: "No. Creating an account, shopping and opening a shop are all free.",
+  },
+  {
+    q: "How do I pay?",
     a: "On delivery or at pickup, straight to the seller. Online payments are coming later.",
   },
   {
-    q: "Who can sell?",
-    a: "Any student with an account. Food, fashion, thrift, beauty, prints, tech, books and more.",
+    q: "How do I open a shop?",
+    a: "Create an account, tap Open a shop and follow five short steps: name, handle, category, how you deliver, and your first product.",
   },
   {
-    q: "Which campuses?",
-    a: `You can pick from ${campuses.length} campuses when you sign up, with more on the way.`,
+    q: "Which campuses are on Kamplug?",
+    a: `You can pick from ${campuses.length} campuses when you sign up, including ${campuses
+      .slice(0, 3)
+      .map((c) => c.shortName)
+      .join(", ")} and more, with others on the way.`,
   },
+  {
+    q: "Is Kamplug only for food?",
+    a: "Not at all. Food is popular, but you'll find thrift, fashion, skincare, phone accessories, prints and study materials too.",
+  },
+];
+
+const INK = "#1b1f3b";
+
+/** Section titles: heavy, tight and big. */
+const h2 =
+  "text-[clamp(38px,5.6vw,68px)] leading-[0.98] font-extrabold tracking-[-0.055em] text-balance";
+
+/** Buttons with a solid "edge" underneath, so they look pressable. */
+const btn = {
+  cobalt:
+    "inline-flex h-14 items-center gap-2 rounded-xl bg-[#3a5bff] px-7 text-[16px] font-bold text-white shadow-[0_5px_0_#1f37b8] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_3px_0_#1f37b8] active:translate-y-[5px] active:shadow-none",
+  ink: "inline-flex h-14 items-center gap-2 rounded-xl bg-[#1b1f3b] px-7 text-[16px] font-bold text-white shadow-[0_5px_0_#000] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_3px_0_#000] active:translate-y-[5px] active:shadow-none",
+  white:
+    "inline-flex h-14 items-center gap-2 rounded-xl bg-white px-7 text-[16px] font-bold text-[#1b1f3b] shadow-[0_5px_0_rgba(27,31,59,0.25)] transition-[transform,box-shadow] hover:translate-y-[2px] hover:shadow-[0_3px_0_rgba(27,31,59,0.25)] active:translate-y-[5px] active:shadow-none",
+};
+
+/** A raised coloured stage that holds an illustration, with a darker edge under it. */
+function Stage({
+  bg,
+  edge,
+  className,
+  children,
+}: {
+  bg: string;
+  edge: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn("relative overflow-hidden rounded-[32px]", className)}
+      style={{ background: bg, boxShadow: `0 12px 0 ${edge}` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** "SEE MORE →" link under each feature card. */
+function SeeMore({ href }: { href: string }) {
+  return (
+    <Link
+      href={href}
+      className="group mt-6 inline-flex items-center gap-2 text-[14px] font-extrabold tracking-[0.2em] text-[#3a5bff] uppercase"
+    >
+      See more
+      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+    </Link>
+  );
+}
+
+const buddyGrid = Array.from({ length: 10 }, (_, i) => ({
+  shape: BUDDY_SHAPES[i % BUDDY_SHAPES.length]!,
+  color: BUDDY_COLORS[(i * 3) % BUDDY_COLORS.length]!,
+}));
+const gridBgs = [
+  "#ffd9cf",
+  "#3a5bff",
+  "#ffd23f",
+  "#9fd8ff",
+  INK,
+  "#ff6a4d",
+  "#ffd23f",
+  INK,
+  "#ffd9cf",
+  "#3a5bff",
 ];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-dvh overflow-x-clip bg-surface">
+    <div className="min-h-dvh overflow-x-clip bg-white font-sans text-[#1b1f3b]">
       <LandingNav />
       <Page>
-        <LandingHero />
+        {/* Hero: the UNILAG gate on a clear morning, the whole width of the page */}
+        <section className="relative overflow-hidden bg-[#f4f5f8] pt-28 md:pt-36">
+          <Clouds3D />
+          <div className="relative mx-auto max-w-4xl px-5 text-center">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold shadow-[0_3px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10">
+              <span className="size-2 rounded-full bg-[#3ddc97]" aria-hidden />
+              Live on {campuses.length} campuses
+            </p>
+            <h1 className="mt-5 text-[clamp(52px,9vw,116px)] leading-[0.9] font-extrabold tracking-[-0.06em]">
+              Wetin you <span className="text-[#3a5bff]">need?</span>
+            </h1>
+            <p className="mx-auto mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
+              Your campus, one plug away. Food, thrift, beauty and more from students near you.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <HeroSearch />
+            </div>
+          </div>
+          <GateScene className="relative mt-6 h-[260px] w-full sm:h-[340px] md:mt-2 md:h-[420px] xl:h-[460px]" />
+          <RoadStrip />
+        </section>
 
-        {/* Campuses */}
-        <section
-          aria-labelledby="campuses-title"
-          className="border-y border-line bg-surface-2 py-10"
-          id="campuses"
-        >
-          <h2
-            id="campuses-title"
-            className="text-center text-[12.5px] font-semibold tracking-[0.12em] text-muted uppercase"
-          >
-            Live on {campuses.length} campuses
-          </h2>
-          <div className="mt-6">
-            <CampusMarquee items={campuses} />
+        {/* Categories */}
+        <section id="shop" className="scroll-mt-24 bg-white px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-[1240px]">
+            <Reveal
+              from="top"
+              className="mb-10 flex flex-col gap-3 md:mb-14 md:flex-row md:items-end md:justify-between"
+            >
+              <h2 className={h2}>
+                Everything
+                <br />
+                on campus
+              </h2>
+              <p className="max-w-sm text-[18px] leading-snug">
+                Whatever you need between lectures, someone in your school is selling it.
+              </p>
+            </Reveal>
+            <CategoryStrip />
           </div>
         </section>
 
-        {/* Features */}
-        <section id="features" className="mx-auto max-w-6xl px-4 pt-28 pb-8 md:px-6">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <SectionLabel>What you can do</SectionLabel>
-            <h2 className="mt-3 text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
-              One account for buying and selling
-            </h2>
-            <p className="mt-3 text-[16.5px] text-muted">
-              Switch between the market and your shop in a tap.
-            </p>
-          </Reveal>
-          <div className="mt-20 flex flex-col gap-24 md:gap-32">
-            {features.map((f, i) => (
-              <div
-                key={f.id}
-                id={f.id}
-                className="grid scroll-mt-28 items-center gap-10 md:grid-cols-2 md:gap-16"
-              >
-                <Reveal from={i % 2 ? "right" : "left"} className={i % 2 ? "md:order-2" : ""}>
-                  {f.art}
-                </Reveal>
-                <Reveal
-                  from={i % 2 ? "left" : "right"}
-                  delay={80}
-                  className={i % 2 ? "md:order-1" : ""}
-                >
-                  <p className="text-[13px] font-semibold tracking-[0.06em] text-brand-ink uppercase">
-                    {f.kicker}
-                  </p>
-                  <h3 className="mt-3 text-[28px] leading-tight font-semibold tracking-[-0.03em] md:text-[34px]">
-                    {f.title}
-                  </h3>
-                  <p className="mt-3 max-w-prose text-[16px] leading-relaxed text-ink-2">
-                    {f.body}
-                  </p>
-                  <ul className="mt-5 flex flex-col gap-2.5">
-                    {f.points.map((p) => (
-                      <li key={p} className="flex items-center gap-2.5 text-[15px]">
-                        <BadgeCheck className="size-[18px] shrink-0 text-brand-ink" aria-hidden />
-                        {p}
-                      </li>
+        {/* Sell */}
+        <section id="sell" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-2">
+            <Reveal from="top" className="md:order-2">
+              <h2 className={h2}>
+                Open a shop for <span className="text-[#3a5bff]">₦0</span>
+              </h2>
+              <p className="mt-5 max-w-md text-[18px] leading-snug md:text-[20px]">
+                No setup fee and no monthly fee. List what you sell, take orders with pay on
+                delivery and watch your sales grow.
+              </p>
+              <Link href="/open-shop" className={cn(btn.cobalt, "mt-8")}>
+                Open your shop <ArrowRight className="size-5" />
+              </Link>
+            </Reveal>
+            <Reveal from="top" delay={120}>
+              <Stage bg="#ffe9a8" edge="#e0b000" className="px-6 pt-10">
+                <Burst className="lp-twinkle absolute top-6 left-6 size-8" color="#ff6a4d" />
+                <Sparkle className="lp-twinkle absolute top-10 right-8 size-7" color="#3a5bff" />
+                <TuckShop className="relative block w-full translate-y-1" />
+              </Stage>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* Three ways in */}
+        <section className="bg-white px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid max-w-[1240px] gap-8 md:grid-cols-3 md:gap-6">
+            {[
+              {
+                mark: <Burst className="size-9" color="#ff6a4d" />,
+                title: "Start selling",
+                body: "Cook, thrift, braid or print? Open a shop in minutes and reach every student on your campus.",
+                href: "/open-shop",
+                panel: <SellPanel className="h-full w-full" />,
+              },
+              {
+                mark: <span className="block h-7 w-14 rounded-t-full bg-[#3ddc97]" aria-hidden />,
+                title: "Shop your campus",
+                body: "Follow the shops you love, order in a few taps and track it all the way to your hall.",
+                href: "/signup",
+                panel: <ShopPanel className="h-full w-full" />,
+              },
+              {
+                mark: <Sparkle className="size-10" color="#3a5bff" />,
+                title: "Meet the buddies",
+                body: "Every account gets an animated buddy as its profile picture. Pick your shape and colour.",
+                href: "/signup",
+                panel: (
+                  <div className="grid h-full grid-cols-5 grid-rows-2">
+                    {buddyGrid.map((b, i) => (
+                      <div
+                        key={i}
+                        className="grid place-items-center"
+                        style={{ background: gridBgs[i] }}
+                      >
+                        <BuddyAvatar buddy={b} size={58} className="!bg-transparent" />
+                      </div>
                     ))}
-                  </ul>
-                </Reveal>
-              </div>
+                  </div>
+                ),
+              },
+            ].map((c, i) => (
+              <Reveal
+                key={c.title}
+                from="top"
+                delay={i * 120}
+                className="flex flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10"
+              >
+                <div className="flex-1 p-7 md:p-8">
+                  {c.mark}
+                  <h3 className="mt-5 text-[30px] leading-none font-extrabold tracking-[-0.04em] md:text-[32px]">
+                    {c.title}
+                  </h3>
+                  <p className="mt-4 text-[17px] leading-relaxed">{c.body}</p>
+                  <SeeMore href={c.href} />
+                </div>
+                <div className="h-[220px]">{c.panel}</div>
+              </Reveal>
             ))}
           </div>
         </section>
 
-        {/* Benefits */}
-        <section
-          id="benefits"
-          className="relative mt-24 overflow-hidden bg-accent-soft py-24 dark:bg-[color-mix(in_oklab,var(--accent)_8%,var(--surface))]"
-        >
-          <div className="mx-auto max-w-6xl px-4 md:px-6">
-            <Reveal className="mx-auto max-w-2xl text-center">
-              <SectionLabel>Why Kamplug</SectionLabel>
-              <h2 className="mt-3 text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
-                Selling on campus, minus the stress
+        {/* Delivery */}
+        <section id="delivery" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-2">
+            <Reveal from="top">
+              <h2 className={h2}>
+                Delivered to <span className="text-[#d9472a]">your hall</span>
               </h2>
-              <p className="mt-3 text-[16.5px] text-muted">
-                Built for how students already buy and sell, without the WhatsApp chaos.
+              <p className="mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
+                Shops deliver across campus or set a pickup spot. Follow your order from placed to
+                at your door, live.
               </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link href="/signup" className={btn.ink}>
+                  Start shopping
+                </Link>
+                <Link href="/open-shop" className={btn.white}>
+                  Deliver for your shop
+                </Link>
+              </div>
             </Reveal>
-            <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {benefits.map((b, i) => (
-                <Reveal as="li" key={b.title} delay={i * 90}>
-                  <div className="group h-full rounded-xl bg-surface p-6 ring-1 ring-line transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-accent/40">
-                    <span className="grid size-10 place-items-center rounded-lg bg-accent-soft text-brand-ink transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
-                      <b.icon className="size-5" aria-hidden />
-                    </span>
-                    <h3 className="mt-5 text-[16.5px] font-semibold">{b.title}</h3>
-                    <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">{b.body}</p>
-                  </div>
+            <Reveal from="top" delay={120}>
+              <Stage bg="#ffd9cf" edge="#e8917c" className="px-6 py-10">
+                <div
+                  aria-hidden
+                  className="lp-stripes pointer-events-none absolute inset-y-0 left-0 flex w-[200%]"
+                >
+                  {Array.from({ length: 8 }, (_, i) => (
+                    <span
+                      key={i}
+                      className="mx-[6%] h-full w-[8%] shrink-0 -skew-x-[24deg] bg-white/35"
+                    />
+                  ))}
+                </div>
+                <DeliveryKeke className="relative w-full" />
+              </Stage>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* Order, chat, track: night in the hostel */}
+        <section className="bg-white px-4 py-20 md:px-8 md:py-28">
+          <Reveal from="top" className="mx-auto max-w-[1240px]">
+            <Stage
+              bg={INK}
+              edge="#000"
+              className="grid items-end text-white md:grid-cols-[1fr_1.25fr]"
+            >
+              <div className="px-7 pt-14 pb-8 md:px-12 md:py-20">
+                <h2 className={h2}>Order, chat and track in one place</h2>
+                <p className="mt-5 max-w-md text-[18px] leading-snug md:text-[20px]">
+                  Ask about sizes, agree a pickup time, and get a ping the moment your order is on
+                  the way. All without leaving your room.
+                </p>
+                <Link href="/signup" className={cn(btn.white, "mt-8")}>
+                  Create your account
+                </Link>
+              </div>
+              <HostelRoom className="block w-full" />
+            </Stage>
+          </Reveal>
+        </section>
+
+        {/* Get started in 3 steps */}
+        <section id="how" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-[1240px]">
+            <Reveal from="top">
+              <h2 className={cn(h2, "text-center")}>Get started in 3 steps</h2>
+            </Reveal>
+            <ol className="mt-14 grid gap-8 md:grid-cols-3">
+              {steps.map((s, i) => (
+                <Reveal
+                  as="li"
+                  key={s.n}
+                  from="top"
+                  delay={i * 140}
+                  className="rounded-[26px] bg-white p-8 shadow-[0_10px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10"
+                >
+                  <span
+                    className="grid size-14 place-items-center rounded-2xl text-[26px] font-extrabold text-white"
+                    style={{
+                      background: ["#3a5bff", "#ff6a4d", "#1b1f3b"][i],
+                      boxShadow: `0 5px 0 ${["#1f37b8", "#c4452b", "#000"][i]}`,
+                    }}
+                  >
+                    {s.n}
+                  </span>
+                  <h3 className="mt-6 text-[24px] font-extrabold tracking-[-0.03em]">{s.title}</h3>
+                  <p className="mt-2 text-[17px] leading-snug">{s.body}</p>
                 </Reveal>
               ))}
-            </ul>
+            </ol>
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how" className="scroll-mt-24 border-y border-line bg-surface-2 py-28">
-          <div className="mx-auto max-w-6xl px-4 md:px-6">
-            <Reveal>
-              <SectionLabel>Getting started</SectionLabel>
-              <h2 className="mt-3 text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
-                How it works
-              </h2>
-            </Reveal>
-            <HowSteps steps={steps} />
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section
-          id="faq"
-          className="scroll-mt-24 border-t border-line bg-surface-2 px-4 py-24 md:px-6"
-        >
-          <Reveal>
-            <SectionLabel>FAQ</SectionLabel>
-            <h2 className="mt-3 text-center text-[clamp(28px,4vw,40px)] font-semibold tracking-[-0.035em]">
-              Questions, answered
-            </h2>
-          </Reveal>
-          <Faq items={faqs} />
-        </section>
-
-        {/* Closing call to action */}
-        <section className="mx-auto max-w-6xl px-4 py-20 md:px-6">
-          <Reveal>
-            <div className="relative overflow-hidden rounded-2xl bg-brand px-6 py-16 text-center text-white md:px-16 md:py-20">
-              {/* Big faint marks drifting behind the text. */}
-              <KamplugMark className="pointer-events-none absolute -top-10 -left-10 size-56 text-white/10 motion-safe:animate-[float_14s_ease-in-out_infinite]" />
-              <KamplugMark className="pointer-events-none absolute -right-8 -bottom-12 size-72 rotate-12 text-white/10 motion-safe:animate-[float_18s_ease-in-out_infinite_reverse]" />
-              <h2 className="relative text-[clamp(28px,4vw,46px)] leading-tight font-semibold tracking-[-0.035em]">
-                Your campus is already buying.
-                <br />
-                Be the plug.
-              </h2>
-              <p className="relative mx-auto mt-3 max-w-md text-[16.5px] text-white">
-                One free account for buying and selling. Open your shop whenever you&apos;re ready.
+        {/* Be the plug */}
+        <section className="bg-white px-4 py-20 md:px-8 md:py-28">
+          <Reveal from="top" className="mx-auto max-w-[1240px]">
+            <Stage
+              bg="#3a5bff"
+              edge="#1f37b8"
+              className="px-6 pt-16 text-center text-white md:pt-20"
+            >
+              <Sparkle className="lp-twinkle absolute top-10 left-[12%] size-9" color="#ffd23f" />
+              <Burst className="lp-twinkle absolute top-24 right-[10%] size-10" color="#ff6a4d" />
+              <h2 className={h2}>Be the plug</h2>
+              <p className="mx-auto mt-4 max-w-lg text-[18px] leading-snug md:text-[20px]">
+                Your campus is already buying. One free account for buying and selling.
               </p>
-              <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/signup"
-                  className="group flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-[15px] font-semibold text-brand transition-colors duration-150 hover:bg-white/90"
-                >
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <Link href="/signup" className={btn.white}>
                   Create your account
-                  <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </Link>
-                <Link
-                  href="/login"
-                  className="flex h-12 items-center rounded-xl px-6 text-[15px] font-semibold ring-1 ring-white/40 transition-colors duration-150 hover:bg-white/10"
-                >
+                <Link href="/login" className={btn.ink}>
                   Log in
                 </Link>
               </div>
-            </div>
+              <TakeawaySet className="mx-auto mt-10 block w-full max-w-[600px] translate-y-2" />
+            </Stage>
           </Reveal>
+        </section>
+
+        {/* FAQs */}
+        <section id="faq" className="scroll-mt-20 bg-[#f4f5f8] px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-[1240px]">
+            <FaqPanel items={faqs} />
+          </div>
         </section>
       </Page>
 
-      <footer className="border-t border-line bg-surface-2">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:px-6">
+      <footer className="bg-[#1b1f3b] text-white">
+        <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-16 md:grid-cols-[1.6fr_1fr_1fr_1fr] md:px-8">
           <div>
-            <Logo />
-            <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-muted">
+            <p className="text-[30px] font-extrabold tracking-[-0.055em]">
+              kam<span className="text-[#9fb0ff]">plug</span>
+            </p>
+            <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-white/85">
               {brand.description}
             </p>
           </div>
@@ -316,27 +429,29 @@ export default function LandingPage() {
               title: "Sell",
               links: [
                 ["Open a shop", "/open-shop"],
-                ["Shop Studio", "/studio"],
+                ["Shop dashboard", "/studio"],
               ],
             },
             {
               title: "Kamplug",
               links: [
                 ["How it works", "/#how"],
-                ["FAQ", "/#faq"],
+                ["FAQs", "/#faq"],
                 ["Log in", "/login"],
                 ["Create an account", "/signup"],
               ],
             },
           ].map((c) => (
             <div key={c.title}>
-              <p className="text-[13px] font-semibold">{c.title}</p>
-              <ul className="mt-3 flex flex-col gap-2">
+              <p className="text-[13px] font-extrabold tracking-[0.18em] text-[#ffd23f] uppercase">
+                {c.title}
+              </p>
+              <ul className="mt-4 flex flex-col gap-2.5">
                 {c.links.map(([label, href]) => (
                   <li key={href}>
                     <Link
                       href={href!}
-                      className="text-[14px] text-muted transition-colors hover:text-ink"
+                      className="text-[15px] text-white/90 hover:text-white hover:underline"
                     >
                       {label}
                     </Link>
@@ -346,27 +461,25 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
-        {/* The wordmark, big, as a sign-off. */}
-        <div className="mx-auto max-w-6xl overflow-hidden px-4 md:px-6" aria-hidden>
-          {/* Drawn as SVG text: a faint sign-off, not something to read. */}
-          <svg viewBox="0 0 1000 200" className="block w-full translate-y-[18%] opacity-[0.07]">
+        <div className="mx-auto max-w-[1240px] overflow-hidden px-5 md:px-8" aria-hidden>
+          <svg viewBox="0 0 1000 210" className="block w-full translate-y-[14%]">
             <text
               x="0"
-              y="170"
+              y="190"
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
-              className="fill-ink font-bold"
-              style={{ fontSize: 220, letterSpacing: "-0.045em" }}
+              fill="#ffffff"
+              opacity="0.1"
+              style={{ fontSize: 250, fontWeight: 800, letterSpacing: "-0.07em" }}
             >
-              kam<tspan className="fill-brand-ink">plug</tspan>
+              kamplug
             </text>
           </svg>
         </div>
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-6 text-[12.5px] text-muted md:px-6">
-          <span>© {brand.name}. Made for Nigerian campuses.</span>
-          <span className="flex items-center gap-1.5">
-            <Globe2 className="size-3.5" /> English (Nigeria)
-          </span>
+        <div className="border-t border-white/15">
+          <p className="mx-auto max-w-[1240px] px-5 py-6 text-[13px] text-white/80 md:px-8">
+            © {brand.name}. Made for Nigerian campuses.
+          </p>
         </div>
       </footer>
     </div>

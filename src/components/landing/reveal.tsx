@@ -3,11 +3,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type From = "up" | "left" | "right";
-const offsets: Record<From, { x: string; y: string }> = {
+type From = "up" | "left" | "right" | "top";
+const offsets: Record<From, { x: string; y: string; rx?: string }> = {
   up: { x: "0px", y: "28px" },
   left: { x: "-40px", y: "0px" },
   right: { x: "40px", y: "0px" },
+  /** Swings down from above, tilted back, like a card flipping into place. */
+  top: { x: "0px", y: "-36px", rx: "34deg" },
 };
 
 /**
@@ -63,6 +65,7 @@ export function Reveal({
         {
           "--reveal-x": o.x,
           "--reveal-y": o.y,
+          "--reveal-rx": o.rx ?? "0deg",
           transitionDelay: state === "shown" ? `${delay}ms` : undefined,
         } as React.CSSProperties
       }
