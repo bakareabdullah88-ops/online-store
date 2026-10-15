@@ -9,7 +9,7 @@ import {
   HandCoins,
   ShieldCheck,
 } from "lucide-react";
-import { KamplugMark, KamplugWordmark } from "@/components/app/kamplug-mark";
+import { KamplugMark } from "@/components/app/kamplug-mark";
 import { ChatComposite, FoundComposite, OrderComposite } from "@/components/landing/composites";
 import { LandingHero } from "@/components/landing/hero";
 import { LandingNav } from "@/components/landing/nav";
@@ -26,6 +26,15 @@ export const metadata: Metadata = {
   description: brand.description,
   alternates: { canonical: "/" },
 };
+
+/** A small green label that names each section, so they read as distinct parts. */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-center text-[12.5px] font-semibold tracking-[0.12em] text-brand-ink uppercase">
+      {children}
+    </p>
+  );
+}
 
 const campuses = seedCampuses().map((c) => ({ name: c.name, short: c.shortName, city: c.city }));
 
@@ -139,22 +148,27 @@ export default function LandingPage() {
         </section>
 
         {/* Campuses */}
-        <section aria-labelledby="campuses-title" className="pt-24" id="campuses">
+        <section
+          aria-labelledby="campuses-title"
+          className="mt-24 border-y border-line bg-surface-2 py-10"
+          id="campuses"
+        >
           <h2
             id="campuses-title"
-            className="text-center text-[13px] font-semibold tracking-[0.08em] text-muted uppercase"
+            className="text-center text-[12.5px] font-semibold tracking-[0.12em] text-muted uppercase"
           >
             Live on {campuses.length} campuses
           </h2>
-          <div className="mt-8">
+          <div className="mt-6">
             <CampusMarquee items={campuses} />
           </div>
         </section>
 
         {/* Features */}
-        <section id="features" className="mx-auto max-w-6xl px-4 pt-28 md:px-6">
+        <section id="features" className="mx-auto max-w-6xl px-4 pt-28 pb-8 md:px-6">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
+            <SectionLabel>What you can do</SectionLabel>
+            <h2 className="mt-3 text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
               One account for buying and selling
             </h2>
             <p className="mt-3 text-[16.5px] text-muted">
@@ -200,10 +214,14 @@ export default function LandingPage() {
         </section>
 
         {/* Benefits */}
-        <section id="benefits" className="relative mt-32 overflow-hidden bg-canvas py-24">
+        <section
+          id="benefits"
+          className="relative mt-24 overflow-hidden bg-accent-soft py-24 dark:bg-[color-mix(in_oklab,var(--accent)_8%,var(--surface))]"
+        >
           <div className="mx-auto max-w-6xl px-4 md:px-6">
             <Reveal className="mx-auto max-w-2xl text-center">
-              <h2 className="text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
+              <SectionLabel>Why Kamplug</SectionLabel>
+              <h2 className="mt-3 text-[clamp(30px,4.4vw,48px)] leading-tight font-semibold tracking-[-0.035em]">
                 Selling on campus, minus the stress
               </h2>
               <p className="mt-3 text-[16.5px] text-muted">
@@ -229,7 +247,8 @@ export default function LandingPage() {
         {/* How it works */}
         <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-28 md:px-6">
           <Reveal>
-            <h2 className="text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
+            <SectionLabel>Getting started</SectionLabel>
+            <h2 className="mt-3 text-center text-[clamp(30px,4.4vw,48px)] font-semibold tracking-[-0.035em]">
               How it works
             </h2>
           </Reveal>
@@ -237,9 +256,13 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="scroll-mt-24 px-4 pb-28 md:px-6">
+        <section
+          id="faq"
+          className="scroll-mt-24 border-t border-line bg-surface-2 px-4 py-24 md:px-6"
+        >
           <Reveal>
-            <h2 className="text-center text-[clamp(28px,4vw,40px)] font-semibold tracking-[-0.035em]">
+            <SectionLabel>FAQ</SectionLabel>
+            <h2 className="mt-3 text-center text-[clamp(28px,4vw,40px)] font-semibold tracking-[-0.035em]">
               Questions, answered
             </h2>
           </Reveal>
@@ -247,7 +270,7 @@ export default function LandingPage() {
         </section>
 
         {/* Closing call to action */}
-        <section className="mx-auto max-w-6xl px-4 pb-20 md:px-6">
+        <section className="mx-auto max-w-6xl px-4 py-20 md:px-6">
           <Reveal>
             <div className="relative overflow-hidden rounded-2xl bg-brand px-6 py-16 text-center text-white md:px-16 md:py-20">
               {/* Big faint marks drifting behind the text. */}
@@ -258,7 +281,7 @@ export default function LandingPage() {
                 <br />
                 Be the plug.
               </h2>
-              <p className="relative mx-auto mt-3 max-w-md text-[16.5px] text-white/80">
+              <p className="relative mx-auto mt-3 max-w-md text-[16.5px] text-white">
                 One free account for buying and selling. Open your shop whenever you&apos;re ready.
               </p>
               <div className="relative mt-8 flex flex-wrap justify-center gap-3">
@@ -334,7 +357,19 @@ export default function LandingPage() {
         </div>
         {/* The wordmark, big, as a sign-off. */}
         <div className="mx-auto max-w-6xl overflow-hidden px-4 md:px-6" aria-hidden>
-          <KamplugWordmark className="block translate-y-[18%] text-[clamp(72px,19vw,240px)] opacity-[0.07]" />
+          {/* Drawn as SVG text: a faint sign-off, not something to read. */}
+          <svg viewBox="0 0 1000 200" className="block w-full translate-y-[18%] opacity-[0.07]">
+            <text
+              x="0"
+              y="170"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              className="fill-ink font-bold"
+              style={{ fontSize: 220, letterSpacing: "-0.045em" }}
+            >
+              kam<tspan className="fill-brand-ink">plug</tspan>
+            </text>
+          </svg>
         </div>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-6 text-[12.5px] text-muted md:px-6">
           <span>© {brand.name}. Made for Nigerian campuses.</span>

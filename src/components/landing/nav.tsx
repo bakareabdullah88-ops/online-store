@@ -27,15 +27,38 @@ export function LandingNav() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
+  // The open menu closes on Escape; a tap anywhere else closes it via the backdrop below.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-(--z-header) px-3 pt-3 md:px-6 md:pt-4">
+      <AnimatePresence>
+        {open && (
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="pointer-events-auto fixed inset-0 bg-overlay/40 backdrop-blur-[2px] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
       <motion.div
         initial={reduce ? false : { y: -24, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "pointer-events-auto mx-auto max-w-6xl rounded-2xl liquid-glass transition-[max-width,padding] duration-500 ease-out",
+          "pointer-events-auto relative mx-auto max-w-6xl rounded-2xl liquid-glass transition-[max-width,padding] duration-500 ease-out",
+          open && "bg-surface",
           scrolled && "max-w-5xl",
         )}
       >

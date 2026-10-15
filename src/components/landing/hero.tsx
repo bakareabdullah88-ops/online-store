@@ -39,7 +39,7 @@ const floaters: {
     y: 20,
     size: "lg",
     depth: 1.2,
-    phone: { x: 9, y: 3 },
+    phone: { x: 13, y: 3 },
   },
   {
     motif: "sneaker",
@@ -49,7 +49,7 @@ const floaters: {
     y: 16,
     size: "lg",
     depth: 1,
-    phone: { x: 91, y: 5 },
+    phone: { x: 87, y: 5 },
   },
   { motif: "dropper", palette: "plum", label: "Face serum", x: 3, y: 64, size: "md", depth: 0.7 },
   { motif: "tee", palette: "sea", label: "Tee", x: 95, y: 60, size: "md", depth: 0.8 },
@@ -219,18 +219,20 @@ export function LandingHero() {
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            className="mt-9 flex items-center justify-center gap-2.5 sm:gap-3"
           >
+            {/* One line on phones: the main action wide, the second one compact. */}
             <Link
               href="/signup"
-              className="group flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-[15.5px] font-semibold text-on-accent shadow-[0_10px_30px_-12px_var(--accent)] transition-colors duration-150 hover:bg-accent-hover"
+              className="group flex h-12 items-center gap-2 rounded-xl bg-accent px-5 text-[15px] font-semibold whitespace-nowrap text-on-accent shadow-[0_10px_30px_-12px_var(--accent)] transition-colors duration-150 hover:bg-accent-hover sm:px-6 sm:text-[15.5px]"
             >
-              Create your account
+              <span className="sm:hidden">Create account</span>
+              <span className="max-sm:hidden">Create your account</span>
               <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/open-shop"
-              className="flex h-12 items-center rounded-xl liquid-glass px-6 text-[15.5px] font-semibold text-ink transition-colors hover:text-brand-ink"
+              className="flex h-12 items-center rounded-xl liquid-glass px-4 text-[15px] font-semibold whitespace-nowrap text-ink transition-colors hover:text-brand-ink sm:px-6 sm:text-[15.5px]"
             >
               Open a shop
             </Link>
