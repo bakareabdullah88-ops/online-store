@@ -165,7 +165,7 @@ export function BuyerHome() {
   return (
     <div className={pagePad}>
       <PageHeader
-        crumbs={[{ label: "Market", href: "/home" }, { label: "Home" }]}
+        crumbs={[{ label: "Market", href: "/home" }, { label: "Dashboard" }]}
         title={mounted && firstName ? <Greeting name={firstName} /> : "Home"}
         description={
           mounted

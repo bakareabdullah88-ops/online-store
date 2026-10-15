@@ -1,18 +1,6 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import { Page } from "@/components/shell/page";
-import { pagePad } from "@/components/app/layout";
-import { DashboardSkeleton } from "@/components/dash/skeleton";
-import { StudioAnalytics } from "@/components/studio/analytics";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Analytics", robots: { index: false } };
-
+/** Analytics is now the Insights view of the shop dashboard. */
 export default function Route() {
-  return (
-    <Page className={pagePad}>
-      <Suspense fallback={<DashboardSkeleton />}>
-        <StudioAnalytics />
-      </Suspense>
-    </Page>
-  );
+  redirect("/studio?view=insights");
 }

@@ -14,7 +14,9 @@ import {
 test("landing sends visitors to sign up and gates the app", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /Your campus, one plug away/ })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /Your campus, one plug away/ }),
+  ).toBeVisible();
   await page.goto("/home");
   await page.waitForURL(/\/login\?next=%2Fhome/);
   await page.goto("/studio/orders");
@@ -59,7 +61,7 @@ test("two real accounts: open a shop, buy, fulfil, message", async ({ page }) =>
   await fulfilFirstOrder(page);
   await page.goto("/studio");
   // The sale now shows up under top products, next to the revenue figure.
-  await expect(page.getByText("Revenue", { exact: true })).toBeVisible();
+  await expect(page.getByText(/^Revenue, /)).toBeVisible();
   await expect(page.getByRole("link", { name: product })).toBeVisible();
   await signOut(page);
 

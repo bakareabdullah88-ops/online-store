@@ -122,3 +122,16 @@ the phone menu open (`menu-open-*.jpg`). Made with `scripts/make-state.mjs` and
 | After the fixes | 16, all the same thing: the 48×28px on/off switches in Settings and Shop settings, on phones. That's the standard switch size; its label row sits beside it. No overlaps, no sideways scrolling, nothing clipped. Details in `audit/layout-report.json`. |
 
 The main fix was the phone header, where icons were squeezed to 29px.
+
+## Round 3: discovery home, one shop dashboard, switch fix (15 Oct)
+
+- **Switch bug:** after switching sides from the phone menu, the other side's menu could reappear open. Next.js keeps the side you left alive in the background, along with its open menu. The menu's state is now shared and closes on every switch.
+- **Switch animation, back and simpler:** a green circle grows from the switch. Your shop's logo (or the bag) lands in the middle with one live line, such as "1 new order waiting". The circle then shrinks into the new page's logo. Reduced motion gets a short fade.
+- **Buyer home is now the market:**
+  - campus and search at the top;
+  - a banner that tracks your order if one is on the way;
+  - photo category circles and shops near you, with follow;
+  - "Popular right now" and "New on Kamplug", each with a one-tap add.
+- **Buyer dashboard:** spending and to-dos moved to `/account` ("Dashboard" in the menu, and "Your dashboard" on home).
+- **Shop dashboard:** Performance and Analytics are one page. It opens with your shop the way students see it (cover, logo, followers, products, rating, View shop and Share), then Overview and Insights tabs with one date range. `/studio/analytics` redirects to the Insights tab.
+- **Category photos:** from Pexels, under the Pexels License. Credits are in `public/discover/CREDITS.md`.

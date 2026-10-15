@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   Bell,
   Compass,
   Gauge,
@@ -84,6 +83,13 @@ export const marketNav: NavSection[] = [
         match: startsWith("/orders"),
       },
       {
+        href: "/account",
+        label: "Dashboard",
+        icon: Gauge,
+        tone: T.sky,
+        match: (p) => p === "/account",
+      },
+      {
         href: "/messages",
         label: "Messages",
         icon: MessageCircle,
@@ -140,18 +146,11 @@ export const shopNav: NavSection[] = [
     items: [
       {
         href: "/studio",
-        label: "Performance",
+        label: "Dashboard",
         icon: Gauge,
         tone: T.blue,
         primary: true,
-        match: (p) => p === "/studio",
-      },
-      {
-        href: "/studio/analytics",
-        label: "Analytics",
-        icon: BarChart3,
-        tone: T.violet,
-        primary: true,
+        match: (p) => p === "/studio" || p.startsWith("/studio?") || p === "/studio/analytics",
       },
       {
         href: "/studio/orders",

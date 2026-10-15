@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Bell, Menu, ShoppingBag } from "lucide-react";
-import { useState } from "react";
 import { useMode } from "@/components/shell/mode";
+import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
 import { MessagesButton } from "./messages-button";
 import { MobileSidebar } from "./mobile-sidebar";
@@ -28,7 +28,8 @@ function Dot({ n }: { n: number }) {
 export function MobileTopBar() {
   const mode = useMode();
   const badges = useNavBadges();
-  const [menu, setMenu] = useState(false);
+  const menu = useUi((s) => s.menuOpen);
+  const setMenu = useUi((s) => s.setMenuOpen);
   const menuCount = mode === "selling" ? badges.newOrders : badges.activeOrders;
   return (
     <header

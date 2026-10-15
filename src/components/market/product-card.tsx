@@ -26,6 +26,7 @@ export function ProductCard({
   className,
   size = "md",
   showBrand = true,
+  action,
 }: {
   product: ProductWithBrand;
   morph?: boolean;
@@ -33,6 +34,8 @@ export function ProductCard({
   className?: string;
   size?: "md" | "lg";
   showBrand?: boolean;
+  /** A control pinned to the photo's bottom-right corner, such as a quick add. */
+  action?: React.ReactNode;
 }) {
   const off = discountPercent(p.priceKobo, p.compareAtKobo);
   const stock = stockState(totalStock(p));
@@ -124,6 +127,11 @@ export function ProductCard({
         size="sm"
         className="absolute top-2 right-2"
       />
+      {action && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/5]">
+          <div className="pointer-events-auto absolute right-2 bottom-2">{action}</div>
+        </div>
+      )}
     </article>
   );
 }

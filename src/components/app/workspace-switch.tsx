@@ -8,6 +8,7 @@ import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { useMyBrand } from "@/queries/studio";
 import { useNavBadges } from "./nav-badges";
+import { centerOf } from "@/components/shell/mode-curtain";
 import { useSwitchWorkspace } from "./workspace";
 
 /** Market ⇄ your shop, as a segmented glass control with a sliding thumb. */
@@ -79,7 +80,7 @@ export function WorkspaceSwitch({
             aria-checked={active}
             aria-label={o.title}
             title={o.title}
-            onClick={() => go(o.value)}
+            onClick={(e) => go(o.value, centerOf(e.currentTarget))}
             whileTap={{ scale: 0.95 }}
             className={cn(
               "relative flex h-9 min-w-0 shrink-0 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold transition-colors",

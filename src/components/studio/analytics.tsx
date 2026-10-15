@@ -4,17 +4,15 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowDownUp, Boxes, Clock, Eye, MapPin, Search, ShoppingBag, Star } from "lucide-react";
 import { useMemo, useState } from "react";
-import { NavPageHeader } from "@/components/app/nav-header";
 import { Stagger, StaggerItem } from "@/components/app/stagger";
 import { DashCard } from "@/components/dash/card";
-import { DateRangeControl, useRangeParam } from "@/components/dash/date-range";
 import { Gauge } from "@/components/dash/gauge";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
 import { ShopTrends } from "./trends";
 import { AppImage } from "@/components/ui/app-image";
 import { ButtonLink } from "@/components/ui/button";
 import { Select } from "@/components/ui/overlay";
-import type { Performance, ProductStat } from "@/domain/analytics";
+import type { DayRange, Performance, ProductStat } from "@/domain/analytics";
 import { formatNaira } from "@/domain/money";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
@@ -148,9 +146,8 @@ function HourlyBars({ hours }: { hours: number[] }) {
   );
 }
 
-/** "All Product List" with a statistic strip and performance gauges (image 2). */
-export function StudioAnalytics() {
-  const { preset, range, setPreset } = useRangeParam();
+/** The detail behind the shop dashboard: the funnel and busy days, then how each product sells. */
+export function ShopInsights({ range }: { range: DayRange }) {
   const { data } = useProductAnalytics(range);
   const products = useStudioProducts({}).data;
   const [q, setQ] = useState("");
@@ -199,11 +196,6 @@ export function StudioAnalytics() {
 
   return (
     <>
-      <NavPageHeader
-        title="Analytics"
-        description="How visits turn into orders, and how each product sells."
-        actions={<DateRangeControl preset={preset} range={range} onChange={setPreset} />}
-      />
       {!data || !products ? (
         <DashboardSkeleton />
       ) : (
