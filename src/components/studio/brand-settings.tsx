@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useUnsavedChangesGuard } from "@/components/ui/unsaved-guard";
 import { Camera, ExternalLink } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -74,7 +75,9 @@ export function ImagePicker({
         tabIndex={-1}
         aria-hidden
         onChange={(e) => {
-          const f = e.target.files?.[0];
+          const f = e.currentTarget.files?.[0];
+          // Clear it so choosing the same file again still uploads.
+          e.currentTarget.value = "";
           if (f)
             upload.mutate(f, {
               onSuccess: (r) => onUploaded(r.id, r.ref),
@@ -137,6 +140,32 @@ function BrandForm({ brand }: { brand: Brand }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
+  const dirty =
+    name !== brand.name ||
+    tagline !== brand.tagline ||
+    bio !== brand.bio ||
+    category !== brand.category ||
+    !!logo.id ||
+    !!cover.id ||
+    [...days].sort().join() !== [...brand.openHours.days].sort().join() ||
+    opens !== brand.openHours.opens ||
+    closes !== brand.openHours.closes ||
+    JSON.stringify(fulfilment) !== JSON.stringify(fromFulfilment(brand.fulfilment));
+  const discard = () => {
+    setName(brand.name);
+    setTagline(brand.tagline);
+    setBio(brand.bio);
+    setCategory(brand.category);
+    setLogo({ ref: brand.logo });
+    setCover({ ref: brand.cover });
+    setDays(brand.openHours.days);
+    setOpens(brand.openHours.opens);
+    setCloses(brand.openHours.closes);
+    setFulfilment(fromFulfilment(brand.fulfilment));
+    setErrors({});
+  };
+  const guard = useUnsavedChangesGuard(dirty, { onDiscard: discard });
+
   const save = () => {
     const e: Record<string, string> = {};
     if (closes <= opens) e.hours = "Closing time must be after opening time";
@@ -159,6 +188,9 @@ function BrandForm({ brand }: { brand: Brand }) {
       {
         onSuccess: () => {
           setErrors({});
+          // The new images are saved now; nothing left to upload.
+          setLogo((l) => ({ ref: l.ref }));
+          setCover((c) => ({ ref: c.ref }));
           setSaved(true);
           window.setTimeout(() => setSaved(false), 1500);
           toast.success("Brand saved");
@@ -282,25 +314,29 @@ function BrandForm({ brand }: { brand: Brand }) {
         />
       </Section>
       <div className="sticky bottom-0 z-(--z-sticky) -mx-1 flex items-center justify-end gap-3 border-t border-line bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 py-3 backdrop-blur">
+        {dirty && <span className="mr-auto text-small text-muted">Unsaved changes</span>}
         <Button loading={update.isPending} success={saved} onClick={save}>
           Save changes
         </Button>
       </div>
+      {guard.dialog}
     </div>
   );
 }
 
 function VacationCard({ brand }: { brand: Brand }) {
   const update = useUpdateBrand();
+  // Flips at once; if saving fails it goes back to what the shop really is.
+  const on = update.isPending ? (update.variables?.vacation ?? brand.vacation) : brand.vacation;
   return (
     <div
       className={cn(
         "rounded-lg p-5 hairline transition-colors",
-        brand.vacation ? "bg-warning-soft" : "bg-surface",
+        on ? "bg-warning-soft" : "bg-surface",
       )}
     >
       <Switch
-        checked={brand.vacation}
+        checked={on}
         onCheckedChange={(vacation) =>
           update.mutate(
             { vacation },
@@ -310,6 +346,10 @@ function VacationCard({ brand }: { brand: Brand }) {
                   description: vacation
                     ? "Your shop stays visible but can't take orders."
                     : "Buyers can order from you.",
+                }),
+              onError: (err) =>
+                toast.error("That didn't go through. Try again?", {
+                  description: errorMessage(err),
                 }),
             },
           )
