@@ -1,7 +1,7 @@
 # Discover image credits
 
 All photos are from Pexels and used under the [Pexels License](https://www.pexels.com/license/)
-(free for commercial use, attribution not required). Category images are 480x480 center crops;
+(free for commercial use, attribution not required). Category images are 800x800 center crops;
 banners are 1600px wide.
 
 | File | Source page | Photographer | Licence |

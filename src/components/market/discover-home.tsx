@@ -28,10 +28,12 @@ import { formatCompact } from "@/lib/format";
 import { useMounted } from "@/lib/hooks";
 import { useBrands, useCampus, useProducts } from "@/queries/catalog";
 import { useMyOrders } from "@/queries/orders";
+import { usePlaces } from "@/queries/inbox";
 import { useSession } from "@/queries/session";
 import { useToggleFollow } from "@/queries/social";
 import type { Brand, CategoryId, Order } from "@/services/types";
 import { useUi } from "@/stores/ui";
+import { Clouds3D, GateScene, RoadStrip } from "@/components/landing/gate-scene";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import { QuickAdd } from "./quick-add";
 
@@ -72,15 +74,15 @@ function SearchBar() {
       <button
         type="button"
         onClick={() => setCommandOpen(true)}
-        className="flex h-14 min-w-0 flex-1 items-center gap-3 rounded-full bg-white px-5 text-left text-[15px] text-[#6b7280] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.01]"
+        className="flex h-14 min-w-0 flex-1 items-center gap-3 rounded-full bg-surface px-5 text-left text-[15px] text-muted shadow-[0_4px_0_var(--line-strong)] ring-1 ring-line transition-transform hover:translate-y-px"
       >
-        <Search className="size-5 shrink-0 text-[#1f2430]" aria-hidden />
+        <Search className="size-5 shrink-0 text-accent" aria-hidden />
         <span className="truncate">Search food, thrift, shops…</span>
       </button>
       <Link
         href="/explore"
         aria-label="Browse with filters"
-        className="grid size-14 shrink-0 place-items-center rounded-full bg-white text-[#0e7a4f] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-105"
+        className="grid size-14 shrink-0 place-items-center rounded-full bg-accent text-on-accent shadow-[0_4px_0_var(--accent-edge)] transition-transform hover:translate-y-px"
       >
         <SlidersHorizontal className="size-5" />
       </Link>
@@ -93,68 +95,56 @@ function SearchBar() {
  * Full-bleed under the top bar on phones; a wide rounded banner on bigger screens.
  */
 function Hero({
-  campusName,
+  spotName,
   shopCount,
 }: {
-  campusName: string | undefined;
+  spotName: string | undefined;
   shopCount: number | undefined;
 }) {
   return (
-    <section className="relative -mx-4 -mt-5 overflow-hidden rounded-b-[28px] bg-[#101412] text-white md:mx-0 md:mt-0 md:rounded-[28px]">
-      <Image
-        src="/discover/banner-food.jpg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover opacity-55"
-      />
-      <span
-        aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(10,14,12,0.35),rgba(10,14,12,0.85))]"
-      />
+    <section className="relative -mx-4 -mt-5 overflow-hidden bg-[#eef1fb] text-ink md:mx-0 md:mt-0 md:rounded-[28px] dark:bg-[#161936]">
+      <Clouds3D />
       <Link
         href="/account"
-        className="absolute top-4 right-4 z-10 hidden h-10 items-center gap-2 rounded-full bg-white/12 px-4 text-[14px] font-medium ring-1 ring-white/25 backdrop-blur-md transition-colors hover:bg-white/20 md:inline-flex"
+        className="absolute top-4 right-4 z-10 hidden h-10 items-center gap-2 rounded-full bg-surface px-4 text-[14px] font-semibold shadow-[0_3px_0_var(--line-strong)] ring-1 ring-line transition-transform hover:translate-y-px md:inline-flex"
       >
         <Gauge className="size-4" aria-hidden /> Your dashboard
       </Link>
-      <div className="relative flex flex-col items-center px-5 pt-6 pb-6 text-center md:px-10 md:pt-9 md:pb-9">
+      <div className="relative flex flex-col items-center px-5 pt-7 text-center md:px-10 md:pt-10">
         <Link
-          href="/account/settings"
-          className="flex flex-col items-center gap-0.5 rounded-lg px-2 py-1 transition-colors hover:bg-white/10"
+          href="/account/places"
+          className="flex flex-col items-center gap-0.5 rounded-lg px-2 py-1 transition-colors hover:bg-ink/[0.05]"
         >
-          <span className="text-[13px] text-white/80">Delivering on</span>
-          <span className="inline-flex max-w-[80vw] items-center gap-1.5 text-[15px] font-semibold">
-            <MapPin className="size-4 shrink-0 text-[#3dd68c]" aria-hidden />
-            <span className="truncate">{campusName ?? "Choose your campus"}</span>
+          <span className="text-[13px] text-muted">Delivering to</span>
+          <span className="inline-flex max-w-[80vw] items-center gap-1.5 text-[15px] font-bold">
+            <MapPin className="size-4 shrink-0 text-accent" aria-hidden />
+            <span className="truncate">{spotName ?? "Choose your spot"}</span>
           </span>
         </Link>
-        <div className="mt-5 flex items-center gap-3 md:mt-6">
+        <div className="mt-4 flex items-center gap-3 md:mt-5">
           {shopCount ? (
             <>
-              <span className="text-[64px] leading-none font-bold tracking-[-0.04em] text-[#3dd68c] tabular md:text-[84px]">
+              <span className="text-[60px] leading-none font-extrabold tracking-[-0.05em] text-accent tabular md:text-[84px]">
                 {shopCount}
               </span>
-              <span className="text-left text-[24px] leading-[1.05] font-semibold tracking-[-0.01em] uppercase md:text-[32px]">
+              <span className="text-left text-[22px] leading-[1.02] font-extrabold tracking-[-0.03em] uppercase md:text-[32px]">
                 {shopCount === 1 ? "Shop" : "Shops"}
                 <br />
-                on campus
+                at UNILAG
               </span>
             </>
           ) : (
-            <span className="text-[34px] leading-[1.05] font-semibold tracking-[-0.03em] md:text-[48px]">
-              Your campus, <span className="text-[#3dd68c]">one plug</span> away
+            <span className="text-[34px] leading-[1.02] font-extrabold tracking-[-0.045em] md:text-[48px]">
+              Wetin you <span className="text-accent">need?</span>
             </span>
           )}
         </div>
-        <p className="mt-3 max-w-md text-[17px] leading-snug font-medium md:text-[19px]">
-          Food, thrift and more from students near you, to your hostel or ready for pickup.
-        </p>
-        <div className="mt-6 w-full max-w-2xl md:mt-8">
+        <div className="mt-6 w-full max-w-2xl md:mt-7">
           <SearchBar />
         </div>
       </div>
+      <GateScene className="relative mt-2 h-[170px] w-full overflow-hidden sm:h-[230px] md:h-[27vw] md:max-h-[390px]" />
+      <RoadStrip />
     </section>
   );
 }
@@ -184,7 +174,7 @@ function OnTheWay({ order }: { order: Order }) {
   );
 }
 
-/** Rounded photo tiles, one per category, scrolling sideways on phones. */
+/** Round photo buttons, one per category, scrolling sideways on phones. */
 function Categories() {
   return (
     <section aria-labelledby="home-categories">
@@ -196,20 +186,21 @@ function Categories() {
           <li key={c.id} className="shrink-0">
             <Link
               href={`/explore?category=${c.id}`}
-              className="group flex w-[76px] flex-col items-center gap-2 md:w-full"
+              className="group flex w-[84px] flex-col items-center gap-2.5 md:w-full"
             >
-              <span className="relative aspect-square w-full overflow-hidden rounded-2xl bg-surface-2 transition-transform duration-300 group-hover:-translate-y-1">
+              <span className="relative aspect-square w-full overflow-hidden rounded-full bg-surface-2 shadow-[0_5px_0_var(--line-strong)] ring-[3px] ring-surface transition-[transform,box-shadow] duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_0_var(--accent-edge)] md:max-w-[120px] md:justify-self-center">
                 <span className="relative block size-full">
                   <Image
                     src={`/discover/${c.id}.jpg`}
                     alt=""
                     fill
-                    sizes="(min-width: 768px) 140px, 76px"
+                    sizes="(min-width: 768px) 120px, 84px"
+                    quality={90}
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </span>
               </span>
-              <span className="text-[13px] font-medium text-ink-2 group-hover:text-ink md:text-[14px]">
+              <span className="text-[13.5px] font-semibold text-ink-2 group-hover:text-ink md:text-[14.5px]">
                 {short[c.id]}
               </span>
             </Link>
@@ -419,6 +410,11 @@ export function DiscoverHome() {
     .sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt))[0];
   const firstName = user?.name.split(" ")[0];
   const empty = anyProducts && anyProducts.items.length === 0;
+  // Where things get delivered: the default saved place, else the campus.
+  const places = usePlaces().data;
+  const home = places?.find((p) => p.isDefault) ?? places?.[0];
+  const homeZone = home ? campus?.zones.find((z) => z.id === home.zoneId) : undefined;
+  const spotName = homeZone ? `${homeZone.name}, ${campus?.shortName}` : campus?.name;
   const campusShops = useBrands(user?.campusId ? { campusId: user.campusId } : {}).data;
 
   return (
@@ -426,7 +422,7 @@ export function DiscoverHome() {
       <h1 className="sr-only">
         {mounted && firstName ? `What do you need, ${firstName}?` : "Home"}
       </h1>
-      <Hero campusName={campus?.name} shopCount={campusShops?.length} />
+      <Hero spotName={spotName} shopCount={campusShops?.length} />
       {onTheWay && <OnTheWay order={onTheWay} />}
       <Categories />
 

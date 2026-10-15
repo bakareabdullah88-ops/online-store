@@ -52,7 +52,7 @@ function OrderCard() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] font-semibold">Jollof bowl + zobo</p>
-          <p className="text-[12px] text-white/90">
+          <p className="text-[12px] text-white">
             <span className="font-mono">KMP-7QRT</span> · ₦5,100
           </p>
         </div>
@@ -92,7 +92,7 @@ function OrderCard() {
 function ChatCard() {
   return (
     <div className="w-[260px] rounded-2xl border border-white/15 bg-black/20 p-3.5 text-white shadow-[0_20px_50px_-20px_rgb(0_0_0/0.45)] backdrop-blur-xl">
-      <p className="flex items-center gap-1.5 text-[12px] font-medium text-white/90">
+      <p className="flex items-center gap-1.5 text-[12px] font-medium text-white">
         <MessageCircle className="size-3.5" /> Message from a buyer
       </p>
       <p className="mt-2 w-fit rounded-lg rounded-tl-sm bg-white/15 px-3 py-2 text-[12.5px]">
@@ -160,12 +160,12 @@ export function AuthBrandPanel() {
           <h2 className="mt-5 text-[40px] leading-[1.05] font-semibold tracking-[-0.04em] xl:text-[46px]">
             Your campus plug.
           </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-white/90">
+          <p className="mt-3 text-[16px] leading-relaxed text-white">
             Buy from students near you, or open a shop and sell to your hostel.
           </p>
           <ul className="mt-6 flex flex-col gap-2.5">
             {points.map((p) => (
-              <li key={p} className="flex items-center gap-2.5 text-[15px] text-white/90">
+              <li key={p} className="flex items-center gap-2.5 text-[15px] text-white">
                 <BadgeCheck className="size-[18px] shrink-0" /> {p}
               </li>
             ))}
@@ -196,7 +196,7 @@ export function AuthBrandPanel() {
             <ChatCard />
           </motion.div>
         </div>
-        <p className="mt-6 text-[12px] text-white/85">Pictures of the app. Names are examples.</p>
+        <p className="mt-6 text-[12px] text-white">Pictures of the app. Names are examples.</p>
       </div>
     </aside>
   );

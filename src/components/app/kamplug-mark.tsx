@@ -35,7 +35,10 @@ export function KamplugTile({
 export function KamplugWordmark({ className }: { className?: string }) {
   return (
     <span
-      className={cn("leading-none font-bold tracking-[-0.045em] text-ink lowercase", className)}
+      className={cn(
+        "leading-none font-extrabold tracking-[-0.055em] text-ink lowercase",
+        className,
+      )}
     >
       kam<span className="text-brand-ink">plug</span>
     </span>

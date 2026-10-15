@@ -4,12 +4,12 @@
  * Pure SVG so it also renders inside ImageResponse.
  */
 export const brandColors = {
-  /** Campus green: the brand colour on light backgrounds and on the mark tile. */
-  green: "#0E7A4F",
-  /** The same green, lifted for dark backgrounds. */
-  greenBright: "#3DD68C",
-  ink: "#0F1115",
-  paper: "#F6F8F7",
+  /** Cobalt: the brand colour on light backgrounds and on the icon tile. */
+  green: "#3A5BFF",
+  /** The same cobalt, lifted for dark backgrounds. */
+  greenBright: "#9FB0FF",
+  ink: "#1B1F3B",
+  paper: "#F4F5F8",
 } as const;
 
 /** Strokes of the K on a 64×64 grid. `w` is the main stroke width. */

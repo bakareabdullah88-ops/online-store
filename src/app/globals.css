@@ -11,41 +11,43 @@
 
 :root {
   /* Surfaces: neutral grey canvas, white panels (dashboard references) */
-  --canvas: #eff0f2;
-  --canvas-sunk: #e7e8eb;
+  --canvas: #f4f5f8;
+  --canvas-sunk: #eceef4;
   --surface: #ffffff;
-  --surface-2: #f6f7f8;
-  --sand: #f0f1f3;
-  --line: #e6e7ea;
-  --line-strong: #d3d5da;
+  --surface-2: #f4f5f8;
+  --sand: #eef0f6;
+  --line: #e4e6ee;
+  --line-strong: #cfd3e1;
   /* Very thin grey separators between open sections and rows (signed-in pages) */
-  --line-thin: rgb(0 0 0 / 0.08);
+  --line-thin: rgb(27 31 59 / 0.09);
 
   /* Ink */
-  --ink: #111214;
-  --ink-2: #2e3036;
-  --muted: #545862;
-  --faint: #9a9ea6;
+  --ink: #1b1f3b;
+  --ink-2: #2f3456;
+  --muted: #5a5f78;
+  --faint: #9a9eb5;
 
   /* Primary: black pills, selected rows, dark panels */
-  --primary: #16171a;
-  --primary-hover: #2b2d32;
+  --primary: #1b1f3b;
+  --primary-hover: #2a2f55;
   --on-primary: #ffffff;
 
-  /* Brand: campus green. The one colour Kamplug owns: logo, main buttons, key states. */
-  --brand: #0e7a4f;
-  --brand-ink: #0e7a4f;
-  --accent: #0e7a4f;
-  --accent-hover: #0b6541;
-  --accent-soft: #e3f3ea;
-  --accent-ink: #0b6541;
+  /* Brand: cobalt, the same as the landing page: wordmark, main buttons, key states. */
+  --brand: #3a5bff;
+  --brand-ink: #2f4ee6;
+  --accent: #3a5bff;
+  --accent-hover: #2a45d6;
+  --accent-soft: #eef1ff;
+  --accent-ink: #2a3fc4;
   --on-accent: #ffffff;
+  /* The solid edge under raised buttons and panels. */
+  --accent-edge: #1f37b8;
 
   /* Both sides of the app share the brand colour. */
-  --studio: #0e7a4f;
-  --ember: #0e7a4f;
-  --studio-contrast: #8fe3b8;
-  --ember-contrast: #8fe3b8;
+  --studio: #3a5bff;
+  --ember: #3a5bff;
+  --studio-contrast: #b9c6ff;
+  --ember-contrast: #b9c6ff;
 
   /* Charts */
   --chart-blue: #2f54ff;
@@ -77,11 +79,11 @@
   --mint-cta: #8fe3b8;
   --on-mint-cta: #0d3b24;
   /* "Add to bag" on product lists: the same warm yellow in both themes. */
-  --buy: #ffd814;
-  --on-buy: #0f1111;
+  --buy: #ffd23f;
+  --on-buy: #1b1f3b;
 
   /* App backdrop (signed-in pages sit on this, slightly tinted vs the landing page) */
-  --app-bg: #f7f7f8;
+  --app-bg: #f4f5f8;
   /* Cards sit close to the background: a near-white fill and a hairline edge, no big drop shadow. */
   --glass-fill: rgb(255 255 255 / 0.82);
   --glass-fill-strong: rgb(255 255 255 / 0.9);
@@ -136,36 +138,37 @@
 /* Selling uses the same brand green; the mode shows in the switch and header, not a new colour. */
 
 .dark {
-  --canvas: #0b0c0e;
-  --canvas-sunk: #070809;
-  --surface: #15171a;
-  --surface-2: #1b1e22;
+  --canvas: #0e1022;
+  --canvas-sunk: #090b18;
+  --surface: #161936;
+  --surface-2: #1c2042;
   --sand: #1e2125;
-  --line: #24272c;
-  --line-strong: #383c43;
+  --line: #272b4d;
+  --line-strong: #393e66;
   --line-thin: rgb(255 255 255 / 0.08);
 
-  --ink: #f2f3f5;
-  --ink-2: #d0d3d8;
-  --muted: #9ca1aa;
+  --ink: #f1f2f8;
+  --ink-2: #cfd2e6;
+  --muted: #9da2c0;
   --faint: #6e737c;
 
-  --primary: #f2f3f5;
+  --primary: #f1f2f8;
   --primary-hover: #ffffff;
-  --on-primary: #0b0c0e;
+  --on-primary: #0e1022;
 
-  --brand: #0e7a4f;
-  --brand-ink: #3dd68c;
-  --accent: #3dd68c;
-  --accent-hover: #5be3a1;
-  --accent-soft: #0f2a1e;
-  --accent-ink: #5be3a1;
-  --on-accent: #04150c;
+  --brand: #3a5bff;
+  --brand-ink: #9fb0ff;
+  --accent: #7d93ff;
+  --accent-hover: #9fb0ff;
+  --accent-soft: #1d2350;
+  --accent-ink: #b3c0ff;
+  --on-accent: #0b0f2a;
+  --accent-edge: #3a5bff;
 
-  --studio: #3dd68c;
-  --ember: #3dd68c;
-  --studio-contrast: #0e7a4f;
-  --ember-contrast: #0e7a4f;
+  --studio: #7d93ff;
+  --ember: #7d93ff;
+  --studio-contrast: #2a3fc4;
+  --ember-contrast: #2a3fc4;
 
   --chart-blue: #6f86ff;
   --chart-blue-2: #3b4fae;
@@ -191,7 +194,7 @@
   --info-soft: #11263a;
   --badge: #ff5a5a;
 
-  --app-bg: #111215;
+  --app-bg: #0e1022;
   --glass-fill: rgb(23 25 29 / 0.82);
   --glass-fill-strong: rgb(24 26 31 / 0.9);
   --glass-border: transparent;
@@ -546,9 +549,11 @@
     opacity: 0;
   }
 }
+/* New pages swing down into place from above, tilted back slightly (as on the landing page). */
 @keyframes vt-rise {
   from {
-    transform: translateY(12px);
+    transform: perspective(1200px) translateY(-14px) rotateX(6deg);
+    transform-origin: 50% 0%;
   }
 }
 @keyframes vt-slide-in-right {

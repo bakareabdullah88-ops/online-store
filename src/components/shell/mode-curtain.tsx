@@ -52,8 +52,8 @@ const MIN_HOLD_MS = 420;
 const ease = [0.65, 0, 0.35, 1] as const;
 
 const background: Record<Mode, string> = {
-  selling: "#0b5c3b",
-  buying: "#0e7a4f",
+  selling: "#1b1f3b",
+  buying: "#3a5bff",
 };
 
 function farthestCorner(p: Point) {
@@ -201,7 +201,7 @@ export function ModeCurtain() {
                 />
               )}
               <motion.span
-                className="grid size-[76px] place-items-center overflow-hidden rounded-[22px] bg-white text-[#0e7a4f] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]"
+                className="grid size-[76px] place-items-center overflow-hidden rounded-[22px] bg-white text-[#3a5bff] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.45)]"
                 initial={reduce ? false : { scale: 0.4, rotate: selling ? -14 : 14 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{

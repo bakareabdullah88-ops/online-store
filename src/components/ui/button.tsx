@@ -12,17 +12,19 @@ export type ButtonVariant = "primary" | "accent" | "secondary" | "ghost" | "dang
 export type ButtonSize = "sm" | "md" | "lg" | "icon" | "icon-sm";
 
 const base =
-  "relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-medium " +
-  "transition-[background-color,color,box-shadow,border-color,scale] duration-150 ease-out " +
+  "relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold " +
+  "transition-[background-color,color,box-shadow,border-color,scale,translate] duration-150 ease-out " +
   "disabled:pointer-events-none disabled:opacity-45 aria-disabled:pointer-events-none aria-disabled:opacity-45 " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 const variants: Record<ButtonVariant, string> = {
-  // Main call to action: blue when Buying, green in Shop Studio.
-  primary: "bg-accent text-on-accent hover:bg-accent-hover shadow-xs",
-  accent: "bg-accent text-on-accent hover:bg-accent-hover shadow-xs",
+  // Main call to action, with a solid edge under it like the landing page: it sinks when pressed.
+  primary:
+    "bg-accent text-on-accent shadow-[0_3px_0_var(--accent-edge)] hover:bg-accent-hover hover:translate-y-px hover:shadow-[0_2px_0_var(--accent-edge)] active:translate-y-[3px] active:shadow-none",
+  accent:
+    "bg-accent text-on-accent shadow-[0_3px_0_var(--accent-edge)] hover:bg-accent-hover hover:translate-y-px hover:shadow-[0_2px_0_var(--accent-edge)] active:translate-y-[3px] active:shadow-none",
   secondary:
-    "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong)] hover:bg-surface-2 hover:shadow-[inset_0_0_0_1px_var(--ink)]",
+    "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--line-strong),0_3px_0_var(--line-strong)] hover:bg-surface-2 hover:translate-y-px hover:shadow-[inset_0_0_0_1px_var(--line-strong),0_2px_0_var(--line-strong)] active:translate-y-[3px] active:shadow-[inset_0_0_0_1px_var(--line-strong)]",
   ghost: "bg-transparent text-ink hover:bg-ink/[0.06] dark:hover:bg-ink/[0.08]",
   danger: "bg-danger text-white hover:brightness-110 dark:text-canvas",
   link: "bg-transparent px-0! h-auto! text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink",
