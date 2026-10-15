@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bike, Inbox, ShoppingBag, Store } from "lucide-react";
 import { create } from "zustand";
-import { AppImage } from "@/components/ui/app-image";
+import { UserAvatar } from "@/components/app/user-avatar";
 import { isActive as orderIsActive } from "@/domain/orders";
 import { useMyOrders } from "@/queries/orders";
 import { useMyBrand, useStudioOrders } from "@/queries/studio";
@@ -23,6 +23,9 @@ type CurtainState = {
   origin: Point | null;
   start: (target: Mode, href: string, origin?: Point) => void;
   set: (p: Partial<Pick<CurtainState, "phase">>) => void;
+  /** Show the person's avatar in the middle this time (first switch of the visit). */
+  withAvatar: boolean;
+  avatarShown: boolean;
 };
 
 export const useCurtain = create<CurtainState>((set, get) => ({
@@ -30,8 +33,12 @@ export const useCurtain = create<CurtainState>((set, get) => ({
   target: "buying",
   href: "/",
   origin: null,
+  withAvatar: false,
+  avatarShown: false,
   start: (target, href, origin) => {
     if (get().phase !== "idle") return;
+    // Your avatar greets you in the curtain on the first switch of a visit only.
+    set({ withAvatar: !get().avatarShown, avatarShown: true });
     // Whatever was open (the phone menu, search, the bag) belongs to the side you're leaving.
     useUi.setState({ menuOpen: false, commandOpen: false, bagOpen: false });
     set({ phase: "cover", target, href, origin: origin ?? null });
@@ -102,7 +109,7 @@ function useHeadline(target: Mode) {
  * Reduced motion: a short fade.
  */
 export function ModeCurtain() {
-  const { phase, target, href, origin, set } = useCurtain();
+  const { phase, target, href, origin, set, withAvatar } = useCurtain();
   const router = useRouter();
   const pathname = usePathname() ?? "/";
   const reduce = useReducedMotion();
@@ -211,8 +218,8 @@ export function ModeCurtain() {
                   delay: reduce ? 0 : 0.22,
                 }}
               >
-                {selling && brand ? (
-                  <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
+                {withAvatar ? (
+                  <UserAvatar size={76} className="rounded-none" />
                 ) : selling ? (
                   <Store className="size-9" aria-hidden />
                 ) : (

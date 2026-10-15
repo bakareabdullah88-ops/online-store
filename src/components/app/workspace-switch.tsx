@@ -1,8 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Plus, ShoppingBag } from "lucide-react";
-import { AppImage } from "@/components/ui/app-image";
+import { Plus, ShoppingBag, Store } from "lucide-react";
 import { useMode, type Mode } from "@/components/shell/mode";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
@@ -50,8 +49,8 @@ export function WorkspaceSwitch({
       label: "Selling",
       title: brand ? `Selling: ${brand.name}` : "Selling: open a shop",
       icon: brand ? (
-        <span className="block size-6 overflow-hidden rounded-lg">
-          <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
+        <span className="grid size-6 place-items-center rounded-lg bg-[#1b1f3b] text-white dark:bg-white dark:text-[#1b1f3b]">
+          <Store className="size-3.5" />
         </span>
       ) : (
         <span className="grid size-6 place-items-center rounded-lg border border-dashed border-line-strong text-muted">
