@@ -55,3 +55,70 @@ the phone menu open (`menu-open-*.jpg`). Made with `scripts/make-state.mjs` and
 - `pnpm test`: 68 passed (unit and server, against Postgres).
 - `pnpm build:test`, then `pnpm playwright test`: 14 passed (phone and desktop, including the accessibility sweep and dark mode).
 - Screenshot runs: no console errors or warnings on any page.
+
+## Round 2: identity, landing, usability (15 Oct)
+
+### Identity
+
+- One brand colour, campus green (`#0E7A4F`, `#3DD68C` on dark). It replaces the blue, lavender and purple accents in both modes.
+- The Plug K mark (a K whose arm ends in a plug) and a lowercase `kamplug` wordmark with "plug" in green.
+- The mark is used in the header, favicon, app icons and the link-share image.
+- Voice: "friendly plug". Copy is plain and warm, with no exclamation marks or emoji.
+
+### Landing and login
+
+- **Navbar:** floating liquid-glass. Its blur never applied before: the build kept only the Safari spelling of the property. Fixed for every glass surface.
+- **Hero:** drawn products float around the headline in their own colours, following the pointer and drifting on scroll.
+- **Below the hero:**
+  - the Studio preview tilts into place;
+  - a campus marquee;
+  - feature drawings that play;
+  - steps that fill in as you scroll;
+  - an FAQ;
+  - a green closing panel.
+- **Section layout:** each section has its own label and background.
+- **Phone menu:** closes on a tap outside it or on Escape.
+- **Phone hero buttons:** both on one line, with "Open a shop" the shorter one.
+- **Login and sign-up:** a green, animated brand panel replaces the empty dark half.
+
+### Fixed bugs
+
+- **New product form kept the previous product's details.** Next.js keeps recently visited pages alive in the background, so the "new" form was the old one. It now resets after publishing and when you leave without changes, and offers "Keep editing / Start fresh" otherwise.
+- **The newest chat messages stayed blurred.** They animated in from a blur that was never cleared.
+- **The phone menu's footer button sat on the bottom edge.** The safe-area padding replaced the normal padding.
+- **Checkout Back showed an endless skeleton.** The success page said "We couldn't find that checkout" until a refetch finished.
+
+### Usability (selected)
+
+- **Selling:**
+  - "Publish & add another", Duplicate, a visible stock field, quick "Edit stock" and "Mark sold out".
+  - One save model, and a warning before leaving with unsaved changes.
+  - Decline and cancel ask first, with a reason.
+  - Call, WhatsApp and Message actions on an order; bulk accept with one summary toast.
+- **Buying:**
+  - Saved places at checkout and "Save this address".
+  - Payment shown per order (on delivery or at pickup), and a clear reason when "Place order" is unavailable.
+  - Star-only reviews.
+  - Reorder can't add the items twice.
+  - Messages keep your text if sending fails, Enter adds a new line on phones, and drafts survive switching chats.
+- **Less noise:**
+  - The phone header is down to the menu, logo, messages, alerts, bag and account; search and the buying/selling switch moved into the menu.
+  - A one-line greeting.
+  - Instant switching between buying and selling, with no colour burst and no arrival pop-up.
+  - Shop set-up shows progress and the next step.
+
+### Layout checker
+
+`scripts/audit-layout.mjs` loads every main page at 360, 390, 430, 768, 1280 and 1440px, in light and dark, as a visitor, buyer and seller. It reports:
+
+- sideways scrolling
+- elements sticking out of the screen
+- overlapping controls
+- tap targets under 32px
+
+| Run | Findings |
+|-----|----------|
+| First run | 323 (299 small tap targets, 24 overlaps, all from the show-password button sitting inside its field by design). No sideways scrolling or clipped elements anywhere. |
+| After the fixes | Recorded in `audit/layout-report.json`. |
+
+The main fix was the phone header, where icons were squeezed to 29px.
