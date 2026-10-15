@@ -67,7 +67,7 @@ export function LandingNav() {
       <div
         aria-hidden
         className={cn(
-          "absolute inset-0 border-b border-[#1b1f3b]/[0.06] bg-white/85 backdrop-blur-md transition-opacity duration-300",
+          "absolute inset-0 border-b border-[#1b1f3b]/[0.06] bg-white/65 backdrop-blur-2xl backdrop-saturate-150 transition-opacity duration-300",
           scrolled ? "opacity-100" : "opacity-0",
         )}
       />
