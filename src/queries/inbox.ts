@@ -75,6 +75,18 @@ export function useStartThread() {
   });
 }
 
+/** Seller side: open the conversation with an order's buyer (creating it if needed). */
+export function useMessageBuyer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => services.messages.startThreadWithBuyer({ orderId }),
+    onSuccess: (t) => {
+      qc.setQueryData(qk.thread(t.id, "brand"), t);
+      void qc.invalidateQueries({ queryKey: qk.threads("brand") });
+    },
+  });
+}
+
 export function useSendMessage(as: "buyer" | "brand") {
   const qc = useQueryClient();
   return useMutation({

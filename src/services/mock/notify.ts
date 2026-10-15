@@ -20,6 +20,7 @@ export function notifyBuyerOfStatus(
   order: Order,
   status: OrderStatus,
   at?: string,
+  note?: string,
 ) {
   const buyer = db.users.find((u) => u.id === order.buyerId);
   if (!buyer?.notificationPrefs.orderUpdates) return;
@@ -40,7 +41,7 @@ export function notifyBuyerOfStatus(
     userId: order.buyerId,
     kind: "order",
     title: `${label} · ${order.code}`,
-    body: body[status] ?? "",
+    body: [body[status], note && `Reason: ${note}`].filter(Boolean).join(" "),
     href: `/orders/${order.id}`,
     ...(at ? { createdAt: at } : {}),
   });

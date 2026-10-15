@@ -1,7 +1,17 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Bike, Check, Eye, MapPin, Printer, Receipt as ReceiptIcon, X } from "lucide-react";
+import {
+  Bike,
+  Check,
+  Eye,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Printer,
+  Receipt as ReceiptIcon,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { NavPageHeader } from "@/components/app/nav-header";
 import {
@@ -12,7 +22,8 @@ import {
   type Column,
 } from "@/components/table/data-table";
 import { TableEmpty } from "@/components/table/empty";
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
+import { Field, Textarea } from "@/components/ui/input";
 import { Dialog, ResponsiveSheet } from "@/components/ui/sheet";
 import { AppImage } from "@/components/ui/app-image";
 import { StatusPill } from "@/components/orders/status-pill";
@@ -23,6 +34,7 @@ import { formatNaira } from "@/domain/money";
 import { formatDate, formatRelative, formatTime } from "@/lib/format";
 import { useMounted, useNow } from "@/lib/hooks";
 import { useCampuses } from "@/queries/catalog";
+import { useMessageBuyer } from "@/queries/inbox";
 import { useStudioOrders, useUpdateOrderStatus } from "@/queries/studio";
 import { errorMessage } from "@/services/errors";
 import type { Order, OrderStatus } from "@/services/types";
@@ -47,24 +59,162 @@ function actionLabel(o: Order, s: OrderStatus) {
 
 function useAdvance() {
   const update = useUpdateOrderStatus();
-  const advance = async (o: Order, path: OrderStatus[]) => {
+  const advance = async (o: Order, path: OrderStatus[], note?: string) => {
     try {
       let current = o;
       for (const s of path) {
         if (!canTransition(current, s))
           throw new Error(`Can't move to ${statusLabel(s, o.fulfilment.method)} yet`);
-        current = await update.mutateAsync({ id: o.id, status: s });
+        current = await update.mutateAsync({ id: o.id, status: s, ...(note ? { note } : {}) });
       }
       const last = path[path.length - 1];
       if (last)
         toast.success(`${o.code} · ${statusLabel(last, o.fulfilment.method)}`, {
           description: `${o.buyerName} has been notified.`,
         });
+      return true;
     } catch (e) {
       toast.error("Couldn't update the order", { description: errorMessage(e) });
+      return false;
     }
   };
-  return { advance, pending: update.isPending };
+  /** Accepts several new orders in one go, with one summary toast. */
+  const acceptAll = async (orders: Order[]) => {
+    let done = 0;
+    let failed: unknown = null;
+    for (const o of orders) {
+      if (o.status !== "placed") continue;
+      try {
+        await update.mutateAsync({ id: o.id, status: "confirmed" });
+        done++;
+      } catch (e) {
+        failed ??= e;
+      }
+    }
+    if (done)
+      toast.success(`Accepted ${done} order${done === 1 ? "" : "s"}`, {
+        description: "Buyers have been notified.",
+      });
+    if (failed)
+      toast.error(
+        done ? "Some orders couldn't be accepted" : "That didn't go through. Try again?",
+        {
+          description: errorMessage(failed),
+        },
+      );
+  };
+  return { advance, acceptAll, pending: update.isPending };
+}
+
+type Closing = { order: Order; status: "declined" | "cancelled" };
+
+/** "Decline" / "Cancel order" ask first, with an optional reason the buyer sees. */
+function CloseOrderDialog({
+  closing,
+  onClose,
+  onConfirm,
+  pending,
+}: {
+  closing: Closing | null;
+  onClose: () => void;
+  onConfirm: (c: Closing, reason: string) => void;
+  pending: boolean;
+}) {
+  const [reason, setReason] = useState("");
+  const decline = closing?.status === "declined";
+  return (
+    <Dialog
+      open={!!closing}
+      onOpenChange={(open) => {
+        if (!open) {
+          setReason("");
+          onClose();
+        }
+      }}
+      title={decline ? "Decline this order?" : "Cancel this order?"}
+      description={
+        closing
+          ? `${closing.order.buyerName} is told straight away. Items go back in stock.`
+          : undefined
+      }
+      footer={
+        <>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setReason("");
+              onClose();
+            }}
+          >
+            Keep order
+          </Button>
+          <Button
+            variant="danger"
+            loading={pending}
+            onClick={() => {
+              if (!closing) return;
+              onConfirm(closing, reason.trim());
+              setReason("");
+            }}
+          >
+            {decline ? "Decline order" : "Cancel order"}
+          </Button>
+        </>
+      }
+    >
+      <Field label="Reason" optional hint="A short line helps, e.g. sold out today.">
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          maxLength={200}
+          className="min-h-20"
+        />
+      </Field>
+    </Dialog>
+  );
+}
+
+/** wa.me wants the full international number, digits only (0803… becomes 234803…). */
+function whatsappNumber(phone: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("234")) return digits;
+  if (digits.startsWith("0") && digits.length === 11) return `234${digits.slice(1)}`;
+  return digits.length >= 10 ? digits : null;
+}
+
+function ContactBuyer({ order }: { order: Order }) {
+  const router = useRouter();
+  const message = useMessageBuyer();
+  const wa = whatsappNumber(order.buyerPhone);
+  const link = buttonStyles({ variant: "secondary", size: "md" });
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label={`Contact ${order.buyerName}`}>
+      {order.buyerPhone && (
+        <a href={`tel:${order.buyerPhone.replace(/\s/g, "")}`} className={link}>
+          <Phone className="size-4" /> Call
+        </a>
+      )}
+      {wa && (
+        <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className={link}>
+          <MessageCircle className="size-4" /> WhatsApp
+        </a>
+      )}
+      <Button
+        variant="secondary"
+        leadingIcon={<MessageCircle className="size-4" />}
+        loading={message.isPending}
+        onClick={() =>
+          message.mutate(order.id, {
+            onSuccess: (t) => router.push(`/studio/messages?thread=${t.id}`),
+            onError: (e) =>
+              toast.error("That didn't go through. Try again?", { description: errorMessage(e) }),
+          })
+        }
+      >
+        Message buyer
+      </Button>
+    </div>
+  );
 }
 
 function Receipt({ o, campusName }: { o: Order; campusName: string }) {
@@ -140,7 +290,15 @@ function Receipt({ o, campusName }: { o: Order; campusName: string }) {
   );
 }
 
-function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => void }) {
+function OrderDrawer({
+  order,
+  onClose,
+  onAskClose,
+}: {
+  order: Order | null;
+  onClose: () => void;
+  onAskClose: (c: Closing) => void;
+}) {
   const campuses = useCampuses();
   const { advance, pending } = useAdvance();
   const [receipt, setReceipt] = useState(false);
@@ -166,15 +324,26 @@ function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => v
               >
                 Receipt
               </Button>
-              {order.status === "placed" && (
+              {order.status === "placed" ? (
                 <Button
                   variant="ghost"
                   className="text-danger"
-                  loading={pending}
-                  onClick={() => void advance(order, ["declined"])}
+                  disabled={pending}
+                  onClick={() => onAskClose({ order, status: "declined" })}
                 >
                   Decline
                 </Button>
+              ) : (
+                canTransition(order, "cancelled") && (
+                  <Button
+                    variant="ghost"
+                    className="text-danger"
+                    disabled={pending}
+                    onClick={() => onAskClose({ order, status: "cancelled" })}
+                  >
+                    Cancel order
+                  </Button>
+                )
               )}
               {next && (
                 <Button
@@ -197,6 +366,7 @@ function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => v
                 {order.fulfilment.method === "delivery" ? "Delivery" : "Pickup"}
               </span>
             </div>
+            <ContactBuyer order={order} />
             <ul className="divide-y divide-line rounded-md hairline">
               {order.items.map((it) => (
                 <li key={it.productId + it.variantKey} className="flex items-center gap-3 p-3">
@@ -320,12 +490,20 @@ export function OrdersBoard() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname() ?? "/studio/orders";
-  const { advance, pending } = useAdvance();
+  const { advance, acceptAll, pending } = useAdvance();
+  const [closing, setClosing] = useState<Closing | null>(null);
   const raw = params.get("status");
   const status = (raw && raw in statusGroups ? raw : "all") as StatusFilter;
   const [method, setMethod] = useState<MethodFilter>("all");
   const [when, setWhen] = useState<WhenFilter>("all");
-  const [q, setQ] = useState(params.get("q") ?? "");
+  // Search follows the URL (links like ?q=<buyer> from Customers and Messages).
+  const urlQ = params.get("q") ?? "";
+  const [q, setQ] = useState(urlQ);
+  const [seenQ, setSeenQ] = useState(urlQ);
+  if (urlQ !== seenQ) {
+    setSeenQ(urlQ);
+    setQ(urlQ);
+  }
   const openId = params.get("order");
 
   const setQuery = (patch: Record<string, string | null>) => {
@@ -343,8 +521,9 @@ export function OrdersBoard() {
     [data],
   );
   const open = orders.find((o) => o.id === openId) ?? null;
+  const newOrders = orders.filter(statusGroups.placed);
   const counts = {
-    placed: orders.filter(statusGroups.placed).length,
+    placed: newOrders.length,
     active: orders.filter((o) => isActive(o.status)).length,
   };
 
@@ -476,6 +655,17 @@ export function OrdersBoard() {
             : "Accept, prepare and hand over. Buyers are notified at every step."
         }
       />
+      {counts.placed > 1 && (
+        <Button
+          size="lg"
+          className="mb-4 w-full md:hidden"
+          leadingIcon={<Check className="size-4.5" />}
+          loading={pending}
+          onClick={() => void acceptAll(newOrders)}
+        >
+          Accept all new ({counts.placed})
+        </Button>
+      )}
       <DataTable
         label="Orders"
         loading={isPending}
@@ -534,7 +724,7 @@ export function OrdersBoard() {
               loading={pending}
               leadingIcon={<Check className="size-4" />}
               onClick={async () => {
-                for (const o of acceptable) await advance(o, ["confirmed"]);
+                await acceptAll(acceptable);
                 clear();
               }}
             >
@@ -549,14 +739,14 @@ export function OrdersBoard() {
             icon: <X />,
             danger: true,
             hidden: o.status !== "placed",
-            onSelect: () => void advance(o, ["declined"]),
+            onSelect: () => setClosing({ order: o, status: "declined" }),
           },
           {
             label: "Cancel order",
             icon: <X />,
             danger: true,
-            hidden: !canTransition(o, "cancelled"),
-            onSelect: () => void advance(o, ["cancelled"]),
+            hidden: o.status === "placed" || !canTransition(o, "cancelled"),
+            onSelect: () => setClosing({ order: o, status: "cancelled" }),
           },
         ]}
         card={(o) => {
@@ -575,7 +765,8 @@ export function OrdersBoard() {
               {next && (
                 <Button
                   size="sm"
-                  className="mt-2.5"
+                  // A thumb-sized target on phones.
+                  className="mt-2.5 max-md:h-11 max-md:px-4 max-md:text-body"
                   variant={o.status === "placed" ? "primary" : "secondary"}
                   disabled={pending}
                   onClick={(e) => {
@@ -605,7 +796,17 @@ export function OrdersBoard() {
           )
         }
       />
-      <OrderDrawer order={open} onClose={() => setQuery({ order: null })} />
+      <OrderDrawer order={open} onClose={() => setQuery({ order: null })} onAskClose={setClosing} />
+      <CloseOrderDialog
+        closing={closing}
+        pending={pending}
+        onClose={() => setClosing(null)}
+        onConfirm={(c, reason) =>
+          void advance(c.order, [c.status], reason || undefined).then(
+            (ok) => ok && setClosing(null),
+          )
+        }
+      />
     </div>
   );
 }

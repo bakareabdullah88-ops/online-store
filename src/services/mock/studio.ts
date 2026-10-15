@@ -418,13 +418,20 @@ export const mockStudio: StudioService = {
     );
   },
 
-  async updateOrderStatus(id, status) {
+  async updateOrderStatus(id, status, note) {
+    if (note !== undefined && typeof note !== "string")
+      throw new ServiceError("VALIDATION", "Write the reason as text.");
+    const reason = note?.trim() || undefined;
+    if (reason && reason.length > 200)
+      throw new ServiceError("VALIDATION", "Keep the reason under 200 characters.");
+    if (reason && status !== "declined" && status !== "cancelled")
+      throw new ServiceError("VALIDATION", "A reason only goes with declining or cancelling.");
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
     const order = db.orders.find((o) => o.id === id && o.brandId === brand.id);
     if (!order) throw new ServiceError("NOT_FOUND", "Order not found.");
-    const next = applySellerTransition(db, id, status);
+    const next = applySellerTransition(db, id, status, reason);
     await commit("orders", "products", "notifications");
     return clone(next);
   },

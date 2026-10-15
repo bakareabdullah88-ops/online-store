@@ -231,6 +231,12 @@ describe.skipIf(!url)("backend on Postgres", () => {
       await seller.call("studio", "updateOrderStatus", orders[0]!.id, st);
 
     expect((await buyer.call("orders", "getOrder", orders[0]!.id)).status).toBe("delivered");
+
+    // The seller can open a conversation with the buyer from the order.
+    const thread = await seller.call("messages", "startThreadWithBuyer", {
+      orderId: orders[0]!.id,
+    });
+    expect(thread.buyerName).toBe("Bisi Ade");
     expect((await buyer.call("catalog", "getProduct", product.slug)).variants[0]!.stock).toBe(8);
 
     // Every record is a row in Postgres.
@@ -260,6 +266,9 @@ describe.skipIf(!url)("backend on Postgres", () => {
       "FORBIDDEN",
     );
     expect(await code(buyer.call("studio", "deleteProducts", [product.id]))).toBe("FORBIDDEN");
+    expect(
+      await code(buyer.call("messages", "startThreadWithBuyer", { orderId: orders[0]!.id })),
+    ).toBe("NOT_FOUND");
     expect(await code(browser().call("orders", "getOrder", orders[0]!.id))).toBe("UNAUTHORIZED");
   });
 

@@ -98,6 +98,36 @@ export const mockMessages: MessageService = {
     return clone(t);
   },
 
+  async startThreadWithBuyer({ orderId }) {
+    if (typeof orderId !== "string") throw new ServiceError("VALIDATION", "Choose an order.");
+    await quick();
+    const db = await getDb();
+    const user = await requireUser(db);
+    const order = db.orders.find((o) => o.id === orderId && user.brandIds.includes(o.brandId));
+    if (!order) throw new ServiceError("NOT_FOUND", "Order not found.");
+    const brand = db.brands.find((b) => b.id === order.brandId);
+    if (!brand) throw new ServiceError("NOT_FOUND", "Brand not found.");
+    let t = db.threads.find((x) => x.buyerId === order.buyerId && x.brandId === brand.id);
+    if (!t) {
+      t = {
+        id: newId("th"),
+        buyerId: order.buyerId,
+        buyerName: order.buyerName,
+        brandId: brand.id,
+        brandName: brand.name,
+        brandHandle: brand.handle,
+        brandLogo: clone(brand.logo),
+        messages: [],
+        updatedAt: new Date().toISOString(),
+        unreadForBuyer: 0,
+        unreadForBrand: 0,
+      };
+      db.threads.push(t);
+      await commit("threads");
+    }
+    return clone(t);
+  },
+
   async send({ threadId, body, as }) {
     const { messageSchema } = await schemas();
     const { body: text } = messageSchema.parse({ body });

@@ -98,6 +98,11 @@ export function OrderTimeline({ order }: { order: Order }) {
                   {statusDescription(s, method)}
                 </motion.p>
               )}
+              {failedStep && order.timeline.find((t) => t.status === s)?.note && (
+                <p className="mt-1 text-small text-ink-2">
+                  Reason: {order.timeline.find((t) => t.status === s)?.note}
+                </p>
+              )}
             </div>
           </li>
         );

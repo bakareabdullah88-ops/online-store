@@ -254,6 +254,42 @@ describe("buying and selling", () => {
     expect(delivered.orders[0]!.payment.method).toBe("pay_on_delivery");
   });
 
+  it("passes a seller's reason for declining on to the buyer", async () => {
+    const { brand, product } = await openShop();
+    await signUpBuyer();
+    const { orders } = await s.orders.createOrders(checkout(brand.id, product.id));
+    await s.auth.signOut();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    await expectCode(
+      s.studio.updateOrderStatus(orders[0]!.id, "confirmed", "no reason needed"),
+      "VALIDATION",
+    );
+    const declined = await s.studio.updateOrderStatus(
+      orders[0]!.id,
+      "declined",
+      "  Sold out today ",
+    );
+    expect(declined.timeline.at(-1)).toMatchObject({ status: "declined", note: "Sold out today" });
+    await s.auth.signOut();
+    await s.auth.signIn({ email: "bisi@example.com", password: PASSWORD });
+    const notes = await s.notifications.list();
+    expect(notes.some((n) => n.body.includes("Reason: Sold out today"))).toBe(true);
+  });
+
+  it("lets a shop message the buyer of its order, reusing one conversation", async () => {
+    const { brand, product } = await openShop();
+    await signUpBuyer();
+    const { orders } = await s.orders.createOrders(checkout(brand.id, product.id));
+    const mine = await s.messages.startThread({ brandId: brand.id });
+    await expectCode(s.messages.startThreadWithBuyer({ orderId: orders[0]!.id }), "NOT_FOUND");
+    await s.auth.signOut();
+    await s.auth.signIn({ email: "kemi@shop.com", password: PASSWORD });
+    const t = await s.messages.startThreadWithBuyer({ orderId: orders[0]!.id });
+    expect(t.id).toBe(mine.id);
+    expect(t.buyerName).toBe("Bisi Ade");
+    expect((await s.messages.listThreads("brand")).map((x) => x.id)).toContain(t.id);
+  });
+
   it("refuses online payments until they are switched on", async () => {
     const { brand, product } = await openShop();
     await signUpBuyer();
