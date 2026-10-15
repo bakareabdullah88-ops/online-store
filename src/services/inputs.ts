@@ -3,6 +3,7 @@
  * the service layer, so validation rules exist exactly once.
  */
 import { z } from "zod";
+import { BUDDY_COLORS, BUDDY_SHAPES } from "@/domain/buddy";
 
 const nigerianPhone = z
   .string()
@@ -46,6 +47,10 @@ export const profileSchema = z.object({
   campusId: z.string().min(1, "Pick your campus"),
   phone: nigerianPhone,
   avatarImageId: z.string().optional(),
+  /** Pick an animated buddy as the profile picture. */
+  buddy: z.object({ shape: z.enum(BUDDY_SHAPES), color: z.enum(BUDDY_COLORS) }).optional(),
+  /** Drop the uploaded photo and show the buddy instead. */
+  removeAvatar: z.boolean().optional(),
 });
 export type ProfileInput = z.input<typeof profileSchema>;
 

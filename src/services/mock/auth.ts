@@ -190,7 +190,9 @@ export const mockAuth: AuthService = {
     user.name = input.name;
     user.campusId = input.campusId;
     user.phone = input.phone;
-    if (input.avatarImageId) user.avatar = { kind: "blob", id: input.avatarImageId };
+    if (input.removeAvatar) user.avatar = null;
+    else if (input.avatarImageId) user.avatar = { kind: "blob", id: input.avatarImageId };
+    if (input.buddy) user.buddy = { shape: input.buddy.shape, color: input.buddy.color };
     user.onboarded = true;
     await commit("users");
     return publicUser(user);

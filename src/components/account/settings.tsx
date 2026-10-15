@@ -38,6 +38,16 @@ import type { User } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
 import { NavPageHeader } from "@/components/app/nav-header";
+import { BuddyAvatar } from "@/components/app/buddy";
+import { buddyFor } from "@/components/app/user-avatar";
+import {
+  BUDDY_COLORS,
+  BUDDY_SHAPES,
+  buddyColors,
+  buddyShapeNames,
+  type Buddy,
+} from "@/domain/buddy";
+import { cn } from "@/lib/cn";
 
 function Section({
   title,
@@ -86,9 +96,15 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
   const [avatarId, setAvatarId] = useState<string | undefined>(
     user.avatar?.kind === "blob" ? user.avatar.id : undefined,
   );
+  const [usePhoto, setUsePhoto] = useState(!!user.avatar);
+  const [buddy, setBuddy] = useState<Buddy>(() => buddyFor(user));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
   const url = useObjectUrl(avatarId);
+  const pickBuddy = (b: Buddy) => {
+    setBuddy(b);
+    setUsePhoto(false);
+  };
 
   const save = () => {
     const parsed = profileSchema.safeParse({ name, phone, campusId, avatarImageId: avatarId });
@@ -100,7 +116,14 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
     }
     setErrors({});
     update.mutate(
-      { name, phone, campusId, ...(avatarId ? { avatarImageId: avatarId } : {}) },
+      {
+        name,
+        phone,
+        campusId,
+        buddy,
+        ...(usePhoto && avatarId ? { avatarImageId: avatarId } : {}),
+        ...(!usePhoto && user.avatar ? { removeAvatar: true } : {}),
+      },
       {
         onSuccess: () => {
           setSaved(true);
@@ -124,33 +147,108 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
         save();
       }}
     >
-      <div className="flex items-center gap-4">
-        <Avatar name={name || "You"} src={url ?? null} size={64} />
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          className="sr-only"
-          aria-label="Upload a profile photo"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f)
-              upload.mutate(f, {
-                onSuccess: (r) => setAvatarId(r.id),
-                onError: (err) => toast.error(errorMessage(err)),
-              });
-          }}
-        />
-        <Button
-          variant="secondary"
-          size="sm"
-          leadingIcon={<Camera className="size-4" />}
-          loading={upload.isPending}
-          onClick={() => fileRef.current?.click()}
-        >
-          Change photo
-        </Button>
-      </div>
+      <fieldset className="flex flex-col gap-4">
+        <legend className="mb-3 text-small font-medium">Profile picture</legend>
+        <div className="flex items-center gap-4">
+          {usePhoto ? (
+            <Avatar name={name || "You"} src={url ?? null} size={88} />
+          ) : (
+            <BuddyAvatar
+              key={`${buddy.shape}-${buddy.color}`}
+              buddy={buddy}
+              size={88}
+              label={`Your buddy: ${buddyColors[buddy.color].name} ${buddyShapeNames[buddy.shape]}`}
+            />
+          )}
+          <div className="flex flex-col items-start gap-2">
+            <p className="text-small text-muted">
+              {usePhoto
+                ? "Your photo shows on your profile."
+                : "Your buddy waves from your profile icon. Point at it to say hi."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                aria-label="Upload a profile photo"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f)
+                    upload.mutate(f, {
+                      onSuccess: (r) => {
+                        setAvatarId(r.id);
+                        setUsePhoto(true);
+                      },
+                      onError: (err) => toast.error(errorMessage(err)),
+                    });
+                }}
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                leadingIcon={<Camera className="size-4" />}
+                loading={upload.isPending}
+                onClick={() => fileRef.current?.click()}
+              >
+                {usePhoto ? "Change photo" : "Use a photo"}
+              </Button>
+              {usePhoto && (
+                <Button variant="ghost" size="sm" onClick={() => setUsePhoto(false)}>
+                  Use my buddy
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div role="radiogroup" aria-label="Buddy" className="grid grid-cols-7 gap-1.5 sm:gap-2">
+          {BUDDY_SHAPES.map((shape) => {
+            const on = !usePhoto && buddy.shape === shape;
+            return (
+              <button
+                key={shape}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                aria-label={buddyShapeNames[shape]}
+                title={buddyShapeNames[shape]}
+                onClick={() => pickBuddy({ ...buddy, shape })}
+                className={cn(
+                  "grid aspect-square place-items-center rounded-xl ring-1 transition-[box-shadow,background-color]",
+                  on ? "bg-accent-soft ring-2 ring-accent" : "ring-line hover:bg-ink/[0.04]",
+                )}
+              >
+                <BuddyAvatar buddy={{ shape, color: buddy.color }} size={40} animated={false} />
+              </button>
+            );
+          })}
+        </div>
+        <div role="radiogroup" aria-label="Buddy colour" className="flex flex-wrap gap-2.5">
+          {BUDDY_COLORS.map((color) => {
+            const on = !usePhoto && buddy.color === color;
+            const c = buddyColors[color];
+            return (
+              <button
+                key={color}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                aria-label={c.name}
+                title={c.name}
+                onClick={() => pickBuddy({ ...buddy, color })}
+                className={cn(
+                  "tap-area size-8 rounded-full ring-offset-2 ring-offset-surface transition-shadow",
+                  on ? "ring-2 ring-ink" : "ring-1 ring-line",
+                )}
+                style={{
+                  background: `linear-gradient(135deg, ${c.light}, ${c.base} 55%, ${c.shade})`,
+                }}
+              />
+            );
+          })}
+        </div>
+      </fieldset>
       <Field label="Name" error={errors.name}>
         <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
       </Field>

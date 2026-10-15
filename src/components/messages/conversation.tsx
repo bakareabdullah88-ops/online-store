@@ -16,9 +16,6 @@ import type { QuickReply } from "./quick-replies";
 /** Unsent text per conversation, kept for this visit. */
 const drafts = new Map<string, string>();
 
-const finePointer = () =>
-  typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches;
-
 /** Draft card: the chosen reply types itself in, then can be edited, swapped or sent. */
 function DraftCard({
   reply,
@@ -343,19 +340,35 @@ export function Conversation({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={(e) => {
-            // Enter sends on a keyboard; on phones it adds a new line and the button sends.
-            if (e.key === "Enter" && !e.shiftKey && finePointer()) {
+            // Enter sends; Shift+Enter (or Alt+Enter) starts a new line. Never while an
+            // input method (Chinese, Japanese, some phone keyboards) is still composing.
+            if (e.key === "Enter" && !e.shiftKey && !e.altKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               submit();
+            } else if (e.key === "Escape" && tools) {
+              e.preventDefault();
+              setTools(false);
             }
           }}
           rows={1}
           maxLength={1000}
-          placeholder="Send message…"
-          className="field-sizing-content max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[14px] outline-none placeholder:text-faint"
+          placeholder="Message…"
+          enterKeyHint="send"
+          autoCapitalize="sentences"
+          autoCorrect="on"
+          autoComplete="off"
+          spellCheck
+          aria-describedby={`composer-hint-${threadId}`}
+          // 16px on phones so iOS doesn't zoom the page when the box is focused.
+          className="field-sizing-content max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] outline-none placeholder:text-faint md:text-[14px]"
         />
+        <span id={`composer-hint-${threadId}`} className="sr-only">
+          Enter sends. Shift and Enter starts a new line.
+        </span>
         <motion.button
           type="submit"
+          // Keep the keyboard open on phones: tapping send doesn't take focus from the box.
+          onPointerDown={(e) => e.preventDefault()}
           whileTap={{ scale: 0.9 }}
           transition={spring.snappy}
           disabled={!body.trim()}

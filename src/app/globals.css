@@ -780,3 +780,203 @@
 html {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Buddies: animated profile pictures (components/app/buddy.tsx)             */
+/* ------------------------------------------------------------------------- */
+.buddy .buddy-open {
+  opacity: 0;
+}
+.buddy-live .buddy-idle {
+  transform-box: view-box;
+  transform-origin: 50px 90px;
+  animation: buddy-bob 3.4s ease-in-out infinite;
+}
+.buddy-live .buddy-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: buddy-blink 5.2s infinite;
+}
+.buddy-live .buddy-act,
+.buddy-live .buddy-arm {
+  transform-box: view-box;
+}
+.buddy-live .buddy-act {
+  transform-origin: 50px 88px;
+}
+.buddy-live .buddy-arm-l {
+  animation: buddy-sway-l 3.4s ease-in-out infinite;
+}
+.buddy-live .buddy-arm-r {
+  animation: buddy-sway-r 3.4s ease-in-out infinite;
+}
+.buddy-live [data-act="wave"] .buddy-arm-r {
+  animation: buddy-wave 1.3s ease-in-out;
+}
+.buddy-live [data-act="jump"] {
+  animation: buddy-jump 0.95s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.buddy-live [data-act="jump"] .buddy-arm-l {
+  animation: buddy-cheer-l 0.95s ease-in-out;
+}
+.buddy-live [data-act="jump"] .buddy-arm-r {
+  animation: buddy-cheer-r 0.95s ease-in-out;
+}
+.buddy-live [data-act="spin"] {
+  transform-origin: 50px 56px;
+  animation: buddy-spin 1s cubic-bezier(0.6, 0, 0.3, 1);
+}
+.buddy-live [data-act="wink"] .buddy-eye-l {
+  animation: buddy-wink 0.8s ease-in-out;
+}
+.buddy-live [data-act="dance"] {
+  animation: buddy-dance 1.5s ease-in-out;
+}
+.buddy-live [data-act="dance"] .buddy-arm-l {
+  animation: buddy-cheer-l 0.5s ease-in-out 3;
+}
+.buddy-live [data-act="dance"] .buddy-arm-r {
+  animation: buddy-cheer-r 0.5s ease-in-out 3 0.25s;
+}
+.buddy-live [data-act="wave"] .buddy-smile,
+.buddy-live [data-act="jump"] .buddy-smile,
+.buddy-live [data-act="dance"] .buddy-smile {
+  opacity: 0;
+}
+.buddy-live [data-act="wave"] .buddy-open,
+.buddy-live [data-act="jump"] .buddy-open,
+.buddy-live [data-act="dance"] .buddy-open {
+  opacity: 1;
+}
+
+@keyframes buddy-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-2.5px) scale(0.985, 1.02);
+  }
+}
+@keyframes buddy-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes buddy-wink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  25%,
+  70% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes buddy-sway-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes buddy-sway-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+}
+@keyframes buddy-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  18% {
+    transform: rotate(-125deg);
+  }
+  32% {
+    transform: rotate(-85deg);
+  }
+  46% {
+    transform: rotate(-125deg);
+  }
+  60% {
+    transform: rotate(-85deg);
+  }
+  76% {
+    transform: rotate(-125deg);
+  }
+}
+@keyframes buddy-cheer-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(115deg);
+  }
+}
+@keyframes buddy-cheer-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(-115deg);
+  }
+}
+@keyframes buddy-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(0) scale(1.1, 0.88);
+  }
+  42% {
+    transform: translateY(-16px) scale(0.94, 1.08);
+  }
+  72% {
+    transform: translateY(0) scale(1.1, 0.9);
+  }
+  86% {
+    transform: translateY(0) scale(0.97, 1.03);
+  }
+}
+@keyframes buddy-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes buddy-dance {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  20%,
+  60% {
+    transform: rotate(-9deg) translateX(-3px);
+  }
+  40%,
+  80% {
+    transform: rotate(9deg) translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .buddy * {
+    animation: none !important;
+  }
+}

@@ -4,6 +4,7 @@
  */
 import type { Kobo } from "@/domain/money";
 import type { ArtPalette } from "@/design/tokens";
+import type { Buddy } from "@/domain/buddy";
 
 export type ID = string;
 export type ISODate = string;
@@ -80,6 +81,8 @@ export type User = {
   phone: string;
   campusId: ID | null;
   avatar: ImageRef | null;
+  /** The animated cartoon used when there's no photo. Missing means the default for this account. */
+  buddy?: Buddy | null;
   brandIds: ID[];
   followingBrandIds: ID[];
   wishlistProductIds: ID[];
