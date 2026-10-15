@@ -117,7 +117,7 @@ export function FunnelChart({
                       initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ ...spring.smooth, delay: 0.25 + i * 0.05 }}
-                      className="absolute left-[calc((100%-26px)/2)] h-1.5 w-9 -translate-x-1/2 rounded-full bg-chart-blue-2"
+                      className="absolute left-[calc((100%-26px)/2)] h-1.5 w-9 -translate-x-1/2 rounded-full bg-accent/60"
                       style={{ bottom: `calc(${pct(s.prev)}% + 10px)` }}
                       title={`Previous period: ${s.prev}`}
                       aria-hidden
@@ -131,7 +131,7 @@ export function FunnelChart({
                     className={cn(
                       "absolute bottom-0 left-0 origin-bottom transition-[background] duration-300",
                       next ? "right-[26px]" : "right-0",
-                      on ? "bg-chart-blue" : "hatch [--hatch:var(--chart-blue)]",
+                      on ? "bg-accent" : "hatch [--hatch:var(--accent)]",
                     )}
                     style={{ height: `${Math.max(h, s.value > 0 ? 1.5 : 0)}%` }}
                     aria-hidden
@@ -148,10 +148,10 @@ export function FunnelChart({
                         <linearGradient id={`${gid}-ramp-${i}`} x1="0" x2="1" y1="0" y2="0">
                           <stop
                             offset="0"
-                            stopColor="var(--chart-blue)"
+                            stopColor="var(--accent)"
                             stopOpacity={on ? 0.55 : 0.28}
                           />
-                          <stop offset="1" stopColor="var(--chart-blue-2)" stopOpacity={0.12} />
+                          <stop offset="1" stopColor="var(--accent)" stopOpacity={0.12} />
                         </linearGradient>
                       </defs>
                       <motion.polygon

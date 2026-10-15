@@ -6,7 +6,7 @@ export const brand = {
   name: "Kamplug",
   /** Used in titles: "Explore · Kamplug" */
   titleSeparator: " · ",
-  tagline: "The campus marketplace",
+  tagline: "Your campus plug",
   description:
     "Buy from student-run brands on your campus. Thrift, food, skincare, prints and more, delivered to your hostel or ready for pickup.",
   shortDescription: "Buy from student brands on your campus.",

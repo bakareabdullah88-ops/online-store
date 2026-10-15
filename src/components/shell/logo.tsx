@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { KamplugMark } from "@/components/app/kamplug-mark";
+import { KamplugTile, KamplugWordmark } from "@/components/app/kamplug-mark";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/cn";
 
-/** Mark tile plus the name. */
+/** The Kamplug lock-up: green K tile and the "kamplug" wordmark. */
 export function Logo({
   className,
   href = "/",
@@ -19,12 +19,8 @@ export function Logo({
       className={cn("group inline-flex items-center gap-2 rounded-xs", className)}
       aria-label={`${brand.name} home`}
     >
-      <span className="grid size-8 place-items-center rounded-lg bg-primary text-on-primary shadow-sm">
-        <KamplugMark className="size-[18px]" />
-      </span>
-      <span className="text-[22px] leading-none font-bold tracking-[-0.03em] text-ink">
-        {brand.name}
-      </span>
+      <KamplugTile className="size-8" />
+      <KamplugWordmark className="text-[23px]" />
       {suffix && <span className="ml-1 eyebrow text-muted">{suffix}</span>}
     </Link>
   );

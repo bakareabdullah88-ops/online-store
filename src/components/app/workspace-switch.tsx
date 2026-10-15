@@ -37,7 +37,7 @@ export function WorkspaceSwitch({
       label: "Buying",
       title: "Buying: the market",
       icon: (
-        <span className="grid size-6 place-items-center rounded-lg bg-chart-blue text-white">
+        <span className="grid size-6 place-items-center rounded-lg bg-brand text-white">
           <ShoppingBag className="size-3.5" />
         </span>
       ),

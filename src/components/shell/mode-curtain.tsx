@@ -55,8 +55,8 @@ const MIN_HOLD_MS = 650;
 const ease = [0.7, 0, 0.25, 1] as const;
 
 const palettes: Record<Mode, { bg: string; accent: string }> = {
-  selling: { bg: "#17653e", accent: "#bff3d8" },
-  buying: { bg: "#2f45d8", accent: "#dfe4ff" },
+  selling: { bg: "#0b6541", accent: "#bff3d8" },
+  buying: { bg: "#0e7a4f", accent: "#d9f5e6" },
 };
 
 function farthestCorner(p: Point) {

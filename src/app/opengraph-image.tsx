@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@/config/brand";
+import { BrandMarkSvg, brandColors } from "@/lib/brand-mark";
 import { defaultFontPreset, emphasis, getFontPreset } from "@/config/font-presets";
 
 export const alt = `${brand.name}: buy from student brands on your campus`;
@@ -37,84 +38,54 @@ export default async function OpengraphImage() {
         width: "100%",
         height: "100%",
         display: "flex",
-        background: "#f6f8f7",
+        background: brandColors.paper,
         padding: 72,
         position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          right: -120,
-          top: -120,
-          width: 560,
-          height: 560,
-          borderRadius: 999,
-          background: "#dff3e6",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          right: 96,
-          bottom: 96,
-          width: 260,
-          height: 320,
-          borderRadius: 24,
-          background: "#2f6b70",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <svg width="200" height="250" viewBox="0 0 400 500">
-          <path
-            d="M128 152 L170 130 Q200 156 230 130 L272 152 L322 206 L284 238 L268 222 L268 386 Q200 396 132 386 L132 222 L116 238 L78 206 Z"
-            fill="#d3e1e2"
-          />
-        </svg>
+      {/* A large mark bleeding off the right edge: the brand, not decoration. */}
+      <div style={{ position: "absolute", right: -90, top: 70, display: "flex" }}>
+        <BrandMarkSvg size={520} radius={120} />
       </div>
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          width: "68%",
+          width: "62%",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            fontFamily: serif,
-            fontSize: 48,
-            color: "#0f1115",
-          }}
-        >
-          {brand.name}
-          <div style={{ width: 12, height: 12, borderRadius: 999, background: "#2f45d8" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <BrandMarkSvg size={64} />
+          <div
+            style={{
+              display: "flex",
+              fontFamily: serif,
+              fontSize: 54,
+              letterSpacing: -2.5,
+              color: brandColors.ink,
+            }}
+          >
+            kam<span style={{ color: brandColors.green }}>plug</span>
+          </div>
         </div>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             fontFamily: serif,
-            fontSize: 96,
-            lineHeight: 0.95,
-            color: "#0f1115",
-            letterSpacing: -2,
+            fontSize: 92,
+            lineHeight: 0.98,
+            color: brandColors.ink,
+            letterSpacing: -3,
           }}
         >
-          <span>Buy from the brands</span>
-          <span
-            style={{ color: "#2f45d8", fontStyle: emphasis === "italic" ? "italic" : "normal" }}
-          >
-            in your hostel.
-          </span>
+          <span>Your campus plug.</span>
+          <span style={{ color: brandColors.green }}>Buy and sell on campus.</span>
         </div>
-        <div style={{ fontFamily: serif, fontSize: 30, color: "#59606a" }}>
-          Thrift · food · skincare · prints · tech, from students on your campus
+        <div style={{ fontFamily: serif, fontSize: 30, color: "#545862" }}>
+          Food, fashion, thrift and more, from students near you
         </div>
       </div>
     </div>,

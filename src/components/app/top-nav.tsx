@@ -13,7 +13,7 @@ import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
-import { KamplugMark } from "./kamplug-mark";
+import { KamplugTile, KamplugWordmark } from "./kamplug-mark";
 import { MessagesButton } from "./messages-button";
 import { ModeLine } from "./mode-line";
 import { NavGrid } from "./more-menu";
@@ -112,10 +112,8 @@ export function TopNav() {
           aria-label="Kamplug home"
           className="flex pressable items-center gap-2 pr-1"
         >
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-on-primary">
-            <KamplugMark className="size-5" />
-          </span>
-          <span className="hidden text-[18px] font-bold tracking-[-0.03em] 2xl:block">Kamplug</span>
+          <KamplugTile className="size-9" />
+          <KamplugWordmark className="hidden text-[20px] 2xl:block" />
         </Link>
         <WorkspaceSwitch compact className="2xl:hidden" />
         <WorkspaceSwitch className="hidden 2xl:flex" />

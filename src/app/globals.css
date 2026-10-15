@@ -30,18 +30,20 @@
   --primary-hover: #2b2d32;
   --on-primary: #ffffff;
 
-  /* Accent: blue while buying */
-  --accent: #2f45d8;
-  --accent-hover: #2337bd;
-  --accent-soft: #e8ebfd;
-  --accent-ink: #2235b5;
+  /* Brand: campus green. The one colour Kamplug owns: logo, main buttons, key states. */
+  --brand: #0e7a4f;
+  --brand-ink: #0e7a4f;
+  --accent: #0e7a4f;
+  --accent-hover: #0b6541;
+  --accent-soft: #e3f3ea;
+  --accent-ink: #0b6541;
   --on-accent: #ffffff;
 
-  /* Named accents: green for selling, blue for buying */
-  --studio: #1d7a4b;
-  --ember: #2f45d8;
-  --studio-contrast: #86e0b0;
-  --ember-contrast: #aab5ff;
+  /* Both sides of the app share the brand colour. */
+  --studio: #0e7a4f;
+  --ember: #0e7a4f;
+  --studio-contrast: #8fe3b8;
+  --ember-contrast: #8fe3b8;
 
   /* Charts */
   --chart-blue: #2f54ff;
@@ -83,6 +85,10 @@
   --glass-fill-strong: rgb(255 255 255 / 0.9);
   --glass-border: transparent;
   --glass-edge: rgb(15 23 42 / 0.07);
+  --lg-fill: rgb(255 255 255 / 0.58);
+  --lg-edge: rgb(15 17 21 / 0.08);
+  --lg-hi: rgb(255 255 255 / 0.9);
+  --lg-lo: rgb(255 255 255 / 0.25);
   --shadow-card: none;
   --shadow-card-hover: 0 0 0 1px var(--line-strong);
 
@@ -125,13 +131,7 @@
   color-scheme: light;
 }
 
-[data-mode="selling"] {
-  --accent: #1d7a4b;
-  --accent-hover: #17653e;
-  --accent-soft: #e2f3e9;
-  --accent-ink: #17653e;
-  --on-accent: #ffffff;
-}
+/* Selling uses the same brand green; the mode shows in the switch and header, not a new colour. */
 
 .dark {
   --canvas: #0b0c0e;
@@ -151,16 +151,18 @@
   --primary-hover: #ffffff;
   --on-primary: #0b0c0e;
 
-  --accent: #8091ff;
-  --accent-hover: #97a4ff;
-  --accent-soft: #1c2250;
-  --accent-ink: #a9b4ff;
-  --on-accent: #0b0f2b;
+  --brand: #0e7a4f;
+  --brand-ink: #3dd68c;
+  --accent: #3dd68c;
+  --accent-hover: #5be3a1;
+  --accent-soft: #0f2a1e;
+  --accent-ink: #5be3a1;
+  --on-accent: #04150c;
 
-  --studio: #4fd39a;
-  --ember: #8091ff;
-  --studio-contrast: #1d7a4b;
-  --ember-contrast: #2f45d8;
+  --studio: #3dd68c;
+  --ember: #3dd68c;
+  --studio-contrast: #0e7a4f;
+  --ember-contrast: #0e7a4f;
 
   --chart-blue: #6f86ff;
   --chart-blue-2: #3b4fae;
@@ -191,6 +193,10 @@
   --glass-fill-strong: rgb(24 26 31 / 0.9);
   --glass-border: transparent;
   --glass-edge: rgb(255 255 255 / 0.07);
+  --lg-fill: rgb(24 26 31 / 0.55);
+  --lg-edge: rgb(255 255 255 / 0.09);
+  --lg-hi: rgb(255 255 255 / 0.12);
+  --lg-lo: rgb(255 255 255 / 0.03);
   --shadow-card: none;
   --shadow-card-hover: 0 0 0 1px var(--line-strong);
 
@@ -205,15 +211,6 @@
   --shadow-xl: var(--shadow-lg);
 
   color-scheme: dark;
-}
-
-.dark[data-mode="selling"],
-.dark [data-mode="selling"] {
-  --accent: #4fd39a;
-  --accent-hover: #6ddfae;
-  --accent-soft: #12291f;
-  --accent-ink: #86e0b0;
-  --on-accent: #04130c;
 }
 
 @theme inline {
@@ -231,6 +228,8 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
@@ -443,8 +442,9 @@
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
+/* Bottom padding that never drops below 16px and grows past the home indicator. */
 @utility safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 @utility text-balance {
@@ -643,6 +643,47 @@
   background-color: color-mix(in oklab, var(--surface) 72%, transparent);
   backdrop-filter: blur(18px) saturate(1.6);
   -webkit-backdrop-filter: blur(18px) saturate(1.6);
+}
+
+/* Liquid glass: a translucent pane that blurs what's behind it, with a lit top edge.
+   Used for the landing navbar and floating icon bubbles. */
+@utility liquid-glass {
+  background-color: var(--lg-fill);
+  backdrop-filter: blur(24px) saturate(1.9);
+  -webkit-backdrop-filter: blur(24px) saturate(1.9);
+  border: 1px solid var(--lg-edge);
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 -1px 0 var(--lg-lo),
+    0 10px 30px -12px rgb(15 17 21 / 0.22);
+}
+
+/* Scroll reveal: content is visible by default (no JS, screenshots); only elements that
+   start below the fold are hidden on mount and slide in once they scroll into view. */
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translate3d(var(--reveal-x, 0), var(--reveal-y, 28px), 0);
+}
+[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@utility animate-marquee {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }
 
 /* ------------------------------------------------------------------ */

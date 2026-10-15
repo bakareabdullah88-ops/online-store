@@ -1,18 +1,43 @@
+import { MarkStrokes } from "@/lib/brand-mark";
 import { cn } from "@/lib/cn";
 
-/** The K mark used on the rail, icons and favicon. */
+/** The K-with-a-plug mark in the current text colour. */
 export function KamplugMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cn("size-6", className)} aria-hidden>
-      <path
-        d="M20 14 V50 M20 34 L40 14 M27 28 L42 50"
-        stroke="currentColor"
-        strokeWidth="6.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <circle cx="48" cy="46" r="5" fill="var(--chart-blue-2)" />
+      <MarkStrokes color="currentColor" />
     </svg>
+  );
+}
+
+/** The mark on its green tile, as on the app icon. */
+export function KamplugTile({
+  className,
+  markClassName,
+}: {
+  className?: string;
+  markClassName?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "grid size-8 shrink-0 place-items-center rounded-[25%] bg-brand text-white",
+        className,
+      )}
+      aria-hidden
+    >
+      <KamplugMark className={cn("size-[78%]", markClassName)} />
+    </span>
+  );
+}
+
+/** "kamplug" set as the wordmark: lowercase, tight, with "plug" in the brand colour. */
+export function KamplugWordmark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn("leading-none font-bold tracking-[-0.045em] text-ink lowercase", className)}
+    >
+      kam<span className="text-brand-ink">plug</span>
+    </span>
   );
 }
