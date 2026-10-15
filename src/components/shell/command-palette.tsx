@@ -27,6 +27,7 @@ import { categories } from "@/config/categories";
 import { spring } from "@/design/motion";
 import { formatNaira } from "@/domain/money";
 import { useSearch } from "@/queries/catalog";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useSession } from "@/queries/session";
 import { usePrefs, useUi } from "@/stores/ui";
 
@@ -39,6 +40,7 @@ export function CommandPalette() {
   const setOpen = useUi((s) => s.setCommandOpen);
   const setBagOpen = useUi((s) => s.setBagOpen);
   const [query, setQuery] = useState("");
+  const touch = useMediaQuery("(pointer: coarse)");
   const deferred = useDeferredValue(query);
   const { data, isFetching } = useSearch(deferred);
   const router = useRouter();
@@ -98,7 +100,18 @@ export function CommandPalette() {
                 transition={{ duration: 0.18 }}
               />
             </RDialog.Overlay>
-            <RDialog.Content asChild forceMount aria-describedby={undefined}>
+            <RDialog.Content
+              asChild
+              forceMount
+              aria-describedby={undefined}
+              // Phones: open on the suggestions without the keyboard covering them;
+              // tapping the search box brings it up.
+              onOpenAutoFocus={(e) => {
+                if (!touch) return;
+                e.preventDefault();
+                (e.currentTarget as HTMLElement | null)?.focus();
+              }}
+            >
               <motion.div
                 className="fixed inset-x-0 top-0 z-(--z-sheet) mx-auto flex max-h-dvh w-full max-w-xl flex-col overflow-hidden bg-surface shadow-xl ring-1 ring-line sm:top-[12vh] sm:max-h-[70vh] sm:rounded-lg"
                 initial={reduce ? { opacity: 0 } : { opacity: 0, y: -16, scale: 0.98 }}
@@ -123,7 +136,7 @@ export function CommandPalette() {
                     <Command.Input
                       value={query}
                       onValueChange={setQuery}
-                      autoFocus
+                      autoFocus={!touch}
                       placeholder="Search products, brands, pages…"
                       className="h-14 flex-1 bg-transparent text-body-lg text-ink outline-none placeholder:text-faint"
                       onKeyDown={(e) => {

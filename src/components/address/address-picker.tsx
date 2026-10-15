@@ -6,6 +6,7 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "rea
 import { Field, Input, fieldControl } from "@/components/ui/input";
 import { detailCopy, kindIcon, spotGroups, type SpotOption } from "@/config/zone-kinds";
 import { cn } from "@/lib/cn";
+import { useTapToType } from "@/lib/use-tap-to-type";
 import type { Campus, ID, ZoneKind } from "@/services/types";
 
 type PickerOwnProps = {
@@ -98,9 +99,14 @@ function SpotCombobox({
       ),
     );
   };
+  const tap = useTapToType();
+  /** Whether the list was already open when this tap started. */
+  const openAtTap = useRef(false);
   const close = () => {
+    if (tap.refocusing.current) return;
     setOpen(false);
     setQuery(null);
+    tap.reset();
   };
   const choose = (o: SpotOption) => {
     onChange(o.zoneId);
@@ -133,6 +139,7 @@ function SpotCombobox({
             autoCapitalize="words"
             spellCheck={false}
             enterKeyHint="done"
+            inputMode={tap.inputMode}
             onChange={(e) => {
               setQuery(e.target.value);
               setOpen(true);
@@ -150,7 +157,14 @@ function SpotCombobox({
               if (clickFocus.current) e.preventDefault();
               clickFocus.current = false;
             }}
-            onClick={openList}
+            onPointerDown={() => {
+              openAtTap.current = open;
+            }}
+            onClick={() => {
+              // Phones: the first tap shows the list; tapping again brings the keyboard.
+              if (openAtTap.current && tap.startTyping(inputRef.current)) return;
+              openList();
+            }}
             onBlur={close}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown" || e.key === "ArrowUp") {
@@ -220,6 +234,11 @@ function SpotCombobox({
             "origin-(--radix-popper-transform-origin) data-[state=open]:[animation:pop-in_160ms_cubic-bezier(0.22,1,0.36,1)]",
           )}
         >
+          {tap.keyboardOff && flat.length > 0 && (
+            <p className="px-2.5 pt-2 pb-1 text-[12.5px] text-muted">
+              Pick one below, or tap the box again to type.
+            </p>
+          )}
           {flat.length === 0 ? (
             <p className="px-2.5 py-3 text-small text-muted" role="status">
               {query?.trim()

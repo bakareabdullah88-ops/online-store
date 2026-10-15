@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import { kindIcon, kindLabel } from "@/config/zone-kinds";
 import { cn } from "@/lib/cn";
+import { useTapToType } from "@/lib/use-tap-to-type";
 import { useCampuses } from "@/queries/catalog";
 import type { ZoneKind } from "@/services/types";
 import { useSpot } from "@/stores/spot";
@@ -36,6 +37,10 @@ export function SpotPicker() {
   const [active, setActive] = useState(0);
   const [picked, setPicked] = useState<Option | null>(null);
   const [street, setStreet] = useState("");
+  const tap = useTapToType();
+  const qRef = useRef<HTMLInputElement>(null);
+  /** Whether the list was already open when this tap started. */
+  const openAtTap = useRef(false);
 
   const options = useMemo<Option[]>(() => {
     const all = (campuses ?? []).flatMap((c) =>
@@ -120,8 +125,23 @@ export function SpotPicker() {
               setOpen(true);
               setActive(0);
             }}
+            ref={qRef}
+            inputMode={tap.inputMode}
             onFocus={() => setOpen(true)}
-            onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+            onPointerDown={() => {
+              openAtTap.current = open;
+            }}
+            onClick={() => {
+              // Phones: the first tap shows the list; tapping again brings the keyboard.
+              if (openAtTap.current) tap.startTyping(qRef.current);
+            }}
+            onBlur={() => {
+              if (tap.refocusing.current) return;
+              window.setTimeout(() => {
+                setOpen(false);
+                tap.reset();
+              }, 120);
+            }}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") {
                 e.preventDefault();
@@ -173,6 +193,11 @@ export function SpotPicker() {
             : "pointer-events-none [transform:perspective(800px)_rotateX(-30deg)] opacity-0",
         )}
       >
+        {tap.keyboardOff && (
+          <li role="presentation" className="px-3 pt-1 pb-1.5 text-[12.5px] text-[#5a5f78]">
+            Pick one below, or tap the box again to type.
+          </li>
+        )}
         {options.map((o, i) => {
           const Icon = kindIcon[o.kind];
           return (
