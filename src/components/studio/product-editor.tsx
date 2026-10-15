@@ -942,7 +942,7 @@ function EditorForm({
     <div ref={formRef}>
       <Link
         href="/studio/products"
-        className="inline-flex items-center gap-1.5 text-small text-muted hover:text-ink"
+        className="tap-area inline-flex items-center gap-1.5 text-small text-muted hover:text-ink"
       >
         <ArrowLeft className="size-4" /> Products
       </Link>

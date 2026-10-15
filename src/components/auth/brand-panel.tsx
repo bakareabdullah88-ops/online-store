@@ -45,14 +45,14 @@ function OrderCard() {
   }, [reduce]);
   const at = reduce ? STEPS.length - 1 : Math.min(step, STEPS.length - 1);
   return (
-    <div className="w-[300px] rounded-2xl border border-white/15 bg-white/10 p-4 text-white shadow-[0_20px_50px_-20px_rgb(0_0_0/0.45)] backdrop-blur-xl">
+    <div className="w-[300px] rounded-2xl border border-white/15 bg-black/20 p-4 text-white shadow-[0_20px_50px_-20px_rgb(0_0_0/0.45)] backdrop-blur-xl">
       <div className="flex items-center gap-3">
         <span className="grid size-9 place-items-center rounded-lg bg-white/15">
           <UtensilsCrossed className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] font-semibold">Jollof bowl + zobo</p>
-          <p className="text-[12px] text-white/70">
+          <p className="text-[12px] text-white/90">
             <span className="font-mono">KMP-7QRT</span> · ₦5,100
           </p>
         </div>
@@ -69,13 +69,14 @@ function OrderCard() {
           </span>
         ))}
       </div>
-      <div className="mt-3 flex h-5 items-center gap-1.5 text-[12.5px] font-medium">
+      {/* Slides only (no fading), so the text never drops below readable contrast. */}
+      <div className="relative mt-3 flex h-5 items-center gap-1.5 overflow-hidden text-[12.5px] font-medium">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={STEPS[at]}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            initial={{ y: "110%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-110%" }}
             transition={{ duration: 0.25, ease: EASE }}
             className="flex items-center gap-1.5"
           >
@@ -90,8 +91,8 @@ function OrderCard() {
 /** A short chat that types itself out. Example only. */
 function ChatCard() {
   return (
-    <div className="w-[260px] rounded-2xl border border-white/15 bg-white/10 p-3.5 text-white shadow-[0_20px_50px_-20px_rgb(0_0_0/0.45)] backdrop-blur-xl">
-      <p className="flex items-center gap-1.5 text-[12px] font-medium text-white/75">
+    <div className="w-[260px] rounded-2xl border border-white/15 bg-black/20 p-3.5 text-white shadow-[0_20px_50px_-20px_rgb(0_0_0/0.45)] backdrop-blur-xl">
+      <p className="flex items-center gap-1.5 text-[12px] font-medium text-white/90">
         <MessageCircle className="size-3.5" /> Message from a buyer
       </p>
       <p className="mt-2 w-fit rounded-lg rounded-tl-sm bg-white/15 px-3 py-2 text-[12.5px]">
@@ -148,18 +149,18 @@ export function AuthBrandPanel() {
 
       <div className="relative z-10 flex flex-1 flex-col justify-center px-12 xl:px-16">
         <motion.div
-          initial={reduce ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={reduce ? false : { y: 16 }}
+          animate={{ y: 0 }}
           transition={{ duration: 0.7, ease: EASE }}
           className="max-w-md"
         >
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[12.5px] font-medium backdrop-blur-md">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[12.5px] font-medium backdrop-blur-md">
             <span className="size-1.5 rounded-full bg-white" /> Free for students
           </p>
           <h2 className="mt-5 text-[40px] leading-[1.05] font-semibold tracking-[-0.04em] xl:text-[46px]">
             Your campus plug.
           </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-white/80">
+          <p className="mt-3 text-[16px] leading-relaxed text-white/90">
             Buy from students near you, or open a shop and sell to your hostel.
           </p>
           <ul className="mt-6 flex flex-col gap-2.5">
@@ -174,10 +175,9 @@ export function AuthBrandPanel() {
         <div className="relative mt-12 h-[230px] max-w-lg">
           <motion.div
             className="absolute top-0 left-0"
-            initial={reduce ? false : { opacity: 0, x: -20 }}
-            animate={reduce ? { opacity: 1 } : { opacity: 1, x: 0, y: [0, -6, 0] }}
+            initial={reduce ? false : { x: -20 }}
+            animate={reduce ? undefined : { x: 0, y: [0, -6, 0] }}
             transition={{
-              opacity: { duration: 0.6, delay: 0.35 },
               x: { duration: 0.8, delay: 0.35, ease: EASE },
               y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
             }}
@@ -186,10 +186,9 @@ export function AuthBrandPanel() {
           </motion.div>
           <motion.div
             className={cn("absolute right-0 bottom-0")}
-            initial={reduce ? false : { opacity: 0, x: 20 }}
-            animate={reduce ? { opacity: 1 } : { opacity: 1, x: 0, y: [0, 6, 0] }}
+            initial={reduce ? false : { x: 20 }}
+            animate={reduce ? undefined : { x: 0, y: [0, 6, 0] }}
             transition={{
-              opacity: { duration: 0.6, delay: 0.5 },
               x: { duration: 0.8, delay: 0.5, ease: EASE },
               y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
             }}
@@ -197,7 +196,7 @@ export function AuthBrandPanel() {
             <ChatCard />
           </motion.div>
         </div>
-        <p className="mt-6 text-[12px] text-white/60">Pictures of the app. Names are examples.</p>
+        <p className="mt-6 text-[12px] text-white/85">Pictures of the app. Names are examples.</p>
       </div>
     </aside>
   );

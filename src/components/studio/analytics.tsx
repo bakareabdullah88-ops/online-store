@@ -63,7 +63,7 @@ function Row({ p, s, i }: { p: Product; s: ProductStat; i: number }) {
       <div className="min-w-0 lg:w-56 lg:shrink-0">
         <Link
           href={`/studio/products/${p.id}`}
-          className="block truncate text-[16px] font-medium hover:underline"
+          className="tap-area block truncate text-[16px] font-medium hover:underline"
         >
           {p.name}
         </Link>

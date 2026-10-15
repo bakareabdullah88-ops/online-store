@@ -117,8 +117,16 @@ function inspect(isPhone) {
     if (isPhone && ra.top < window.innerHeight * 3) {
       const minSide = Math.min(ra.width, ra.height);
       const inText = a.matches("a") && getComputedStyle(a).display === "inline";
-      // tap-area adds an invisible 44px hit box around small links and icons.
-      const padded = a.classList.contains("tap-area");
+      // Fine: tap-area or another invisible ::after hit box, or a wrapping <label> or
+      // matching <label for> that is itself big enough to tap.
+      const after = getComputedStyle(a, "::after");
+      const label =
+        a.closest("label") ?? (a.id ? document.querySelector(`label[for="${a.id}"]`) : null);
+      const lr = label?.getBoundingClientRect();
+      const padded =
+        a.classList.contains("tap-area") ||
+        (after.content !== "none" && after.position === "absolute") ||
+        (lr ? Math.min(lr.width, lr.height) >= 32 : false);
       if (
         minSide < 32 &&
         !inText &&
@@ -135,8 +143,8 @@ function inspect(isPhone) {
       const b = controls[j];
       if (a.contains(b) || b.contains(a)) continue;
       // Buttons drawn inside an input (show password, clear) share its wrapper on purpose.
-      if (a.parentElement === b.parentElement && (a.matches("input") || b.matches("input")))
-        continue;
+      const input = a.matches("input") ? a : b.matches("input") ? b : null;
+      if (input && input.parentElement?.contains(input === a ? b : a)) continue;
       const rb = b.getBoundingClientRect();
       const x = Math.max(0, Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left));
       const y = Math.max(0, Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top));

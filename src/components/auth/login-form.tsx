@@ -70,7 +70,7 @@ export function LoginForm() {
           aside={
             <Link
               href="/forgot-password"
-              className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
+              className="tap-area text-small text-muted underline-offset-4 hover:text-ink hover:underline"
             >
               Forgot password?
             </Link>
