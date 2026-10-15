@@ -22,7 +22,15 @@ export function FaqPanel({ items }: { items: { q: string; a: string }[] }) {
           {items.map((f, i) => {
             const on = i === open;
             return (
-              <li key={f.q}>
+              <li
+                key={f.q}
+                className={cn(
+                  "overflow-hidden rounded-xl transition-[background-color,box-shadow] duration-300",
+                  on
+                    ? "bg-[#3a5bff] shadow-[0_5px_0_#1f37b8]"
+                    : "bg-white shadow-[0_3px_0_rgba(27,31,59,0.12)] ring-1 ring-[#1b1f3b]/10",
+                )}
+              >
                 <button
                   type="button"
                   id={`${base}-q${i}`}
@@ -30,23 +38,43 @@ export function FaqPanel({ items }: { items: { q: string; a: string }[] }) {
                   aria-controls={`${base}-a${i}`}
                   onClick={() => setOpen(i)}
                   className={cn(
-                    "flex w-full items-center justify-between gap-4 rounded-xl px-5 py-4 text-left text-[16px] font-bold transition-[transform,background-color] md:text-[18px]",
-                    on
-                      ? "bg-[#3a5bff] text-white shadow-[0_5px_0_#1f37b8]"
-                      : "bg-white text-[#1b1f3b] shadow-[0_3px_0_rgba(27,31,59,0.12)] ring-1 ring-[#1b1f3b]/10 hover:-translate-y-0.5",
+                    "flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-[16px] font-bold md:text-[18px]",
+                    on ? "text-white" : "text-[#1b1f3b]",
                   )}
                 >
                   {f.q}
-                  {on && <Burst className="size-6 shrink-0" color="#ffd23f" />}
+                  <Burst
+                    className={cn(
+                      "size-6 shrink-0 transition-transform duration-300",
+                      on ? "scale-100 rotate-45" : "scale-0",
+                    )}
+                    color="#ffd23f"
+                  />
                 </button>
+                {/* Phones: the answer unrolls from the bottom of the same card. */}
                 <div
                   id={`${base}-a${i}`}
                   role="region"
                   aria-labelledby={`${base}-q${i}`}
-                  hidden={!on}
-                  className="mt-3 rounded-xl bg-[#ffd23f] p-5 text-[16px] leading-relaxed text-[#1b1f3b] md:hidden"
+                  aria-hidden={!on}
+                  inert={!on}
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden",
+                    on ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                  )}
                 >
-                  {f.a}
+                  <div className="overflow-hidden">
+                    <p
+                      className={cn(
+                        "mx-2 mb-2 origin-top rounded-lg bg-[#ffd23f] p-4 text-[16px] leading-relaxed text-[#1b1f3b] transition-transform duration-400",
+                        on
+                          ? "[transform:perspective(600px)_rotateX(0deg)]"
+                          : "[transform:perspective(600px)_rotateX(-70deg)]",
+                      )}
+                    >
+                      {f.a}
+                    </p>
+                  </div>
                 </div>
               </li>
             );

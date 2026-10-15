@@ -5,7 +5,7 @@ import { BuddyAvatar } from "@/components/app/buddy";
 import { CategoryStrip } from "@/components/landing/category-strip";
 import { FaqPanel } from "@/components/landing/faq-panel";
 import { Clouds3D, GateScene, RoadStrip } from "@/components/landing/gate-scene";
-import { HeroSearch } from "@/components/landing/hero-search";
+import { SpotPicker } from "@/components/landing/spot-picker";
 import {
   Burst,
   DeliveryKeke,
@@ -167,7 +167,7 @@ export default function LandingPage() {
               Your campus, one plug away. Food, thrift, beauty and more from students near you.
             </p>
             <div className="mt-8 flex justify-center">
-              <HeroSearch />
+              <SpotPicker />
             </div>
           </div>
           <GateScene className="relative mt-6 h-[260px] w-full sm:h-[340px] md:mt-2 md:h-[420px] xl:h-[460px]" />
