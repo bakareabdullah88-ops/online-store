@@ -70,9 +70,9 @@ export function NotificationsView() {
       ) : !data?.length ? (
         <EmptyState
           illustration="notifications"
-          title="No notifications yet"
-          body="Order updates, replies and drops from brands you follow land here."
-          action={<ButtonLink href="/explore">Explore</ButtonLink>}
+          title="Nothing new yet"
+          body="Order updates, replies and new drops from shops you follow will show up here."
+          action={<ButtonLink href="/explore">Find shops</ButtonLink>}
         />
       ) : (
         <div className="flex flex-col gap-8">

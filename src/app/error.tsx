@@ -19,8 +19,8 @@ export default function RouteError({
     <main id="main" className="container-page flex min-h-[70dvh] items-center justify-center">
       <EmptyState
         illustration="error"
-        title="Something spilled"
-        body="This part of Kamplug hit a problem. Your bag and orders are safe on this device."
+        title="That didn't load"
+        body="Something broke on our side. Your bag and orders are safe. Try again?"
         action={<Button onClick={reset}>Try again</Button>}
         secondary={
           <ButtonLink href="/" variant="secondary">

@@ -33,8 +33,8 @@ export function MyReviewsView() {
         <EmptyState
           illustration="reviews"
           title="No reviews yet"
-          body="After an order is delivered, you can rate it from your orders."
-          action={<ButtonLink href="/orders">Your orders</ButtonLink>}
+          body="Once an order reaches you, you can rate it from your orders."
+          action={<ButtonLink href="/orders">See your orders</ButtonLink>}
         />
       ) : (
         <ul className="flex flex-col gap-3">

@@ -260,8 +260,8 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
           {list.isError ? (
             <EmptyState
               illustration="error"
-              title="We couldn't load products"
-              body="Something went wrong on our side. Your filters are saved."
+              title="That didn't load"
+              body="Probably our side, not yours. Your filters are still set."
               action={<Button onClick={() => void list.refetch()}>Try again</Button>}
             />
           ) : list.isPending ? (
