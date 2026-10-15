@@ -14,7 +14,7 @@ import {
 test("landing sends visitors to sign up and gates the app", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /Buy from your campus/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Your campus plug/ })).toBeVisible();
   await page.goto("/home");
   await page.waitForURL(/\/login\?next=%2Fhome/);
   await page.goto("/studio/orders");
