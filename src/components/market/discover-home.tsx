@@ -167,34 +167,31 @@ function OnTheWay({ order }: { order: Order }) {
   );
 }
 
-/** Round photo buttons, one per category, scrolling sideways on phones. */
+/** Rectangular photo tiles, one per category, packed close together; they scroll sideways on phones. */
 function Categories() {
   return (
     <section aria-labelledby="home-categories">
       <h2 id="home-categories" className="sr-only">
         Categories
       </h2>
-      <ul className="-mx-(--gutter) scrollbar-none flex gap-3 overflow-x-auto px-(--gutter) pb-1 md:mx-0 md:grid md:grid-cols-8 md:gap-4 md:px-0">
+      <ul className="-mx-(--gutter) scrollbar-none flex gap-2 overflow-x-auto px-(--gutter) pb-2 md:mx-0 md:grid md:grid-cols-8 md:gap-2 md:px-0">
         {categories.map((c) => (
           <li key={c.id} className="shrink-0">
-            <Link
-              href={`/explore?category=${c.id}`}
-              className="group flex w-[84px] flex-col items-center gap-2.5 md:w-full"
-            >
-              <span className="relative aspect-square w-full overflow-hidden rounded-full bg-surface-2 shadow-[0_5px_0_var(--line-strong)] ring-[3px] ring-surface transition-[transform,box-shadow] duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_0_var(--accent-edge)] md:max-w-[120px] md:justify-self-center">
+            <Link href={`/explore?category=${c.id}`} className="group block w-[108px] md:w-full">
+              <span className="relative block aspect-[4/5] w-full overflow-hidden rounded-2xl bg-surface-2 shadow-[0_5px_0_var(--line-strong)] transition-[transform,box-shadow] duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_8px_0_var(--accent-edge)]">
                 <span className="relative block size-full">
                   <Image
                     src={`/discover/${c.id}.jpg`}
                     alt=""
                     fill
-                    sizes="(min-width: 768px) 120px, 84px"
+                    sizes="(min-width: 768px) 170px, 108px"
                     quality={90}
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </span>
-              </span>
-              <span className="text-[13.5px] font-semibold text-ink-2 group-hover:text-ink md:text-[14.5px]">
-                {short[c.id]}
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2.5 pt-8 pb-2.5 text-[14px] font-bold text-white md:text-[15px]">
+                  {short[c.id]}
+                </span>
               </span>
             </Link>
           </li>
