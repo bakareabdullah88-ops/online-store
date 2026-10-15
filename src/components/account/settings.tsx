@@ -13,6 +13,7 @@ import {
   Trash2,
   UserRound,
 } from "lucide-react";
+import { AddressPicker } from "@/components/address/address-picker";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/controls";
 import { Field, Input, PasswordInput } from "@/components/ui/input";
@@ -33,7 +34,7 @@ import {
 } from "@/queries/session";
 import { useUploadImage } from "@/queries/studio";
 import { profileSchema } from "@/services/inputs";
-import { errorMessage } from "@/services/errors";
+import { errorMessage, isServiceError } from "@/services/errors";
 import type { User } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
@@ -93,6 +94,9 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone);
   const [campusId, setCampusId] = useState(user.campusId ?? "");
+  const [hall, setHall] = useState(user.hallZoneId ?? "");
+  const [faculty, setFaculty] = useState(user.facultyZoneId ?? "");
+  const campus = campuses.data?.find((c) => c.id === campusId);
   const [avatarId, setAvatarId] = useState<string | undefined>(
     user.avatar?.kind === "blob" ? user.avatar.id : undefined,
   );
@@ -120,6 +124,9 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
         name,
         phone,
         campusId,
+        // Empty clears them.
+        hallZoneId: hall || null,
+        facultyZoneId: faculty || null,
         buddy,
         ...(usePhoto && avatarId ? { avatarImageId: avatarId } : {}),
         ...(!usePhoto && user.avatar ? { removeAvatar: true } : {}),
@@ -133,7 +140,10 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
           });
           if (returnTo) router.push(returnTo);
         },
-        onError: (e) => toast.error(errorMessage(e)),
+        onError: (e) => {
+          if (isServiceError(e) && e.fields) setErrors(e.fields);
+          toast.error(errorMessage(e));
+        },
       },
     );
   };
@@ -269,7 +279,13 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
       <Field label="Campus" error={errors.campusId}>
         <Select
           value={campusId || undefined}
-          onValueChange={setCampusId}
+          onValueChange={(v) => {
+            if (v === campusId) return;
+            // A hall or faculty belongs to one campus.
+            setCampusId(v);
+            setHall("");
+            setFaculty("");
+          }}
           placeholder="Choose your campus"
           label="Campus"
           options={(campuses.data ?? []).map((c) => ({
@@ -279,6 +295,31 @@ function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }
           }))}
         />
       </Field>
+      {campus && (
+        <>
+          <AddressPicker
+            campus={campus}
+            value={hall}
+            onChange={setHall}
+            kinds={["hostel"]}
+            label="Your hall"
+            error={errors.hallZoneId}
+            hint="Shops from your hall and faculty show up first."
+            optional
+            clearable
+          />
+          <AddressPicker
+            campus={campus}
+            value={faculty}
+            onChange={setFaculty}
+            kinds={["faculty"]}
+            label="Your faculty"
+            error={errors.facultyZoneId}
+            optional
+            clearable
+          />
+        </>
+      )}
       <Button type="submit" className="self-start" loading={update.isPending} success={saved}>
         Save profile
       </Button>

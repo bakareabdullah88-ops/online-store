@@ -10,8 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { categories } from "@/config/categories";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
+import { WALKING_MINUTES } from "@/domain/distance";
 import { formatNaira } from "@/domain/money";
 import { useCampuses, usePriceRange } from "@/queries/catalog";
+import { useBuyerSpot } from "@/queries/nearby";
 import { useSession } from "@/queries/session";
 import type { ExploreParams } from "./params";
 
@@ -109,6 +111,7 @@ export function ExploreFilters({
   const campuses = useCampuses();
   const { user } = useSession();
   const campus = campuses.data?.find((c) => c.id === params.campus);
+  const buyer = useBuyerSpot();
   return (
     <div>
       <FilterGroup title="Price">
@@ -173,6 +176,19 @@ export function ExploreFilters({
             </Chip>
           ))}
         </div>
+      </FilterGroup>
+      <FilterGroup title="Distance">
+        <Switch
+          checked={params.walk && buyer.onMap}
+          disabled={!buyer.onMap}
+          onCheckedChange={(v) => update({ walk: v })}
+          label="Walking distance"
+          description={
+            buyer.onMap
+              ? `About ${WALKING_MINUTES} min or less on foot from ${buyer.label}`
+              : "Set a spot on campus in Places to use this"
+          }
+        />
       </FilterGroup>
       <FilterGroup title="Availability">
         <Switch

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { cn } from "@/lib/cn";
 
 /**
  * The hero scene: the University of Lagos main gate with the Senate tower behind
@@ -225,9 +226,19 @@ const clouds: CloudSpec[] = [
  * some right at their own speed, each bobbing, swelling or rising as it goes.
  * Far ones are smaller, paler and slower; near ones are big and quick.
  */
-export function Clouds3D() {
+/**
+ * Drifting clouds behind a hero. `inApp` heroes follow the app's dark theme:
+ * the clouds turn to dusk tones and step back so text on top stays readable.
+ */
+export function Clouds3D({ inApp = false }: { inApp?: boolean }) {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0 z-0 overflow-hidden",
+        inApp && "opacity-90 dark:opacity-60",
+      )}
+    >
       {clouds.map((c, i) => {
         const shape = cloudShapes[c.shape];
         return (
@@ -259,8 +270,16 @@ export function Clouds3D() {
                   viewBox={shape.vb}
                   className="w-full drop-shadow-[0_14px_14px_rgba(27,31,59,0.12)]"
                 >
-                  <path d={shape.top} fill="#ffffff" />
-                  <path d={shape.under} fill="#dfe5f2" />
+                  <path
+                    d={shape.top}
+                    className={inApp ? "fill-white dark:fill-[#2c3263]" : undefined}
+                    fill="#ffffff"
+                  />
+                  <path
+                    d={shape.under}
+                    className={inApp ? "fill-[#dfe5f2] dark:fill-[#222752]" : undefined}
+                    fill="#dfe5f2"
+                  />
                 </svg>
               </div>
             </div>

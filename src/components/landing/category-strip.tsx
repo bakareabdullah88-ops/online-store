@@ -23,7 +23,6 @@ type Tile = {
   href: string;
   icon: LucideIcon;
   bg: string;
-  edge: string;
   Art: (p: { className?: string }) => React.ReactNode;
   span: string;
   big?: boolean;
@@ -37,7 +36,6 @@ const tiles: Tile[] = [
     href: "/explore?category=food",
     icon: Soup,
     bg: "#ffe9a8",
-    edge: "#d9a800",
     Art: JollofPlate,
     span: "col-span-2 md:row-span-2",
     big: true,
@@ -49,7 +47,6 @@ const tiles: Tile[] = [
     href: "/explore?category=thrift",
     icon: Shirt,
     bg: "#dfe5ff",
-    edge: "#7d93ff",
     Art: ThriftRack,
     span: "col-span-1",
   },
@@ -60,7 +57,6 @@ const tiles: Tile[] = [
     href: "/explore?category=beauty",
     icon: Sparkles,
     bg: "#ffd9cf",
-    edge: "#f09a85",
     Art: BeautySet,
     span: "col-span-1",
   },
@@ -71,7 +67,6 @@ const tiles: Tile[] = [
     href: "/explore?category=tech",
     icon: Cpu,
     bg: "#d4f0ff",
-    edge: "#7cc4ec",
     Art: TechSet,
     span: "col-span-1",
   },
@@ -82,7 +77,6 @@ const tiles: Tile[] = [
     href: "/explore?category=books",
     icon: BookOpen,
     bg: "#d6f7e8",
-    edge: "#7fd3ad",
     Art: BookStack,
     span: "col-span-1",
   },
@@ -144,7 +138,7 @@ export function CategoryStrip() {
           <TiltLink
             href={t.href}
             className={t.big ? "min-h-[420px] md:min-h-0" : "min-h-[230px]"}
-            style={{ background: t.bg, boxShadow: `0 10px 0 ${t.edge}` }}
+            style={{ background: t.bg }}
           >
             <div className={cn("relative z-10 flex flex-col p-5 md:p-7", t.big && "md:p-9")}>
               <span className="grid size-11 place-items-center rounded-2xl bg-white/70 text-[#1b1f3b]">

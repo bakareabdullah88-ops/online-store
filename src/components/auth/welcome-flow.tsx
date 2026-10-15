@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Camera, Check } from "lucide-react";
+import { AddressPicker } from "@/components/address/address-picker";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Avatar, ProgressBar } from "@/components/ui/misc";
@@ -37,11 +38,22 @@ export function WelcomeFlow() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [campusId, setCampusId] = useState<string>("");
+  /** Null until they choose; until then it's what's saved, or a guess from the landing page. */
+  const [hallPick, setHall] = useState<string | null>(null);
+  const [facultyPick, setFaculty] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarId, setAvatarId] = useState<string | undefined>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const avatarUrl = useObjectUrl(avatarId);
+  const campus = campuses.data?.find((c) => c.id === campusId);
+  // A hall or faculty picked on the landing page is a good first guess; they can change it.
+  const spot = useSpot((st) => st.spot);
+  const spotZone =
+    spot?.campusId === campusId ? campus?.zones.find((z) => z.id === spot.zoneId) : undefined;
+  const hall = hallPick ?? user?.hallZoneId ?? (spotZone?.kind === "hostel" ? spotZone.id : "");
+  const faculty =
+    facultyPick ?? user?.facultyZoneId ?? (spotZone?.kind === "faculty" ? spotZone.id : "");
   const seeded = useRef(false);
 
   useEffect(() => {
@@ -92,7 +104,15 @@ export function WelcomeFlow() {
 
   const finish = (withAvatar: boolean) =>
     update.mutate(
-      { name, campusId, phone, ...(withAvatar && avatarId ? { avatarImageId: avatarId } : {}) },
+      {
+        name,
+        campusId,
+        phone,
+        // Null clears one they took out; leaving it out keeps what's saved.
+        ...(hall || hallPick !== null ? { hallZoneId: hall || null } : {}),
+        ...(faculty || facultyPick !== null ? { facultyZoneId: faculty || null } : {}),
+        ...(withAvatar && avatarId ? { avatarImageId: avatarId } : {}),
+      },
       {
         onSuccess: (u) => {
           toast.success(`You're all set, ${u.name.split(" ")[0]}`, {
@@ -172,7 +192,12 @@ export function WelcomeFlow() {
                             type="button"
                             role="radio"
                             aria-checked={active}
-                            onClick={() => setCampusId(c.id)}
+                            onClick={() => {
+                              if (c.id === campusId) return;
+                              setCampusId(c.id);
+                              setHall("");
+                              setFaculty("");
+                            }}
                             className={cn(
                               "relative flex flex-col items-start rounded-md bg-surface p-3.5 text-left transition-shadow",
                               active
@@ -200,6 +225,31 @@ export function WelcomeFlow() {
                         );
                       })}
                 </div>
+                {campus && (
+                  <div className="mt-6 flex flex-col gap-4 border-t border-line-thin pt-6">
+                    <p className="text-body text-muted">
+                      Shops from your hall and faculty show up first.
+                    </p>
+                    <AddressPicker
+                      campus={campus}
+                      value={hall}
+                      onChange={setHall}
+                      kinds={["hostel"]}
+                      label="Your hall"
+                      optional
+                      clearable
+                    />
+                    <AddressPicker
+                      campus={campus}
+                      value={faculty}
+                      onChange={setFaculty}
+                      kinds={["faculty"]}
+                      label="Your faculty"
+                      optional
+                      clearable
+                    />
+                  </div>
+                )}
                 <Button
                   size="lg"
                   className="mt-8 w-full"

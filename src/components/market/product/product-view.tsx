@@ -4,7 +4,16 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { BadgeCheck, Bike, Clock, MapPin, MessageCircle, ShoppingBag, Store } from "lucide-react";
+import {
+  BadgeCheck,
+  Bike,
+  Clock,
+  Footprints,
+  MapPin,
+  MessageCircle,
+  ShoppingBag,
+  Store,
+} from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,6 +22,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { ChatSheet } from "@/components/messages/chat-sheet";
 import { spring } from "@/design/motion";
 import { purchaseBlock, MAX_LINE_QUANTITY } from "@/domain/bag";
+import { formatWhen } from "@/domain/distance";
 import { discountPercent, formatNaira } from "@/domain/money";
 import {
   findVariant,
@@ -34,12 +44,14 @@ import {
   useProducts,
   useRelatedProducts,
 } from "@/queries/catalog";
+import { useNearness } from "@/queries/nearby";
 import { useSession } from "@/queries/session";
 import { isServiceError } from "@/services/errors";
 import type { ProductWithBrand } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { useUi } from "@/stores/ui";
 import { toast } from "@/stores/toast";
+import { DistanceLine } from "../nearby";
 import { ProductCard, ProductCardSkeleton } from "../product-card";
 import { Rail } from "../rail";
 import { ReviewsBlock } from "../reviews";
@@ -134,6 +146,8 @@ export function ProductView() {
   const variant = p && key ? findVariant(p, key) : undefined;
   const stock = variant?.stock ?? 0;
   const price = p && key ? unitPrice(p, key) : (p?.priceKobo ?? 0);
+
+  const near = useNearness(brand?.fulfilment, brand?.campusId);
 
   if (isPending) return <ProductSkeleton />;
   if (error || !p) {
@@ -403,15 +417,25 @@ export function ProductView() {
                   </div>
                 </div>
               )}
+              {(near.metres !== null || near.relation) && brand && (
+                <div className="flex gap-3 py-4">
+                  <Footprints className="mt-0.5 size-5 shrink-0" />
+                  <div className="text-small">
+                    <p className="font-medium">How far</p>
+                    <DistanceLine
+                      fulfilment={fulfilment}
+                      campusId={brand.campusId}
+                      badge
+                      eta
+                      className="mt-1 text-small"
+                    />
+                  </div>
+                </div>
+              )}
               <div className="flex gap-3 py-4">
                 <Clock className="mt-0.5 size-5 shrink-0" />
                 <div className="text-small">
-                  <p className="font-medium">
-                    Usually ready in{" "}
-                    {fulfilment.prepMinutes >= 60
-                      ? `${Math.round(fulfilment.prepMinutes / 60)} hour${fulfilment.prepMinutes >= 120 ? "s" : ""}`
-                      : `${fulfilment.prepMinutes} minutes`}
-                  </p>
+                  <p className="font-medium">Usually ready {formatWhen(fulfilment.prepMinutes)}</p>
                   <p className="text-muted">
                     Each brand ships its own order. You&apos;ll track it live.
                   </p>

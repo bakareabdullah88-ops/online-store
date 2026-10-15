@@ -27,8 +27,8 @@ export function FaqPanel({ items }: { items: { q: string; a: string }[] }) {
                 className={cn(
                   "overflow-hidden rounded-xl transition-[background-color,box-shadow] duration-300",
                   on
-                    ? "bg-[#3a5bff] shadow-[0_5px_0_#1f37b8]"
-                    : "bg-white shadow-[0_3px_0_rgba(27,31,59,0.12)] ring-1 ring-[#1b1f3b]/10",
+                    ? "bg-[#3a5bff]"
+                    : "bg-white ring-1 ring-[#1b1f3b]/10",
                 )}
               >
                 <button
@@ -84,7 +84,7 @@ export function FaqPanel({ items }: { items: { q: string; a: string }[] }) {
       <div className="hidden md:block md:pt-24">
         <div
           key={open}
-          className="sticky top-28 min-h-[340px] rounded-[26px] bg-[#ffd23f] p-9 text-[#1b1f3b] shadow-[0_10px_0_#d9a800] motion-safe:animate-[lp-answer_0.35s_ease-out]"
+          className="sticky top-28 min-h-[340px] rounded-[26px] bg-[#ffd23f] p-9 text-[#1b1f3b] motion-safe:animate-[lp-answer_0.35s_ease-out]"
         >
           <Burst className="size-8" color="#1b1f3b" />
           <p className="mt-6 text-[22px] leading-snug font-medium">{current?.a}</p>

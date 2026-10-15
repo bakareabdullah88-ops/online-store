@@ -239,7 +239,7 @@ export default function LandingPage() {
                 key={c.title}
                 from="top"
                 delay={i * 120}
-                className="flex flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_10px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10"
+                className="flex flex-col overflow-hidden rounded-[28px] bg-white ring-1 ring-[#1b1f3b]/10"
               >
                 <div className="flex-1 p-7 md:p-8">
                   {c.mark}
@@ -325,7 +325,7 @@ export default function LandingPage() {
                   key={s.n}
                   from="top"
                   delay={i * 140}
-                  className="rounded-[26px] bg-white p-8 shadow-[0_10px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10"
+                  className="rounded-[26px] bg-white p-8 ring-1 ring-[#1b1f3b]/10"
                 >
                   <span
                     className="grid size-14 place-items-center rounded-2xl text-[26px] font-extrabold text-white"

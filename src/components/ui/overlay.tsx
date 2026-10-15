@@ -182,7 +182,7 @@ export function Select<T extends string>({
           "flex h-11 w-full items-center justify-between gap-2 rounded-md bg-surface px-3.5 text-left text-body text-ink",
           "shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--muted)]",
           "focus-visible:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)] focus-visible:outline-none",
-          "aria-invalid:shadow-[inset_0_0_0_1.5px_var(--danger)] data-[placeholder]:text-faint",
+          "aria-invalid:shadow-[inset_0_0_0_1.5px_var(--danger)] data-[placeholder]:text-muted",
           className,
         )}
       >

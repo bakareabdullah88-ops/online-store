@@ -1,3 +1,4 @@
+import { compareNearness, isOnMap, nearness, type Nearness } from "@/domain/distance";
 import { totalStock } from "@/domain/variants";
 import type { CatalogService } from "../contracts";
 import { ServiceError } from "../errors";
@@ -27,6 +28,8 @@ export function withBrand(db: DbSnapshot, p: Product): ProductWithBrand {
         delivery: b.fulfilment.delivery,
         deliveryFeeKobo: b.fulfilment.deliveryFeeKobo,
         prepMinutes: b.fulfilment.prepMinutes,
+        pickupPointIds: b.fulfilment.pickupPointIds.slice(0, 1),
+        ...(b.fulfilment.baseZoneId ? { baseZoneId: b.fulfilment.baseZoneId } : {}),
       },
     },
   };
@@ -123,6 +126,21 @@ export const mockCatalog: CatalogService = {
     if (query.minRating) list = list.filter((p) => p.rating >= query.minRating!);
     if (query.inStock) list = list.filter((p) => totalStock(p) > 0);
 
+    // Distance from the buyer, worked out once per shop.
+    const near = query.near ?? {};
+    const nearByBrand = new Map<string, Nearness>();
+    const nearOf = (brandId: string) => {
+      let n = nearByBrand.get(brandId);
+      if (!n) {
+        const b = brandsById.get(brandId);
+        const campus = db.campuses.find((c) => c.id === b?.campusId);
+        n = nearness(b?.fulfilment, campus, near);
+        nearByBrand.set(brandId, n);
+      }
+      return n;
+    };
+    if (query.walking && isOnMap(near.zoneId)) list = list.filter((p) => nearOf(p.brandId).walking);
+
     const scores = new Map<string, number>();
     if (query.q?.trim()) {
       for (const p of list) scores.set(p.id, scoreProduct(p, brandsById.get(p.brandId), query.q));
@@ -144,6 +162,8 @@ export const mockCatalog: CatalogService = {
           return b.priceKobo - a.priceKobo;
         case "rating":
           return b.rating - a.rating || b.ratingCount - a.ratingCount;
+        case "nearest":
+          return compareNearness(nearOf(a.brandId), nearOf(b.brandId)) || byPopular(a, b);
         default:
           return byPopular(a, b);
       }

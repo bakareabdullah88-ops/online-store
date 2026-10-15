@@ -148,15 +148,6 @@ export function OrdersList() {
             ? `${activeCount} on the way. Open one to follow it live.`
             : "Everything you've ordered, newest first."
         }
-        actions={
-          <ButtonLink
-            href="/explore"
-            variant="secondary"
-            leadingIcon={<Compass className="size-4" />}
-          >
-            Discover
-          </ButtonLink>
-        }
       />
       <DataTable
         label="Your orders"

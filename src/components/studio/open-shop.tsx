@@ -148,10 +148,16 @@ export function OpenShopWizard() {
 
   // Default pickup point once the campus is known.
   const firstPoint = campus?.pickupPoints[0]?.id;
-  const fulfilment =
+  const withPoint =
     s.fulfilment.pickupPointIds.length === 0 && s.fulfilment.pickup && firstPoint
       ? { ...s.fulfilment, pickupPointIds: [firstPoint] }
       : s.fulfilment;
+  // Where they sell from starts at their hall, if they told us.
+  const hall = user?.hallZoneId;
+  const fulfilment =
+    !withPoint.baseZoneId && hall && campus?.zones.some((z) => z.id === hall)
+      ? { ...withPoint, baseZoneId: hall }
+      : withPoint;
 
   const go = (to: number) => {
     setDir(to > step ? 1 : -1);

@@ -4,9 +4,10 @@ import { newId, slugify } from "@/lib/ids";
 import { hashString } from "@/lib/random";
 import { categoryById } from "@/config/categories";
 import type { Customer, StudioService } from "../contracts";
+import type { CreateBrandInput } from "../inputs";
 import { ServiceError } from "../errors";
 import { schemas, type Schemas } from "./schemas";
-import type { Brand, ImageRef, Product, Promo } from "../types";
+import type { Brand, Campus, Fulfilment, ImageRef, Product, Promo } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireBrand, requireUser } from "./context";
 import { latency, quick } from "./latency";
@@ -114,6 +115,35 @@ function refreshCounts(db: DbSnapshot, brand: Brand) {
   ).length;
 }
 
+/** Keep only pickup points and spots that exist on the shop's campus. */
+function cleanFulfilment(
+  f: CreateBrandInput["fulfilment"],
+  campus: Campus | undefined,
+): Fulfilment {
+  const zones = new Set(campus?.zones.map((z) => z.id));
+  const points = new Set(campus?.pickupPoints.map((p) => p.id));
+  const base = f.baseZoneId && zones.has(f.baseZoneId) ? f.baseZoneId : undefined;
+  const pickupPointIds = f.pickupPointIds.filter((id) => points.has(id));
+  const zoneIds = f.zoneIds.filter((id) => zones.has(id));
+  if (f.pickup && pickupPointIds.length === 0)
+    throw new ServiceError("VALIDATION", "Choose at least one pickup point", {
+      pickupPointIds: "Choose at least one pickup point",
+    });
+  if (f.delivery && zoneIds.length === 0)
+    throw new ServiceError("VALIDATION", "Choose at least one zone you deliver to", {
+      zoneIds: "Choose at least one zone you deliver to",
+    });
+  return {
+    pickup: f.pickup,
+    delivery: f.delivery,
+    deliveryFeeKobo: f.deliveryFeeKobo,
+    prepMinutes: f.prepMinutes,
+    pickupPointIds,
+    zoneIds,
+    ...(base ? { baseZoneId: base } : {}),
+  };
+}
+
 export const mockStudio: StudioService = {
   async createBrand(raw) {
     const { createBrandSchema } = await schemas();
@@ -151,7 +181,10 @@ export const mockStudio: StudioService = {
         ? { kind: "blob", id: input.coverImageId }
         : { kind: "art", motif: cat.motif, palette: cat.palette, seed },
       campusId,
-      fulfilment: input.fulfilment,
+      fulfilment: cleanFulfilment(
+        input.fulfilment,
+        db.campuses.find((c) => c.id === campusId),
+      ),
       openHours: { days: [1, 2, 3, 4, 5, 6], opens: "09:00", closes: "20:00" },
       vacation: false,
       rating: 0,
@@ -206,7 +239,11 @@ export const mockStudio: StudioService = {
     if (input.bio !== undefined) brand.bio = input.bio;
     if (input.logoImageId) brand.logo = { kind: "blob", id: input.logoImageId };
     if (input.coverImageId) brand.cover = { kind: "blob", id: input.coverImageId };
-    if (input.fulfilment) brand.fulfilment = input.fulfilment;
+    if (input.fulfilment)
+      brand.fulfilment = cleanFulfilment(
+        input.fulfilment,
+        db.campuses.find((c) => c.id === brand.campusId),
+      );
     if (input.vacation !== undefined) brand.vacation = input.vacation;
     if (input.openHours) brand.openHours = input.openHours;
     if (input.payoutAccount) {

@@ -187,12 +187,37 @@ export const mockAuth: AuthService = {
         campusId: "Pick a campus",
       });
     }
+    // Hall and faculty must be a hall and a faculty on their campus.
+    const zones = db.campuses.find((c) => c.id === input.campusId)?.zones ?? [];
+    const pick = (id: string | null | undefined, kind: "hostel" | "faculty") => {
+      if (id === undefined) return undefined;
+      if (id === null) return null;
+      if (!zones.some((z) => z.id === id && z.kind === kind)) {
+        const field = kind === "hostel" ? "hallZoneId" : "facultyZoneId";
+        throw new ServiceError(
+          "VALIDATION",
+          `Pick your ${kind === "hostel" ? "hall" : "faculty"} from the list`,
+          {
+            [field]: "Pick one from the list",
+          },
+        );
+      }
+      return id;
+    };
+    const hall = pick(input.hallZoneId, "hostel");
+    const faculty = pick(input.facultyZoneId, "faculty");
     user.name = input.name;
     user.campusId = input.campusId;
     user.phone = input.phone;
     if (input.removeAvatar) user.avatar = null;
     else if (input.avatarImageId) user.avatar = { kind: "blob", id: input.avatarImageId };
     if (input.buddy) user.buddy = { shape: input.buddy.shape, color: input.buddy.color };
+    if (hall !== undefined) user.hallZoneId = hall;
+    if (faculty !== undefined) user.facultyZoneId = faculty;
+    // A new campus clears the old campus's hall and faculty unless new ones came along.
+    if (user.hallZoneId && !zones.some((z) => z.id === user.hallZoneId)) user.hallZoneId = null;
+    if (user.facultyZoneId && !zones.some((z) => z.id === user.facultyZoneId))
+      user.facultyZoneId = null;
     user.onboarded = true;
     await commit("users");
     return publicUser(user);

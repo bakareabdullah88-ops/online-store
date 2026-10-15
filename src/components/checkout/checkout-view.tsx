@@ -6,30 +6,34 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffectEvent, useLayoutEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { RadioGroup as RRadio } from "radix-ui";
 import {
   AlertCircle,
   Banknote,
   Bike,
   Building2,
+  Clock,
   CreditCard,
   Lock,
   MapPin,
+  Plus,
   RotateCcw,
   Tag,
   X,
 } from "lucide-react";
+import { AddressFields } from "@/components/address/address-picker";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { Chip } from "@/components/ui/chip";
 import { Checkbox, RadioCards } from "@/components/ui/controls";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input } from "@/components/ui/input";
 import { NumberTicker } from "@/components/ui/misc";
-import { Select } from "@/components/ui/overlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SegmentedControl } from "@/components/ui/tabs";
 import { Spinner } from "@/components/ui/spinner";
 import { spring } from "@/design/motion";
+import { kindIcon } from "@/config/zone-kinds";
+import { arrivalMinutes, formatEta, nearness, walkMetres, walkMinutes } from "@/domain/distance";
 import { formatNaira } from "@/domain/money";
 import type { GroupQuote } from "@/domain/checkout";
 import { cn } from "@/lib/cn";
@@ -40,7 +44,7 @@ import { useCreateOrders, useQuote } from "@/queries/orders";
 import { useSession } from "@/queries/session";
 import { errorMessage } from "@/services/errors";
 import type { CheckoutInput } from "@/services/inputs";
-import type { Campus, PaymentMethod, SavedPlace } from "@/services/types";
+import type { Campus, PaymentMethod, SavedPlace, User } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
 import { features } from "@/config/features";
@@ -64,6 +68,39 @@ function payLine(method: GroupState["method"]) {
   return method === "delivery"
     ? { title: "Pay when you receive it", hint: "Cash or transfer to the seller on delivery" }
     : { title: "Pay at pickup", hint: "Cash or transfer to the seller when you collect it" };
+}
+
+/** "in about 25 min", or "next day" for slow-made things. */
+function inAbout(min: number) {
+  const t = formatEta(min);
+  return t === "Next day" ? "next day" : `in about ${t}`;
+}
+
+/**
+ * How soon this shop's order gets to the buyer, from the spot they've chosen
+ * right now. Nothing when we can't place the shop or the spot on the map.
+ */
+function etaLine(
+  b: NonNullable<BagGroupView["brand"]>,
+  campus: Campus | undefined,
+  state: GroupState,
+  user: User | null | undefined,
+): string | null {
+  const f = b.fulfilment;
+  if (state.method === "delivery") {
+    const n = nearness(f, campus, {
+      zoneId: state.zoneId || null,
+      hallZoneId: user?.hallZoneId ?? null,
+      facultyZoneId: user?.facultyZoneId ?? null,
+    });
+    const min = n.metres === null ? null : arrivalMinutes(f, n);
+    return min === null ? null : `Arrives ${inAbout(min)}`;
+  }
+  const point = campus?.pickupPoints.find((p) => p.id === state.pickupPointId);
+  if (!point) return null;
+  const metres = walkMetres(state.zoneId || null, point.zoneId);
+  if (metres === null) return null;
+  return `Ready ${inAbout(f.prepMinutes)} · ${walkMinutes(metres)} min walk to ${point.name}`;
 }
 
 function SummaryRow({
@@ -93,6 +130,42 @@ function SummaryRow({
   );
 }
 
+/** One row in the list of saved places at checkout: tap to deliver there. */
+function PlaceOption({
+  value,
+  icon,
+  children,
+}: {
+  value: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <RRadio.Item
+      value={value}
+      className="group flex min-h-14 w-full items-center gap-3 py-2.5 text-left focus-visible:outline-offset-0"
+    >
+      <span
+        className="flex size-5 shrink-0 rounded-full shadow-[inset_0_0_0_1.5px_var(--line-strong)] transition-[box-shadow] duration-150 group-data-[state=checked]:shadow-[inset_0_0_0_6px_var(--ink)]"
+        aria-hidden
+      />
+      <span className="grid size-8 shrink-0 place-items-center rounded-md bg-accent-soft text-accent-ink">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">{children}</span>
+    </RRadio.Item>
+  );
+}
+
+function EtaLine({ text, className }: { text: string; className?: string }) {
+  return (
+    <p className={cn("flex items-start gap-2 text-small text-ink-2", className)}>
+      <Clock className="mt-0.5 size-4 shrink-0 text-muted" aria-hidden />
+      {text}
+    </p>
+  );
+}
+
 function GroupSection({
   group,
   campus,
@@ -102,8 +175,10 @@ function GroupSection({
   errors,
   index,
   places,
+  user,
 }: {
   group: BagGroupView;
+  user: User | null | undefined;
   places: SavedPlace[];
   campus: Campus | undefined;
   state: GroupState;
@@ -116,13 +191,15 @@ function GroupSection({
   const setPromo = useBag((s) => s.setPromo);
   const promoCode = useBag((s) => s.promoCodes[group.brandId]);
   if (!b) return <Skeleton className="h-64 w-full" rounded="lg" />;
-  const zones = campus?.zones.filter((z) => b.fulfilment.zoneIds.includes(z.id)) ?? [];
   const points =
     campus?.pickupPoints.filter((p) => b.fulfilment.pickupPointIds.includes(p.id)) ?? [];
   // Saved places on this campus, in zones this shop delivers to.
   const savedHere = places.filter(
     (p) => p.campusId === b.campusId && b.fulfilment.zoneIds.includes(p.zoneId),
   );
+  // A saved place picked, or a spot typed in ("Somewhere else").
+  const elsewhere = savedHere.length === 0 || !state.placeId;
+  const eta = etaLine(b, campus, state, user);
   const typedNew =
     !state.placeId &&
     state.addressLine.trim().length >= 3 &&
@@ -209,54 +286,67 @@ function GroupSection({
               className="flex flex-col gap-4"
             >
               {savedHere.length > 0 && (
-                <div role="group" aria-label="Your saved places" className="flex flex-wrap gap-2">
-                  {savedHere.map((p) => (
-                    <Chip
-                      key={p.id}
-                      selected={state.placeId === p.id}
-                      icon={<MapPin className="size-3.5" />}
-                      onClick={() =>
-                        onChange({
-                          placeId: p.id,
-                          zoneId: p.zoneId,
-                          addressLine: p.addressLine,
-                          saveAddress: false,
-                        })
-                      }
-                    >
-                      {p.label}
-                    </Chip>
-                  ))}
-                </div>
+                <RRadio.Root
+                  value={state.placeId || "elsewhere"}
+                  onValueChange={(v) => {
+                    const p = savedHere.find((x) => x.id === v);
+                    onChange(
+                      p
+                        ? {
+                            placeId: p.id,
+                            zoneId: p.zoneId,
+                            addressLine: p.addressLine,
+                            saveAddress: false,
+                          }
+                        : { placeId: "", zoneId: "", addressLine: "", saveAddress: false },
+                    );
+                  }}
+                  aria-label={`Deliver your ${b.name} order to`}
+                  className="flex flex-col divide-y divide-line-thin border-y border-line-thin"
+                >
+                  {savedHere.map((p) => {
+                    const zone = campus?.zones.find((z) => z.id === p.zoneId);
+                    const Icon = zone ? kindIcon[zone.kind] : MapPin;
+                    const where = [zone?.name, p.addressLine !== zone?.name ? p.addressLine : null]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      <PlaceOption key={p.id} value={p.id} icon={<Icon className="size-4" />}>
+                        <span className="block truncate text-body font-medium text-ink">
+                          {p.label}
+                        </span>
+                        <span className="block truncate text-small text-muted">{where}</span>
+                      </PlaceOption>
+                    );
+                  })}
+                  <PlaceOption value="elsewhere" icon={<Plus className="size-4" />}>
+                    <span className="block text-body font-medium text-ink">Somewhere else</span>
+                  </PlaceOption>
+                </RRadio.Root>
               )}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Deliver to" error={errors.zoneId}>
-                  <Select
-                    label="Delivery zone"
-                    value={state.zoneId || undefined}
-                    onValueChange={(v) => onChange({ zoneId: v, placeId: "" })}
-                    placeholder="Choose a zone"
-                    options={zones.map((z) => ({ value: z.id, label: z.name }))}
-                  />
-                </Field>
-                <Field label="Room, block or landmark" error={errors.addressLine}>
-                  <Input
-                    value={state.addressLine}
-                    onChange={(e) => onChange({ addressLine: e.target.value, placeId: "" })}
-                    placeholder="e.g. Room 12, Block C"
-                    autoComplete="address-line1"
-                    maxLength={120}
-                  />
-                </Field>
-              </div>
+              {elsewhere && (
+                <AddressFields
+                  campus={campus}
+                  zoneId={state.zoneId}
+                  detail={state.addressLine}
+                  onZoneChange={(zoneId) => onChange({ zoneId, placeId: "" })}
+                  onDetailChange={(addressLine) => onChange({ addressLine, placeId: "" })}
+                  zoneIds={b.fulfilment.zoneIds}
+                  label="Deliver to"
+                  placeholder={`Places ${b.name} delivers to`}
+                  errors={errors}
+                  detailRequired
+                />
+              )}
               {typedNew && (
                 <Checkbox
                   checked={state.saveAddress}
                   onCheckedChange={(saveAddress) => onChange({ saveAddress })}
-                  label="Save this address"
+                  label="Save this place"
                   description="Pick it in one tap next time."
                 />
               )}
+              {eta && <EtaLine text={eta} />}
             </motion.div>
           ) : (
             <motion.div
@@ -276,6 +366,7 @@ function GroupSection({
               {errors.pickupPointId && (
                 <p className="mt-2 text-small font-medium text-danger">{errors.pickupPointId}</p>
               )}
+              {eta && <EtaLine text={eta} className="mt-4" />}
             </motion.div>
           )}
         </AnimatePresence>
@@ -405,18 +496,24 @@ export function CheckoutView() {
     if (overrides[g.brandId]) return overrides[g.brandId];
     const b = g.brand;
     if (!b) return undefined;
-    const place =
-      places.data?.find((p) => p.isDefault && p.campusId === b.campusId) ??
-      places.data?.find((p) => p.campusId === b.campusId);
-    const served = !!place && b.fulfilment.zoneIds.includes(place.zoneId);
+    // Start with their default place, or another saved place this shop delivers to.
+    const served = (places.data ?? []).filter(
+      (p) => p.campusId === b.campusId && b.fulfilment.zoneIds.includes(p.zoneId),
+    );
+    const place = served.find((p) => p.isDefault) ?? served[0];
+    // No saved place here: their hall, if the shop delivers there. Never a guess.
+    const hall =
+      user?.hallZoneId && b.fulfilment.zoneIds.includes(user.hallZoneId)
+        ? user.hallZoneId
+        : undefined;
     return {
       method: b.fulfilment.delivery ? "delivery" : "pickup",
-      zoneId: served ? place.zoneId : (b.fulfilment.zoneIds[0] ?? ""),
+      zoneId: place?.zoneId ?? hall ?? "",
       pickupPointId: b.fulfilment.pickupPointIds[0] ?? "",
       addressLine: place?.addressLine ?? "",
       note: "",
       promoInput: promoCodes[g.brandId] ?? "",
-      placeId: served ? place.id : "",
+      placeId: place?.id ?? "",
       saveAddress: false,
     };
   };
@@ -465,7 +562,8 @@ export function CheckoutView() {
             s.method === "delivery"
               ? {
                   method: "delivery" as const,
-                  zoneId: s.zoneId,
+                  // The spot doesn't change the price, so a quote can go ahead before it's picked.
+                  zoneId: s.zoneId || (forQuote ? (g.brand!.fulfilment.zoneIds[0] ?? "quote") : ""),
                   addressLine: forQuote ? "quote" : s.addressLine,
                   ...(s.note && !forQuote ? { note: s.note } : {}),
                 }
@@ -495,8 +593,13 @@ export function CheckoutView() {
       if (!s) continue;
       const e: Record<string, string> = {};
       if (s.method === "delivery") {
-        if (!s.zoneId) e.zoneId = "Choose a zone";
-        if (s.addressLine.trim().length < 3) e.addressLine = "Add a room number or landmark";
+        if (!s.zoneId) e.zoneId = "Choose where to deliver";
+        const kind = campusById
+          .get(g.brand?.campusId ?? "")
+          ?.zones.find((z) => z.id === s.zoneId)?.kind;
+        if (s.addressLine.trim().length < 3)
+          e.addressLine =
+            kind === "offcampus" ? "Add your street address" : "Add a room number or landmark";
       } else if (!s.pickupPointId) e.pickupPointId = "Choose a pickup point";
       if (Object.keys(e).length) all[g.brandId] = e;
     }
@@ -654,6 +757,7 @@ export function CheckoutView() {
               index={i}
               campus={g.brand ? campusById.get(g.brand.campusId) : undefined}
               places={places.data ?? []}
+              user={user}
               state={state[g.brandId]!}
               onChange={(patch) =>
                 setOverrides((o) => ({

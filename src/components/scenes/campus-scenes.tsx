@@ -607,7 +607,7 @@ export function SceneBanner({
         className,
       )}
     >
-      <Clouds3D />
+      <Clouds3D inApp />
       {children}
     </section>
   );

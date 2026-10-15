@@ -3,6 +3,7 @@
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "motion/react";
+import { formatWhen } from "@/domain/distance";
 import { BadgeCheck, Bike, Clock, MapPin, MessageCircle, Star, Store } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { useToggleFollow } from "@/queries/social";
 import { isServiceError } from "@/services/errors";
 import type { Brand, SortKey } from "@/services/types";
 import { toast } from "@/stores/toast";
+import { DistanceLine } from "./nearby";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import { ReviewsBlock } from "./reviews";
 import { ShareButton } from "./share-button";
@@ -146,6 +148,8 @@ function BrandAbout({ brand }: { brand: Brand }) {
   const points =
     campus?.pickupPoints.filter((p) => brand.fulfilment.pickupPointIds.includes(p.id)) ?? [];
   const zones = campus?.zones.filter((z) => brand.fulfilment.zoneIds.includes(z.id)) ?? [];
+  // Only the spot the seller chose; a pickup point is already listed below.
+  const base = campus?.zones.find((z) => z.id === brand.fulfilment.baseZoneId);
   return (
     <div className="grid grid-cols-1 gap-10 md:grid-cols-12">
       <div className="md:col-span-7">
@@ -168,6 +172,16 @@ function BrandAbout({ brand }: { brand: Brand }) {
             {formatClock(brand.openHours.closes)}
           </dd>
         </div>
+        {base && (
+          <div className="card py-5">
+            <dt className="flex items-center gap-2 text-small font-semibold">
+              <Store className="size-4" /> Sells from
+            </dt>
+            <dd className="mt-2 text-small text-ink-2">
+              {base.name}, {campus?.shortName}
+            </dd>
+          </div>
+        )}
         {brand.fulfilment.pickup && (
           <div className="card py-5">
             <dt className="flex items-center gap-2 text-small font-semibold">
@@ -192,11 +206,8 @@ function BrandAbout({ brand }: { brand: Brand }) {
             </dt>
             <dd className="mt-2 text-small text-ink-2">
               To {zones.length} {zones.length === 1 ? "zone" : "zones"} on {campus?.shortName}:{" "}
-              {zones.map((z) => z.name).join(", ")}. Ready in about{" "}
-              {brand.fulfilment.prepMinutes >= 60
-                ? `${Math.round(brand.fulfilment.prepMinutes / 60)}h`
-                : `${brand.fulfilment.prepMinutes} min`}
-              .
+              {zones.map((z) => z.name).join(", ")}. Ready{" "}
+              {formatWhen(brand.fulfilment.prepMinutes)}.
             </dd>
           </div>
         )}
@@ -343,6 +354,13 @@ export function BrandView() {
             />{" "}
             <span className="text-muted">followers</span>
           </span>
+          <DistanceLine
+            fulfilment={brand.fulfilment}
+            campusId={brand.campusId}
+            badge
+            eta
+            className="text-small"
+          />
           <span className="text-muted">
             {brand.fulfilment.pickup && brand.fulfilment.delivery
               ? "Pickup or delivery"

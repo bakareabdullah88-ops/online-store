@@ -83,6 +83,9 @@ export type User = {
   avatar: ImageRef | null;
   /** The animated cartoon used when there's no photo. Missing means the default for this account. */
   buddy?: Buddy | null;
+  /** The hall they live in and the faculty they study in, for "same hostel/faculty". */
+  hallZoneId?: ID | null;
+  facultyZoneId?: ID | null;
   brandIds: ID[];
   followingBrandIds: ID[];
   wishlistProductIds: ID[];
@@ -122,6 +125,8 @@ export type Fulfilment = {
   pickupPointIds: ID[];
   /** Campus zones the brand delivers to */
   zoneIds: ID[];
+  /** The hall, faculty or spot the shop works from. Used for distance and walk time. */
+  baseZoneId?: ID;
 };
 
 export type Brand = {
@@ -186,7 +191,8 @@ export type ProductWithBrand = Product & {
     "id" | "handle" | "name" | "logo" | "campusId" | "vacation" | "rating" | "verified"
   > & {
     /** How the shop gets orders to buyers, for list rows. */
-    fulfilment?: Pick<Fulfilment, "pickup" | "delivery" | "deliveryFeeKobo" | "prepMinutes">;
+    fulfilment?: Pick<Fulfilment, "pickup" | "delivery" | "deliveryFeeKobo" | "prepMinutes"> &
+      Partial<Pick<Fulfilment, "baseZoneId" | "pickupPointIds">>;
   };
 };
 
@@ -364,7 +370,14 @@ export type SavedPlace = {
 
 /* ---------------------------------- Lists --------------------------------- */
 
-export type SortKey = "relevance" | "popular" | "newest" | "price_asc" | "price_desc" | "rating";
+export type SortKey =
+  | "relevance"
+  | "popular"
+  | "newest"
+  | "nearest"
+  | "price_asc"
+  | "price_desc"
+  | "rating";
 
 export type ProductQuery = {
   q?: string;
@@ -376,6 +389,10 @@ export type ProductQuery = {
   maxPriceKobo?: Kobo;
   minRating?: number;
   inStock?: boolean;
+  /** The buyer's spot, hall and faculty: used by "nearest" and the walking filter. */
+  near?: { zoneId?: ID | null; hallZoneId?: ID | null; facultyZoneId?: ID | null };
+  /** Only shops within walking distance of `near.zoneId`. */
+  walking?: boolean;
   sort?: SortKey;
   page?: number;
   pageSize?: number;

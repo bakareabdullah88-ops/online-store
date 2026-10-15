@@ -8,8 +8,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { discountPercent, formatNaira } from "@/domain/money";
 import { stockState, totalStock } from "@/domain/variants";
 import { cn } from "@/lib/cn";
+import { useNearness } from "@/queries/nearby";
 import type { ProductWithBrand } from "@/services/types";
+import { DistanceLine, RelationBadge } from "./nearby";
 import { WishlistButton } from "./wishlist-button";
+
+function NearBadge({ product: p }: { product: ProductWithBrand }) {
+  const n = useNearness(p.brand.fulfilment, p.brand.campusId);
+  return <RelationBadge relation={n.relation} />;
+}
 
 export function productTransitionName(id: string) {
   return `product-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -79,6 +86,7 @@ export function ProductCard({
                 Few left
               </span>
             )}
+            <NearBadge product={p} />
             {p.brand.vacation && (
               <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold text-ink uppercase">
                 Shop on break
@@ -119,6 +127,11 @@ export function ProductCard({
               </span>
             )}
           </div>
+          <DistanceLine
+            fulfilment={p.brand.fulfilment}
+            campusId={p.brand.campusId}
+            className="mt-0.5 text-[12px]"
+          />
         </div>
       </Link>
       <WishlistButton

@@ -51,6 +51,9 @@ export const profileSchema = z.object({
   buddy: z.object({ shape: z.enum(BUDDY_SHAPES), color: z.enum(BUDDY_COLORS) }).optional(),
   /** Drop the uploaded photo and show the buddy instead. */
   removeAvatar: z.boolean().optional(),
+  /** Their hall and faculty. Null clears; leaving it out keeps what's saved. */
+  hallZoneId: z.string().max(80).nullable().optional(),
+  facultyZoneId: z.string().max(80).nullable().optional(),
 });
 export type ProfileInput = z.input<typeof profileSchema>;
 
@@ -74,6 +77,8 @@ const fulfilmentSchema = z
       .max(72 * 60),
     pickupPointIds: z.array(z.string()),
     zoneIds: z.array(z.string()),
+    /** Where the shop works from. */
+    baseZoneId: z.string().max(80).optional(),
   })
   .refine((f) => f.pickup || f.delivery, {
     message: "Offer pickup, delivery or both",

@@ -19,6 +19,8 @@ import { formatNaira } from "@/domain/money";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { useCampuses, useSearch } from "@/queries/catalog";
+import { isOnMap } from "@/domain/distance";
+import { useNearQuery } from "@/queries/nearby";
 import { qk } from "@/queries/keys";
 import { services } from "@/services";
 import type { SortKey } from "@/services/types";
@@ -58,6 +60,7 @@ function ActivePills({
   if (params.rating)
     pills.push({ key: "rating", label: `${params.rating}★ & up`, clear: { rating: null } });
   if (params.stock) pills.push({ key: "stock", label: "In stock", clear: { stock: false } });
+  if (params.walk) pills.push({ key: "walk", label: "Walking distance", clear: { walk: false } });
   if (!pills.length) return null;
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Active filters">
@@ -104,7 +107,9 @@ function BrandMatches({ q }: { q: string }) {
 
 export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" }) {
   const { params, update, clearFilters, pending } = useExploreParams();
-  const query = useMemo(() => toQuery(params), [params]);
+  const near = useNearQuery();
+  const located = isOnMap(near?.zoneId);
+  const query = useMemo(() => ({ ...toQuery(params), ...(near ? { near } : {}) }), [params, near]);
   const reduce = useReducedMotion();
   const [sheet, setSheet] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -138,7 +143,11 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const sortOptions = (Object.keys(sortLabels) as SortKey[])
-    .filter((s) => s !== "relevance" || !!params.q)
+    .filter(
+      (s) =>
+        (s !== "relevance" || !!params.q) &&
+        (s !== "nearest" || located || params.sort === "nearest"),
+    )
     .map((s) => ({ value: s, label: sortLabels[s] }));
 
   const title =

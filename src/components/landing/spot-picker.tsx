@@ -2,38 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  Building2,
-  DoorOpen,
-  Home,
-  Landmark,
-  MapPin,
-  Store,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
+import { kindIcon, kindLabel } from "@/config/zone-kinds";
 import { cn } from "@/lib/cn";
 import { useCampuses } from "@/queries/catalog";
 import type { ZoneKind } from "@/services/types";
 import { useSpot } from "@/stores/spot";
-
-const kindIcon: Record<ZoneKind, LucideIcon> = {
-  hostel: Building2,
-  faculty: BookOpen,
-  landmark: Landmark,
-  gate: DoorOpen,
-  market: Store,
-  offcampus: Home,
-};
-const kindLabel: Record<ZoneKind, string> = {
-  hostel: "Hostel",
-  faculty: "Faculty",
-  landmark: "Landmark",
-  gate: "Gate",
-  market: "Market",
-  offcampus: "Off campus",
-};
 
 type Option = {
   key: string;

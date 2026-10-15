@@ -6,6 +6,7 @@ import { Checkbox, Switch } from "@/components/ui/controls";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/overlay";
 import { spring } from "@/design/motion";
+import { kindLabel } from "@/config/zone-kinds";
 import type { Campus, Fulfilment } from "@/services/types";
 
 export type FulfilmentDraft = Omit<Fulfilment, "deliveryFeeKobo"> & { deliveryFee: string };
@@ -34,6 +35,24 @@ export function FulfilmentFields({
   if (!campus) return <p className="text-small text-muted">Loading your campus…</p>;
   return (
     <div className="flex flex-col divide-y divide-line-thin">
+      <div className="py-4 first:pt-0 last:pb-0">
+        <Field
+          label="Where you sell from"
+          hint="Your hall, faculty or usual spot. Buyers see how far you are and how long the walk is."
+        >
+          <Select
+            label="Where you sell from"
+            value={value.baseZoneId}
+            placeholder="Choose a spot"
+            onValueChange={(v) => set({ baseZoneId: v })}
+            options={campus.zones.map((z) => ({
+              value: z.id,
+              label: z.name,
+              hint: kindLabel[z.kind],
+            }))}
+          />
+        </Field>
+      </div>
       <div className="py-4 first:pt-0 last:pb-0">
         <Switch
           checked={value.pickup}

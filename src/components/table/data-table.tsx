@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  Download,
   FileSpreadsheet,
   FileText,
   Minus,
@@ -59,13 +60,13 @@ export function FilterMenu<V extends string>({
           type="button"
           aria-label={`${label}: ${current?.label}`}
           className={cn(
-            "flex h-10 items-center gap-2 rounded-xl px-3.5 text-[13.5px] font-medium ring-1 transition-colors",
+            "flex h-10 max-w-[44vw] shrink-0 items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-medium whitespace-nowrap ring-1 transition-colors",
             isDefault
               ? "bg-surface ring-line hover:ring-line-strong"
               : "bg-accent-soft text-accent ring-accent/30",
           )}
         >
-          {isDefault ? label : current?.label}
+          <span className="truncate">{isDefault ? label : current?.label}</span>
           <ChevronDown className="size-4 opacity-60" />
         </button>
       </MenuTrigger>
@@ -94,7 +95,7 @@ export function TableSearch({
   placeholder?: string;
 }) {
   return (
-    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl bg-surface px-3 ring-1 ring-line focus-within:ring-2 focus-within:ring-accent/40 md:w-64">
+    <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-xl bg-surface px-3 ring-1 ring-line focus-within:ring-2 focus-within:ring-accent/40 md:max-w-80">
       <Search className="size-4 shrink-0 text-muted" />
       <input
         type="search"
@@ -102,7 +103,7 @@ export function TableSearch({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder.replace(/…$/, "")}
-        className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-faint [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 flex-1 bg-transparent text-[16px] outline-none md:text-[13.5px] placeholder:text-faint [&::-webkit-search-cancel-button]:hidden"
       />
       {value && (
         <button
@@ -136,7 +137,7 @@ function downloadCsv<T>(name: string, columns: Column<T>[], rows: T[]) {
 }
 
 const exportButton =
-  "flex h-10 items-center gap-2 rounded-xl bg-surface px-3.5 text-[13.5px] font-medium ring-1 ring-line transition-colors hover:ring-line-strong";
+  "flex h-10 shrink-0 items-center gap-2 rounded-xl bg-surface px-3.5 text-[13.5px] font-medium ring-1 ring-line transition-colors hover:ring-line-strong disabled:opacity-45";
 
 /* ------------------------------- Checkbox --------------------------------- */
 
@@ -364,34 +365,37 @@ export function DataTable<T>({
 
   return (
     <div className="print:text-black">
+      {/* One line, always: search takes the room, then the filter, then one export button. */}
       {(filters || search || exportName) && (
-        <div className="mb-4 flex flex-wrap items-center gap-2 print:hidden">
+        <div className="mb-4 flex items-center gap-2 print:hidden">
+          {search ? <TableSearch {...search} /> : <span className="flex-1" />}
           {filters}
-          <div className="ml-auto flex flex-wrap items-center gap-2 max-md:w-full">
-            {search && <TableSearch {...search} />}
-            {exportName && (
-              <>
+          {exportName && (
+            <Menu>
+              <MenuTrigger asChild>
                 <button
                   type="button"
-                  className={exportButton}
-                  onClick={() => window.print()}
+                  className={cn(exportButton, "max-sm:w-10 max-sm:justify-center max-sm:px-0")}
                   disabled={!rows.length}
+                  aria-label="Export"
                 >
-                  <FileText className="size-4 text-muted" />{" "}
-                  <span className="max-sm:hidden">Export</span> PDF
+                  <Download className="size-4 text-muted" />
+                  <span className="max-sm:hidden">Export</span>
                 </button>
-                <button
-                  type="button"
-                  className={exportButton}
-                  onClick={() => downloadCsv(exportName, columns, rows)}
-                  disabled={!rows.length}
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem icon={<FileText />} onSelect={() => window.print()}>
+                  Save as PDF
+                </MenuItem>
+                <MenuItem
+                  icon={<FileSpreadsheet />}
+                  onSelect={() => downloadCsv(exportName, columns, rows)}
                 >
-                  <FileSpreadsheet className="size-4 text-muted" />{" "}
-                  <span className="max-sm:hidden">Export</span> CSV
-                </button>
-              </>
-            )}
-          </div>
+                  Download CSV
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          )}
         </div>
       )}
 

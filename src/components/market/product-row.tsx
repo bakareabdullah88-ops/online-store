@@ -8,17 +8,20 @@ import { AppImage } from "@/components/ui/app-image";
 import { Stars } from "@/components/ui/misc";
 import { Skeleton } from "@/components/ui/skeleton";
 import { purchaseBlock } from "@/domain/bag";
+import { formatWhen } from "@/domain/distance";
 import { discountPercent, formatNaira } from "@/domain/money";
 import { DEFAULT_VARIANT_KEY, findVariant, stockState, totalStock } from "@/domain/variants";
 import { flyToBag } from "@/lib/fly-to-bag";
 import { cn } from "@/lib/cn";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { recordEvent, useCampus } from "@/queries/catalog";
+import { useNearness } from "@/queries/nearby";
 import { useSession } from "@/queries/session";
 import type { ProductWithBrand } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { toast } from "@/stores/toast";
 import { useUi } from "@/stores/ui";
+import { DistanceLine } from "./nearby";
 import { productTransitionName } from "./product-card";
 import { WishlistButton } from "./wishlist-button";
 
@@ -79,6 +82,7 @@ export function ProductRow({
   });
   const own = block.blocked && block.reason === "own_product";
   const f = p.brand.fulfilment;
+  const near = useNearness(f, p.brand.campusId);
   const href = `/products/${p.slug}`;
 
   const onAdd = () => {
@@ -203,11 +207,21 @@ export function ProductRow({
             )}
           </p>
         )}
-        {campus && (
-          <p className="hidden items-center gap-1.5 text-[13px] text-muted sm:flex">
-            <MapPin className="size-3.5" aria-hidden /> {campus.shortName}
-            {f && ` · ready in about ${Math.max(1, Math.round(f.prepMinutes / 60))}h`}
-          </p>
+        {near.metres !== null || near.relation ? (
+          <DistanceLine
+            fulfilment={f}
+            campusId={p.brand.campusId}
+            badge
+            eta
+            className="text-[12.5px] sm:text-[13.5px]"
+          />
+        ) : (
+          campus && (
+            <p className="hidden items-center gap-1.5 text-[13px] text-muted sm:flex">
+              <MapPin className="size-3.5" aria-hidden /> {campus.shortName}
+              {f && ` · ready ${formatWhen(f.prepMinutes)}`}
+            </p>
+          )
         )}
 
         {p.brand.vacation ? (
