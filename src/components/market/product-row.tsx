@@ -142,7 +142,7 @@ export function ProductRow({
       <div className="flex min-w-0 flex-col items-start justify-center gap-1 py-2.5 pr-3 sm:gap-2 sm:py-5 sm:pr-6">
         <Link
           href={`/brands/${p.brand.handle}`}
-          className="inline-flex max-w-full items-center gap-1 text-[12px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
+          className="tap-area inline-flex max-w-full items-center gap-1 text-[12px] font-bold tracking-[-0.01em] hover:underline sm:text-[15px]"
         >
           <span className="truncate">{p.brand.name}</span>
           {p.brand.verified && (

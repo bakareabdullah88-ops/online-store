@@ -227,7 +227,8 @@ export const reviewInputSchema = z.object({
   orderId: z.string(),
   productId: z.string(),
   rating: z.number().int().min(1, "Tap a star to rate").max(5),
-  body: z.string().trim().min(10, "A sentence helps other students (10+ characters)").max(600),
+  /** Optional: stars alone are a fine review. */
+  body: z.string().trim().max(600),
 });
 export type ReviewInput = z.infer<typeof reviewInputSchema>;
 

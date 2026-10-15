@@ -46,7 +46,7 @@ export function OrdersList() {
   const router = useRouter();
   const pathname = usePathname() ?? "/orders";
   const now = useNow(30_000);
-  const reorder = useReorder();
+  const { reorder } = useReorder();
   const startThread = useStartThread();
   const cancel = useCancelOrder();
   const [q, setQ] = useState("");

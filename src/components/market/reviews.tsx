@@ -67,7 +67,7 @@ export function ReviewItem({ review, brandName }: { review: Review; brandName?: 
         </div>
         <Stars value={review.rating} size={13} className="text-ink" />
       </header>
-      <p className="mt-3 text-body text-ink-2">{review.body}</p>
+      {review.body && <p className="mt-3 text-body text-ink-2">{review.body}</p>}
       {review.reply && (
         <div className="mt-3 rounded-md bg-canvas-sunk px-4 py-3">
           <p className="eyebrow text-muted">Reply from {brandName ?? "the brand"}</p>

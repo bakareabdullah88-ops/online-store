@@ -13,7 +13,7 @@ import { ModeLine } from "./mode-line";
 import { WorkspaceSwitch } from "./workspace-switch";
 
 const iconButton =
-  "pressable relative grid size-10 place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink";
+  "pressable relative grid size-10 shrink-0 place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink max-[380px]:size-9";
 
 function Dot({ n }: { n: number }) {
   if (!n) return null;
@@ -50,8 +50,8 @@ export function MobileTopBar() {
             <span className="absolute top-2 right-2 size-2 rounded-full bg-badge ring-2 ring-surface" />
           )}
         </button>
-        <WorkspaceSwitch compact className="ml-1" />
-        <span className="flex-1" />
+        <WorkspaceSwitch compact tight className="ml-1 shrink-0" />
+        <span className="min-w-0 flex-1" />
         <button
           type="button"
           aria-label="Search"
@@ -82,7 +82,7 @@ export function MobileTopBar() {
             <Dot n={badges.bag} />
           </Link>
         )}
-        <span className="ml-1">
+        <span className="ml-1 shrink-0">
           <AccountMenu />
         </span>
       </div>

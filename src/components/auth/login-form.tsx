@@ -12,7 +12,6 @@ import { safeNext } from "@/lib/safe-next";
 import { signInSchema } from "@/services/inputs";
 import { useSignIn } from "@/queries/session";
 import { toast } from "@/stores/toast";
-import { features } from "@/config/features";
 import { GoogleButton, SignInError } from "./google-button";
 
 type Values = z.input<typeof signInSchema>;
@@ -69,15 +68,12 @@ export function LoginForm() {
           label="Password"
           error={form.formState.errors.password?.message}
           aside={
-            // Only once reset emails can actually be sent.
-            features.passwordResetEmail ? (
-              <Link
-                href="/forgot-password"
-                className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
-              >
-                Forgot password?
-              </Link>
-            ) : undefined
+            <Link
+              href="/forgot-password"
+              className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
+            >
+              Forgot password?
+            </Link>
           }
         >
           <PasswordInput autoComplete="current-password" {...form.register("password")} />

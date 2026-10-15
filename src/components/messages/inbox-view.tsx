@@ -48,7 +48,7 @@ function StarButton({ id, label }: { id: string; label: string }) {
       }}
       aria-pressed={starred}
       aria-label={starred ? `Unstar ${label}` : `Star ${label}`}
-      className="grid size-7 place-items-center rounded-full text-faint transition-colors hover:text-ink"
+      className="tap-area grid size-7 place-items-center rounded-full text-faint transition-colors hover:text-ink"
     >
       <motion.span
         key={String(starred)}

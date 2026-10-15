@@ -14,9 +14,12 @@ import { useSwitchWorkspace } from "./workspace";
 /** Market ⇄ your shop, as a segmented glass control with a sliding thumb. */
 export function WorkspaceSwitch({
   compact = false,
+  tight = false,
   className,
 }: {
   compact?: boolean;
+  /** Small phones: icons only, so the header icons keep a full tap size. */
+  tight?: boolean;
   className?: string;
 }) {
   const mode = useMode();
@@ -86,7 +89,7 @@ export function WorkspaceSwitch({
             }
             whileTap={{ scale: 0.95 }}
             className={cn(
-              "relative flex h-9 min-w-0 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold transition-colors",
+              "relative flex h-9 min-w-0 shrink-0 items-center gap-2 rounded-lg px-2 text-[13px] font-semibold transition-colors",
               active ? "text-ink" : "text-muted hover:text-ink",
             )}
           >
@@ -104,7 +107,10 @@ export function WorkspaceSwitch({
               {(!compact || active) && (
                 <motion.span
                   key="label"
-                  className="relative overflow-hidden whitespace-nowrap"
+                  className={cn(
+                    "relative overflow-hidden whitespace-nowrap",
+                    tight && "max-[419px]:hidden",
+                  )}
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "auto", opacity: 1 }}
                   exit={{ width: 0, opacity: 0 }}

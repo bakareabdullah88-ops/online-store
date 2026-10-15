@@ -186,7 +186,7 @@ export function BuyerHome() {
             footer={
               <Link
                 href="/orders"
-                className="inline-flex items-center gap-1.5 text-small font-medium text-accent-ink hover:underline"
+                className="tap-area inline-flex items-center gap-1.5 text-small font-medium text-accent-ink hover:underline"
               >
                 All your orders <ArrowRight className="size-4" />
               </Link>
@@ -200,7 +200,7 @@ export function BuyerHome() {
                 onTheWay.length > 0 && (
                   <Link
                     href="/orders?tab=active"
-                    className="text-small font-medium text-accent-ink hover:underline"
+                    className="tap-area text-small font-medium text-accent-ink hover:underline"
                   >
                     Track
                   </Link>

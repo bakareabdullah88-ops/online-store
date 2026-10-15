@@ -711,6 +711,17 @@
   border: 1px solid var(--line);
 }
 
+/* A bigger invisible hit area (about 44px tall) for small text links and icons,
+   without changing how they look or how much room they take. */
+@utility tap-area {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -12px -6px;
+  }
+}
+
 @utility pressable {
   transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
   &:active {

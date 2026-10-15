@@ -55,7 +55,7 @@ export function OrderDetail() {
   const campus = useCampus(order?.fulfilment.campusId);
   const now = useNow(1000);
   const cancel = useCancelOrder();
-  const reorder = useReorder();
+  const { reorder, pendingId: reorderingId } = useReorder();
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [chat, setChat] = useState(false);
@@ -139,6 +139,7 @@ export function OrderDetail() {
               <Button
                 variant="secondary"
                 leadingIcon={<RotateCcw className="size-4.5" />}
+                loading={reorderingId === order.id}
                 onClick={() => void reorder(order)}
               >
                 Reorder

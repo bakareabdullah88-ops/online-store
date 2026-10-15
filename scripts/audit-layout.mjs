@@ -117,7 +117,14 @@ function inspect(isPhone) {
     if (isPhone && ra.top < window.innerHeight * 3) {
       const minSide = Math.min(ra.width, ra.height);
       const inText = a.matches("a") && getComputedStyle(a).display === "inline";
-      if (minSide < 32 && !inText && !a.matches("input[type=checkbox],input[type=radio]")) {
+      // tap-area adds an invisible 44px hit box around small links and icons.
+      const padded = a.classList.contains("tap-area");
+      if (
+        minSide < 32 &&
+        !inText &&
+        !padded &&
+        !a.matches("input[type=checkbox],input[type=radio]")
+      ) {
         problems.push({
           kind: "small-tap-target",
           detail: `${describe(a)} is ${Math.round(ra.width)}×${Math.round(ra.height)}`,
@@ -127,6 +134,9 @@ function inspect(isPhone) {
     for (let j = i + 1; j < controls.length; j++) {
       const b = controls[j];
       if (a.contains(b) || b.contains(a)) continue;
+      // Buttons drawn inside an input (show password, clear) share its wrapper on purpose.
+      if (a.parentElement === b.parentElement && (a.matches("input") || b.matches("input")))
+        continue;
       const rb = b.getBoundingClientRect();
       const x = Math.max(0, Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left));
       const y = Math.max(0, Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top));

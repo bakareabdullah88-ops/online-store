@@ -54,6 +54,22 @@ export function WelcomeFlow() {
     setCampusId(user.campusId ?? "");
   }, [user]);
 
+  // Move focus to each new step's heading so keyboard and screen-reader users land on it.
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      const h = document.querySelector<HTMLHeadingElement>("[data-wizard] h1");
+      if (!h) return;
+      h.tabIndex = -1;
+      h.focus({ preventScroll: true });
+    }, 380);
+    return () => window.clearTimeout(t);
+  }, [step]);
+
   const go = (to: number) => {
     setDir(to > step ? 1 : -1);
     setStep(to);
@@ -120,7 +136,7 @@ export function WelcomeFlow() {
         </span>
       </div>
 
-      <div className="relative mt-8 overflow-hidden">
+      <div data-wizard className="relative mt-8 overflow-hidden">
         <AnimatePresence mode="wait" custom={dir} initial={false}>
           <motion.div
             key={step}
@@ -252,7 +268,11 @@ export function WelcomeFlow() {
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       className="sr-only"
-                      onChange={(e) => onFile(e.target.files?.[0])}
+                      onChange={(e) => {
+                        onFile(e.target.files?.[0]);
+                        // Picking the same file again should still work.
+                        e.currentTarget.value = "";
+                      }}
                       aria-label="Upload profile photo"
                     />
                     <Button

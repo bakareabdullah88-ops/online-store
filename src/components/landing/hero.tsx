@@ -10,24 +10,17 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import {
-  ArrowRight,
-  BookOpen,
-  Gem,
-  Headphones,
-  Printer,
-  Recycle,
-  Shirt,
-  Sparkles,
-  UtensilsCrossed,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { ProductArt } from "@/components/art/product-art";
+import type { ArtPalette } from "@/design/tokens";
 import { cn } from "@/lib/cn";
+import type { ArtMotif } from "@/services/types";
 
-/** The categories students actually sell, floating around the headline. */
+/** Things students actually sell, drawn in their own colours, floating around the headline. */
 const floaters: {
-  icon: LucideIcon;
+  motif: ArtMotif;
+  palette: ArtPalette;
   label: string;
   /** Position as % of the hero box. */
   x: number;
@@ -39,27 +32,39 @@ const floaters: {
   phone?: { x: number; y: number };
 }[] = [
   {
-    icon: UtensilsCrossed,
-    label: "Food",
+    motif: "bowl",
+    palette: "ochre",
+    label: "Jollof bowl",
     x: 8,
-    y: 18,
+    y: 20,
     size: "lg",
     depth: 1.2,
-    phone: { x: 10, y: 2 },
+    phone: { x: 9, y: 3 },
   },
-  { icon: Shirt, label: "Fashion", x: 88, y: 14, size: "lg", depth: 1, phone: { x: 90, y: 4 } },
-  { icon: Sparkles, label: "Skincare", x: 4, y: 62, size: "md", depth: 0.7 },
-  { icon: Recycle, label: "Thrift", x: 93, y: 58, size: "md", depth: 0.8 },
-  { icon: Headphones, label: "Tech", x: 18, y: 86, size: "sm", depth: 0.5 },
-  { icon: Printer, label: "Prints", x: 80, y: 86, size: "sm", depth: 0.6 },
-  { icon: Gem, label: "Accessories", x: 24, y: 4, size: "sm", depth: 0.4 },
-  { icon: BookOpen, label: "Books", x: 72, y: 2, size: "sm", depth: 0.45 },
+  {
+    motif: "sneaker",
+    palette: "rose",
+    label: "Sneakers",
+    x: 89,
+    y: 16,
+    size: "lg",
+    depth: 1,
+    phone: { x: 91, y: 5 },
+  },
+  { motif: "dropper", palette: "plum", label: "Face serum", x: 3, y: 64, size: "md", depth: 0.7 },
+  { motif: "tee", palette: "sea", label: "Tee", x: 95, y: 60, size: "md", depth: 0.8 },
+  { motif: "earbuds", palette: "dusk", label: "Earbuds", x: 17, y: 88, size: "sm", depth: 0.5 },
+  { motif: "drink", palette: "palm", label: "Zobo", x: 82, y: 88, size: "sm", depth: 0.6 },
+  { motif: "tote", palette: "clay", label: "Tote bag", x: 23, y: 3, size: "sm", depth: 0.4 },
+  { motif: "book", palette: "sand", label: "Books", x: 74, y: 1, size: "sm", depth: 0.45 },
+  { motif: "cap", palette: "sea", label: "Cap", x: 36, y: 96, size: "sm", depth: 0.35 },
+  { motif: "cookie", palette: "ochre", label: "Cookies", x: 63, y: 97, size: "sm", depth: 0.4 },
 ];
 
-const bubble = {
-  sm: "size-12 rounded-2xl [&_svg]:size-5",
-  md: "size-14 rounded-[18px] [&_svg]:size-6",
-  lg: "size-16 rounded-[20px] [&_svg]:size-7",
+const card = {
+  sm: "w-14 rounded-xl",
+  md: "w-[72px] rounded-2xl",
+  lg: "w-[88px] rounded-[20px]",
 };
 
 function Floater({
@@ -81,7 +86,6 @@ function Floater({
   const pointerY = useTransform(py, (v) => v * 22 * f.depth);
   const scrollShift = useTransform(scrollY, [0, 600], [0, -140 * f.depth]);
   const y = useTransform([pointerY, scrollShift], ([a, b]) => (a as number) + (b as number));
-  const Icon = f.icon;
   return (
     <motion.div
       className={cn(
@@ -105,7 +109,12 @@ function Floater({
         animate={
           reduce
             ? { opacity: 1 }
-            : { opacity: 1, scale: 1, y: [0, -10, 0], rotate: [0, i % 2 ? 4 : -4, 0] }
+            : {
+                opacity: 1,
+                scale: 1,
+                y: [0, -10, 0],
+                rotate: [i % 2 ? 4 : -4, i % 2 ? -2 : 2, i % 2 ? 4 : -4],
+              }
         }
         transition={{
           opacity: { duration: 0.6, delay: 0.25 + i * 0.07 },
@@ -114,18 +123,23 @@ function Floater({
           rotate: { duration: 7 + (i % 3), repeat: Infinity, ease: "easeInOut" },
         }}
         className={cn(
-          "grid -translate-x-1/2 -translate-y-1/2 place-items-center liquid-glass text-brand-ink",
-          bubble[f.size],
+          "-translate-x-1/2 -translate-y-1/2 overflow-hidden liquid-glass p-1",
+          card[f.size],
         )}
       >
-        <Icon strokeWidth={1.75} />
+        <ProductArt
+          motif={f.motif}
+          palette={f.palette}
+          seed={i * 7 + 3}
+          className="block aspect-[4/5] w-full rounded-[calc(var(--radius-xl)-2px)]"
+        />
       </motion.div>
     </motion.div>
   );
 }
 
 /**
- * The top of the landing page: headline, the main call to action, and category icons
+ * The top of the landing page: headline, the main call to action, and drawn products
  * that float, follow the pointer a little and drift apart as you scroll.
  */
 export function LandingHero() {

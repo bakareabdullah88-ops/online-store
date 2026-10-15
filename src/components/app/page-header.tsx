@@ -43,7 +43,7 @@ export function PageHeader({
                 {c.href ? (
                   <Link
                     href={c.href}
-                    className="flex items-center gap-1.5 rounded-md transition-colors hover:text-ink"
+                    className="tap-area flex items-center gap-1.5 rounded-md transition-colors hover:text-ink"
                   >
                     {i === 0 && <House className="size-3.5" aria-hidden />}
                     {c.label}

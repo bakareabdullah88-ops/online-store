@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, Loader2, X } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
@@ -159,6 +159,8 @@ export function OpenShopWizard() {
       const h = handleSchema.safeParse(s.handle);
       if (!h.success) e.handle = h.error.issues[0]?.message ?? "Choose a handle";
       else if (shownHandleState === "taken") e.handle = "That handle is taken";
+      else if (shownHandleState !== "ok")
+        e.handle = "Checking that handle. One sec, then try again.";
     }
     if (step === 1 && !s.category) e.category = "Pick a category";
     if (step === 3 && s.tagline.trim().length < 4) e.tagline = "A short line about what you sell";
@@ -199,9 +201,35 @@ export function OpenShopWizard() {
         useUi.setState({ shopJustOpened: true });
         setCreated(b);
       },
-      onError: (e) => toast.error("Couldn't open your shop", { description: errorMessage(e) }),
+      onError: (e) => {
+        // A handle someone else just took sends you back to the step where you can change it.
+        const fields = (e as { fields?: Record<string, string> }).fields;
+        if (fields?.handle) {
+          go(0);
+          setErrors({ handle: fields.handle });
+          setHandleState("taken");
+          return;
+        }
+        toast.error("Couldn't open your shop", { description: errorMessage(e) });
+      },
     });
   };
+
+  // Move focus to the new step's heading so keyboard and screen-reader users land on it.
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      const h = document.querySelector<HTMLHeadingElement>("[data-wizard] h1");
+      if (!h) return;
+      h.tabIndex = -1;
+      h.focus({ preventScroll: true });
+    }, 380);
+    return () => window.clearTimeout(t);
+  }, [step]);
 
   const variants = {
     enter: (d: number) => (reduce ? { opacity: 0 } : { opacity: 0, x: d * 48 }),
@@ -280,7 +308,7 @@ export function OpenShopWizard() {
           ))}
         </ol>
 
-        <div className="relative mt-10 min-h-[440px] overflow-hidden">
+        <div data-wizard className="relative mt-10 min-h-[440px] overflow-hidden">
           <AnimatePresence mode="wait" custom={dir} initial={false}>
             <motion.form
               key={step}
@@ -450,6 +478,7 @@ export function OpenShopWizard() {
                     variant="cover"
                     label="Upload a cover image"
                     onUploaded={(id, ref) => setS((x) => ({ ...x, cover: { id, ref } }))}
+                    withButton
                   />
                   <div className="flex items-center gap-4">
                     <ImagePicker
@@ -465,10 +494,10 @@ export function OpenShopWizard() {
                       variant="logo"
                       label="Upload a logo"
                       onUploaded={(id, ref) => setS((x) => ({ ...x, logo: { id, ref } }))}
+                      withButton
                     />
                     <p className="text-small text-muted">
-                      Hover or tap the images to upload. Square logos look best; covers are wide
-                      (16:6).
+                      Square logos look best. Covers are wide (16:6). PNG, JPG or WebP.
                     </p>
                   </div>
                 </div>

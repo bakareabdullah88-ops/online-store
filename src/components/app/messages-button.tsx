@@ -28,7 +28,7 @@ export function MessagesButton({ className }: { className?: string }) {
       href={href}
       aria-label={total ? `Messages, ${total} unread` : "Messages"}
       className={cn(
-        "relative grid size-10 pressable place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink",
+        "relative grid size-10 shrink-0 pressable place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink max-[380px]:size-9",
         className,
       )}
     >

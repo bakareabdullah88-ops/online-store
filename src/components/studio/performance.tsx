@@ -53,7 +53,7 @@ export function ShopPerformance() {
             footer={
               <Link
                 href={`/studio/analytics?range=${preset}`}
-                className="inline-flex items-center gap-1.5 text-small font-medium text-accent-ink hover:underline"
+                className="tap-area inline-flex items-center gap-1.5 text-small font-medium text-accent-ink hover:underline"
               >
                 Funnel, busiest days and repeat buyers <ArrowRight className="size-4" />
               </Link>
@@ -68,7 +68,7 @@ export function ShopPerformance() {
               aside={
                 <Link
                   href="/studio/orders"
-                  className="text-small font-medium text-accent-ink hover:underline"
+                  className="tap-area text-small font-medium text-accent-ink hover:underline"
                 >
                   All orders
                 </Link>
@@ -82,7 +82,7 @@ export function ShopPerformance() {
               aside={
                 <Link
                   href="/studio/products"
-                  className="text-small font-medium text-accent-ink hover:underline"
+                  className="tap-area text-small font-medium text-accent-ink hover:underline"
                 >
                   All products
                 </Link>
@@ -108,7 +108,7 @@ export function ShopPerformance() {
                       <span className="w-5 text-small text-muted tabular">{i + 1}</span>
                       <Link
                         href={`/studio/products/${p.productId}`}
-                        className="min-w-0 flex-1 truncate text-[14px] font-medium hover:underline"
+                        className="tap-area min-w-0 flex-1 truncate text-[14px] font-medium hover:underline"
                       >
                         {p.name}
                       </Link>
