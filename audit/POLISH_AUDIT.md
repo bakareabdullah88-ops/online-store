@@ -119,6 +119,6 @@ the phone menu open (`menu-open-*.jpg`). Made with `scripts/make-state.mjs` and
 | Run | Findings |
 |-----|----------|
 | First run | 323 (299 small tap targets, 24 overlaps, all from the show-password button sitting inside its field by design). No sideways scrolling or clipped elements anywhere. |
-| After the fixes | Recorded in `audit/layout-report.json`. |
+| After the fixes | 16, all the same thing: the 48×28px on/off switches in Settings and Shop settings, on phones. That's the standard switch size; its label row sits beside it. No overlaps, no sideways scrolling, nothing clipped. Details in `audit/layout-report.json`. |
 
 The main fix was the phone header, where icons were squeezed to 29px.
