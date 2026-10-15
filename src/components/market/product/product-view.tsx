@@ -22,7 +22,7 @@ import {
   type Selection,
 } from "@/domain/variants";
 import { flyToBag } from "@/lib/fly-to-bag";
-import { useDocumentTitle } from "@/lib/hooks";
+import { useDocumentTitle, useTextEntryFocus } from "@/lib/hooks";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { cn } from "@/lib/cn";
 import {
@@ -106,6 +106,7 @@ export function ProductView() {
   const { data: brand } = useBrand(p?.brand.handle ?? "");
   const campus = useCampus(p?.brand.campusId);
   const { user } = useSession();
+  const typing = useTextEntryFocus();
   const reviews = useProductReviews(p?.id);
   const related = useRelatedProducts(p?.id);
   const moreFromBrand = useProducts(
@@ -477,7 +478,13 @@ export function ProductView() {
 
       {/* Sticky add-to-bag (phones & tablets) */}
       <div className="h-24 lg:hidden" aria-hidden />
-      <div className="fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden",
+          // Out of the way while typing (a review, a message): the keyboard would lift it over the field.
+          typing && "hidden",
+        )}
+      >
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <div className="min-w-0">
             <p className="truncate text-small text-muted">{p.name}</p>

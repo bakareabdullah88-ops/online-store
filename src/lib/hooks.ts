@@ -36,3 +36,48 @@ export function useDocumentTitle(title: string | null | undefined) {
     };
   }, [title]);
 }
+
+const NOT_TEXT = new Set([
+  "checkbox",
+  "radio",
+  "button",
+  "submit",
+  "reset",
+  "range",
+  "file",
+  "color",
+]);
+
+function isTextEntry(el: Element | null): boolean {
+  if (el instanceof HTMLTextAreaElement) return true;
+  if (el instanceof HTMLInputElement) return !NOT_TEXT.has(el.type);
+  return el instanceof HTMLElement && el.isContentEditable;
+}
+
+function subscribeFocus(cb: () => void) {
+  let t = 0;
+  // On focusout the next element isn't focused yet; look again a tick later.
+  const later = () => {
+    window.clearTimeout(t);
+    t = window.setTimeout(cb, 0);
+  };
+  document.addEventListener("focusin", cb);
+  document.addEventListener("focusout", later);
+  return () => {
+    window.clearTimeout(t);
+    document.removeEventListener("focusin", cb);
+    document.removeEventListener("focusout", later);
+  };
+}
+
+/**
+ * True while a text field has focus. Phones use it to hide fixed bottom bars,
+ * which would otherwise ride up with the keyboard and cover the field.
+ */
+export function useTextEntryFocus(): boolean {
+  return useSyncExternalStore(
+    subscribeFocus,
+    () => isTextEntry(document.activeElement),
+    () => false,
+  );
+}

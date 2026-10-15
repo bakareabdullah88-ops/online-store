@@ -53,6 +53,12 @@ export function useCreateOrders() {
     mutationFn: (input: CheckoutInput) => services.orders.createOrders(input),
     onSuccess: (res) => {
       for (const o of res.orders) qc.setQueryData(qk.order(o.id), o);
+      // The success page reads the order list: it must find these at once, not after a refetch.
+      const ids = new Set(res.orders.map((o) => o.id));
+      qc.setQueryData<Order[]>(qk.orders, (list) => [
+        ...res.orders,
+        ...(list ?? []).filter((o) => !ids.has(o.id)),
+      ]);
       void qc.invalidateQueries({ queryKey: qk.orders });
       void qc.invalidateQueries({ queryKey: qk.notifications });
       void qc.invalidateQueries({ queryKey: qk.productsAll });

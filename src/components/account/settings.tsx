@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { safeNext } from "@/lib/safe-next";
 import { useRef, useState } from "react";
 import {
   BellRing,
@@ -72,7 +73,9 @@ function Section({
   );
 }
 
-function ProfileForm({ user }: { user: User }) {
+/** `returnTo`: where to go after saving, when another page sent the user here (?next=). */
+function ProfileForm({ user, returnTo }: { user: User; returnTo: string | null }) {
+  const router = useRouter();
   const campuses = useCampuses();
   const update = useUpdateProfile();
   const upload = useUploadImage();
@@ -102,7 +105,10 @@ function ProfileForm({ user }: { user: User }) {
         onSuccess: () => {
           setSaved(true);
           window.setTimeout(() => setSaved(false), 1500);
-          toast.success("Profile saved");
+          toast.success("Profile saved", {
+            description: returnTo ? "Taking you back." : undefined,
+          });
+          if (returnTo) router.push(returnTo);
         },
         onError: (e) => toast.error(errorMessage(e)),
       },
@@ -224,6 +230,7 @@ export function SettingsView() {
   const [confirm, setConfirm] = useState(false);
   const [password, setPassword] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const returnTo = safeNext(useSearchParams().get("next"));
   if (!user) return null;
 
   return (
@@ -235,7 +242,7 @@ export function SettingsView() {
         tone="var(--chart-blue)"
         description="How sellers see you."
       >
-        <ProfileForm user={user} />
+        <ProfileForm user={user} returnTo={returnTo} />
       </Section>
       <Section
         title="Notifications"

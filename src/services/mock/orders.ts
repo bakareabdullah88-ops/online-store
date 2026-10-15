@@ -246,7 +246,15 @@ export const mockOrders: OrderService = {
         totalKobo: g.quote.totalKobo,
         ...(g.quote.promo?.status === "applied" ? { promoCode: g.quote.promo.code } : {}),
         // Offline payments are collected by the seller on handover and marked paid on delivery.
-        payment: { method: parsed.paymentMethod, status: online ? "paid" : "pending" },
+        // How depends on each order's own fulfilment, whatever single method the client sent.
+        payment: {
+          method: online
+            ? parsed.paymentMethod
+            : f.method === "pickup"
+              ? "pay_on_pickup"
+              : "pay_on_delivery",
+          status: online ? "paid" : "pending",
+        },
         status: "placed",
         timeline: [{ status: "placed", at: placedAt }],
         autoProgress: false,

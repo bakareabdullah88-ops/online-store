@@ -237,6 +237,23 @@ describe("buying and selling", () => {
     expect(home.toReview).toBe(1);
   });
 
+  it("records offline payment per order from how it is fulfilled", async () => {
+    const { brand, product } = await openShop();
+    await signUpBuyer();
+    const input = checkout(brand.id, product.id, { paymentMethod: "pay_on_delivery" });
+    input.groups[0]!.fulfilment = {
+      method: "pickup",
+      zoneId: "unilag-z1",
+      pickupPointId: "unilag-pp1",
+    };
+    const { orders } = await s.orders.createOrders(input);
+    expect(orders[0]!.payment.method).toBe("pay_on_pickup");
+    const delivered = await s.orders.createOrders(
+      checkout(brand.id, product.id, { paymentMethod: "pay_on_pickup" }),
+    );
+    expect(delivered.orders[0]!.payment.method).toBe("pay_on_delivery");
+  });
+
   it("refuses online payments until they are switched on", async () => {
     const { brand, product } = await openShop();
     await signUpBuyer();
