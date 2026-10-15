@@ -648,7 +648,7 @@ export function OrdersBoard() {
 
   return (
     <div>
-      <SceneBanner className="-mt-5 mb-6 h-[170px] sm:h-[210px] md:-mt-7 md:h-[22vw] md:max-h-[320px]">
+      <SceneBanner className="-mt-5 mb-3 h-[170px] sm:h-[210px] md:-mt-7 md:h-[22vw] md:max-h-[320px]">
         <MarketScene className="absolute inset-0" />
       </SceneBanner>
       <NavPageHeader

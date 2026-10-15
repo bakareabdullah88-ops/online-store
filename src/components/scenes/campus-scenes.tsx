@@ -591,6 +591,31 @@ export function MarketScene({ className }: { className?: string }) {
   );
 }
 
+/**
+ * The scene's bottom edge: two soft waves in the page colour, so the scene
+ * flows into the page instead of stopping at a straight line.
+ */
+export function SceneEdge({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 1440 90"
+      preserveAspectRatio="none"
+      className={cn(
+        "pointer-events-none absolute inset-x-0 -bottom-px z-[2] block h-8 w-full sm:h-12 md:h-16",
+        className,
+      )}
+    >
+      <path
+        d="M0 46 C 220 6, 420 4, 660 34 S 1120 84, 1440 22 V90 H0 Z"
+        fill="var(--app-bg)"
+        opacity="0.55"
+      />
+      <path d="M0 64 C 260 30, 520 34, 760 58 S 1180 86, 1440 50 V90 H0 Z" fill="var(--app-bg)" />
+    </svg>
+  );
+}
+
 /** A rounded sky panel that holds one of the scenes, with clouds drifting at three depths. */
 export function SceneBanner({
   children,
@@ -609,6 +634,7 @@ export function SceneBanner({
     >
       <Clouds3D inApp />
       {children}
+      <SceneEdge />
     </section>
   );
 }

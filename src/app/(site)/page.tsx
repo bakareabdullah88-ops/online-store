@@ -24,6 +24,8 @@ import { brand } from "@/config/brand";
 import { BUDDY_COLORS, BUDDY_SHAPES } from "@/domain/buddy";
 import { cn } from "@/lib/cn";
 import { seedCampuses } from "@/services/mock/seed/campuses";
+import { focusCampusId } from "@/config/brand";
+import { CampusBadge } from "@/components/landing/campus-badge";
 
 export const metadata: Metadata = {
   title: { absolute: `${brand.name} · Your campus plug` },
@@ -70,10 +72,10 @@ const faqs = [
   },
   {
     q: "Which campuses are on Kamplug?",
-    a: `You can pick from ${campuses.length} campuses when you sign up, including ${campuses
-      .slice(0, 3)
+    a: `Kamplug is live at UNILAG right now. ${campuses
+      .filter((c) => c.id !== focusCampusId)
       .map((c) => c.shortName)
-      .join(", ")} and more, with others on the way.`,
+      .join(", ")} are coming next.`,
   },
   {
     q: "Is Kamplug only for food?",
@@ -135,10 +137,7 @@ export default function LandingPage() {
         <section className="relative overflow-hidden bg-[#f4f5f8] pt-28 md:pt-36">
           <Clouds3D />
           <div className="relative mx-auto max-w-4xl px-5 text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold shadow-[0_3px_0_rgba(27,31,59,0.1)] ring-1 ring-[#1b1f3b]/10">
-              <span className="size-2 rounded-full bg-[#3ddc97]" aria-hidden />
-              Live on {campuses.length} campuses
-            </p>
+            <CampusBadge />
             <HeroHeadline />
             <p className="mx-auto mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
               Your campus, one plug away. Food, thrift, beauty and more from students near you.

@@ -3,9 +3,8 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Bike, Inbox, ShoppingBag, Store } from "lucide-react";
+import { Bike, Inbox } from "lucide-react";
 import { create } from "zustand";
-import { UserAvatar } from "@/components/app/user-avatar";
 import { isActive as orderIsActive } from "@/domain/orders";
 import { useMyOrders } from "@/queries/orders";
 import { useMyBrand, useStudioOrders } from "@/queries/studio";
@@ -23,9 +22,6 @@ type CurtainState = {
   origin: Point | null;
   start: (target: Mode, href: string, origin?: Point) => void;
   set: (p: Partial<Pick<CurtainState, "phase">>) => void;
-  /** Show the person's avatar in the middle this time (first switch of the visit). */
-  withAvatar: boolean;
-  avatarShown: boolean;
 };
 
 export const useCurtain = create<CurtainState>((set, get) => ({
@@ -33,12 +29,8 @@ export const useCurtain = create<CurtainState>((set, get) => ({
   target: "buying",
   href: "/",
   origin: null,
-  withAvatar: false,
-  avatarShown: false,
   start: (target, href, origin) => {
     if (get().phase !== "idle") return;
-    // Your avatar greets you in the curtain on the first switch of a visit only.
-    set({ withAvatar: !get().avatarShown, avatarShown: true });
     // Whatever was open (the phone menu, search, the bag) belongs to the side you're leaving.
     useUi.setState({ menuOpen: false, commandOpen: false, bagOpen: false });
     set({ phase: "cover", target, href, origin: origin ?? null });
@@ -102,6 +94,125 @@ function useHeadline(target: Mode) {
     : null;
 }
 
+const K = "#1b1f3b";
+
+/**
+ * The picture in the middle of the curtain. Selling: a little shopfront whose
+ * striped awning rolls down as it opens. Buying: a bag that things drop into.
+ */
+function ModeArt({ selling, still }: { selling: boolean; still: boolean }) {
+  const d = (delay: number) => ({ delay: still ? 0 : delay });
+  if (selling)
+    return (
+      <svg viewBox="0 0 64 64" className="size-12" aria-hidden>
+        <rect
+          x="10"
+          y="22"
+          width="44"
+          height="32"
+          rx="3"
+          fill="#eef1ff"
+          stroke={K}
+          strokeWidth="2.5"
+        />
+        <rect
+          x="26"
+          y="34"
+          width="12"
+          height="20"
+          rx="1.5"
+          fill="#3a5bff"
+          stroke={K}
+          strokeWidth="2.5"
+        />
+        <rect
+          x="14"
+          y="32"
+          width="9"
+          height="9"
+          rx="1.5"
+          fill="#ffd84d"
+          stroke={K}
+          strokeWidth="2"
+        />
+        <rect
+          x="41"
+          y="32"
+          width="9"
+          height="9"
+          rx="1.5"
+          fill="#ffd84d"
+          stroke={K}
+          strokeWidth="2"
+        />
+        <motion.g
+          style={{ transformBox: "fill-box", transformOrigin: "50% 0%" }}
+          initial={still ? false : { scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 14, ...d(0.45) }}
+        >
+          <path
+            d="M6 14 H58 L54 26 H10 Z"
+            fill="#ffffff"
+            stroke={K}
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M15 14 L13 26 M24 14 L23 26 M33 14 V26 M42 14 L42 26 M51 14 L52 26"
+            stroke="#3a5bff"
+            strokeWidth="5"
+          />
+          <path
+            d="M6 14 H58 L54 26 H10 Z"
+            fill="none"
+            stroke={K}
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+        </motion.g>
+        <rect x="8" y="9" width="48" height="6" rx="2" fill={K} />
+      </svg>
+    );
+  return (
+    <svg viewBox="0 0 64 64" className="size-12" aria-hidden>
+      <motion.circle
+        cx="26"
+        cy="24"
+        r="7"
+        fill="#ff6a4d"
+        stroke={K}
+        strokeWidth="2.5"
+        initial={still ? false : { y: -26, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 16, ...d(0.45) }}
+      />
+      <motion.rect
+        x="33"
+        y="16"
+        width="11"
+        height="14"
+        rx="2"
+        fill="#ffd84d"
+        stroke={K}
+        strokeWidth="2.5"
+        initial={still ? false : { y: -30, rotate: -20, opacity: 0 }}
+        animate={{ y: 0, rotate: 8, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 16, ...d(0.6) }}
+      />
+      <path d="M22 26 V20 a10 10 0 0 1 20 0 V26" fill="none" stroke={K} strokeWidth="2.5" />
+      <path
+        d="M12 26 H52 L48 56 H16 Z"
+        fill="#3a5bff"
+        stroke={K}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path d="M14 30 H50" stroke="#7d93ff" strokeWidth="3" />
+    </svg>
+  );
+}
+
 /**
  * The switch between buying and selling. A green circle grows from the switch,
  * the destination's badge (your shop's logo, or the bag) lands in the middle,
@@ -109,7 +220,7 @@ function useHeadline(target: Mode) {
  * Reduced motion: a short fade.
  */
 export function ModeCurtain() {
-  const { phase, target, href, origin, set, withAvatar } = useCurtain();
+  const { phase, target, href, origin, set } = useCurtain();
   const router = useRouter();
   const pathname = usePathname() ?? "/";
   const reduce = useReducedMotion();
@@ -218,13 +329,7 @@ export function ModeCurtain() {
                   delay: reduce ? 0 : 0.22,
                 }}
               >
-                {withAvatar ? (
-                  <UserAvatar size={76} className="rounded-none" />
-                ) : selling ? (
-                  <Store className="size-9" aria-hidden />
-                ) : (
-                  <ShoppingBag className="size-9" aria-hidden />
-                )}
+                <ModeArt selling={selling} still={!!reduce} />
               </motion.span>
             </div>
             <p className="mt-5 text-[12px] font-semibold tracking-[0.14em] text-white/85 uppercase">

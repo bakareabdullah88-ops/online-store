@@ -66,7 +66,7 @@ export function WishlistButton({
         "relative flex items-center justify-center rounded-full",
         dim,
         variant === "floating"
-          ? "bg-surface/90 shadow-sm backdrop-blur-sm hover:bg-surface"
+          ? "bg-surface/95 shadow-sm hover:bg-surface"
           : "hover:bg-ink/[0.06]",
         className,
       )}

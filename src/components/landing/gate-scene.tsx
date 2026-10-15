@@ -81,6 +81,8 @@ export function useParallax(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = ref.current?.closest("section") ?? ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Only with a mouse: on phones a finger drag would restyle the scene every frame.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     let raf = 0;
     const onMove = (e: PointerEvent) => {
       cancelAnimationFrame(raf);
@@ -245,7 +247,7 @@ export function Clouds3D({ inApp = false }: { inApp?: boolean }) {
           <div
             key={i}
             data-depth={c.depth}
-            className="lp-layer absolute inset-x-0"
+            className={cn("lp-layer absolute inset-x-0", i >= 5 && "max-md:hidden")}
             style={{ top: c.top }}
           >
             <div
@@ -256,7 +258,6 @@ export function Clouds3D({ inApp = false }: { inApp?: boolean }) {
                   ["--lp-dur" as string]: c.dur,
                   ["--lp-delay" as string]: c.delay,
                   opacity: c.depth === "far" ? 0.65 : c.depth === "mid" ? 0.9 : 1,
-                  filter: c.depth === "far" ? "blur(0.8px)" : undefined,
                 } as React.CSSProperties
               }
             >
@@ -266,10 +267,7 @@ export function Clouds3D({ inApp = false }: { inApp?: boolean }) {
                 }
                 style={{ animationDelay: `${i * -1.3}s` }}
               >
-                <svg
-                  viewBox={shape.vb}
-                  className="w-full drop-shadow-[0_14px_14px_rgba(27,31,59,0.12)]"
-                >
+                <svg viewBox={shape.vb} className="w-full">
                   <path
                     d={shape.top}
                     className={inApp ? "fill-white dark:fill-[#2c3263]" : undefined}

@@ -20,7 +20,7 @@ export function HeroHeadline() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = window.setInterval(() => setI((n) => (n + 1) % lines.length), 3200);
+    const t = window.setInterval(() => setI((n) => (n + 1) % lines.length), 9600);
     return () => window.clearInterval(t);
   }, []);
 

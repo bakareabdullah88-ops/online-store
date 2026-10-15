@@ -139,7 +139,7 @@ export function useStudioOrders() {
     queryKey: qk.studio.orders,
     queryFn: () => services.studio.listOrders(),
     enabled: useHasBrand(),
-    refetchInterval: 15_000,
+    refetchInterval: 30_000,
   });
 }
 

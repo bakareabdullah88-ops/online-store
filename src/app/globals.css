@@ -1341,3 +1341,14 @@ html {
     transform: rotateX(0deg) translateY(0);
   }
 }
+
+/* Sections scrolled out of view stop animating (see PauseOffscreen). */
+[data-paused],
+[data-paused] * {
+  animation-play-state: paused !important;
+}
+/* Drifting clouds get their own layer so moving them never repaints the page. */
+.lp-cloud,
+.lp-cloud-rev {
+  will-change: transform;
+}

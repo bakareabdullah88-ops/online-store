@@ -55,7 +55,7 @@ import type {
 import { useHomeFilters, type HomeSort } from "@/stores/home-filters";
 import { useUi } from "@/stores/ui";
 import { Clouds3D } from "@/components/landing/gate-scene";
-import { LagoonScene } from "@/components/scenes/campus-scenes";
+import { LagoonScene, SceneEdge } from "@/components/scenes/campus-scenes";
 import { RelationBadge, etaText } from "./nearby";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import { QuickAdd } from "./quick-add";
@@ -172,6 +172,7 @@ function Hero({
         </div>
       </div>
       <LagoonScene className="relative z-[1] mt-2 h-[190px] w-full sm:h-[240px] md:h-[24vw] md:max-h-[380px]" />
+      <SceneEdge />
     </section>
   );
 }
@@ -319,7 +320,7 @@ function ShopTile({ brand: b, near }: { brand: Brand; near: ShopNear | undefined
           aria-pressed={following}
           aria-label={following ? `Unfollow ${b.name}` : `Follow ${b.name}`}
           onClick={() => follow.mutate({ id: b.id, handle: b.handle })}
-          className="absolute top-2.5 right-2.5 grid size-9 pressable place-items-center rounded-full bg-black/25 backdrop-blur-sm"
+          className="absolute top-2.5 right-2.5 grid size-9 pressable place-items-center rounded-full bg-black/40"
         >
           <Heart
             className={cn(

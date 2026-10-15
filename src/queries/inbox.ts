@@ -14,7 +14,7 @@ export function useNotifications() {
     queryKey: qk.notifications,
     queryFn: () => services.notifications.list(),
     enabled: isSignedIn,
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
 }
 
@@ -45,7 +45,7 @@ export function useThreads(as: "buyer" | "brand") {
     queryKey: qk.threads(as),
     queryFn: () => services.messages.listThreads(as),
     enabled: isSignedIn,
-    refetchInterval: 20_000,
+    refetchInterval: 45_000,
   });
 }
 

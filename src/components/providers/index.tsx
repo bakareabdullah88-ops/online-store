@@ -1,5 +1,6 @@
 "use client";
 
+import { PauseOffscreen } from "@/components/shell/pause-offscreen";
 import { MotionConfig } from "motion/react";
 import { TooltipProvider } from "@/components/ui/overlay";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,6 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <SkipLink />
             {children}
             <GlobalChrome />
+            <PauseOffscreen />
             <Toaster />
           </TooltipProvider>
         </MotionConfig>

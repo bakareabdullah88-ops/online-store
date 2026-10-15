@@ -33,7 +33,7 @@ export function MobileTopBar() {
   return (
     <header
       style={{ viewTransitionName: "site-header" }}
-      className="sticky top-0 z-(--z-header) border-b border-line bg-surface/95 pt-[env(safe-area-inset-top)] backdrop-blur-md md:hidden"
+      className="sticky top-0 z-(--z-header) border-b border-line bg-surface pt-[env(safe-area-inset-top)] md:hidden"
     >
       <div className="flex h-14 items-center gap-0.5 px-2">
         <button

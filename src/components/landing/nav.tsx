@@ -59,9 +59,18 @@ export function LandingNav() {
     <header
       className={cn(
         "pointer-events-none fixed inset-x-0 top-0 z-(--z-header) px-4 transition-[padding] duration-300 md:px-8",
-        scrolled ? "pt-3" : "pt-4 md:pt-6",
+        scrolled ? "pt-3 pb-3" : "pt-4 md:pt-6",
       )}
     >
+      {/* Once you scroll, a frosted bar slides in behind the pills so page content
+          passing underneath never fights with the logo and buttons. */}
+      <div
+        aria-hidden
+        className={cn(
+          "absolute inset-0 border-b border-[#1b1f3b]/[0.06] bg-white/85 backdrop-blur-md transition-opacity duration-300",
+          scrolled ? "opacity-100" : "opacity-0",
+        )}
+      />
       <AnimatePresence>
         {open && (
           <motion.button
