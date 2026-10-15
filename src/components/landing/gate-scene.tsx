@@ -186,17 +186,6 @@ export function GateScene({ className }: { className?: string }) {
                 />
               )),
             )}
-            <text
-              x="180"
-              y="142"
-              textAnchor="middle"
-              fontSize="13"
-              fontWeight="800"
-              fill={NAVY}
-              style={{ letterSpacing: "0.2em" }}
-            >
-              SENATE
-            </text>
           </g>
           <g className="lp-drop" style={{ animationDelay: "0.12s" }}>
             <Block
@@ -223,17 +212,6 @@ export function GateScene({ className }: { className?: string }) {
                 />
               )),
             )}
-            <text
-              x="1295"
-              y="292"
-              textAnchor="middle"
-              fontSize="12"
-              fontWeight="800"
-              fill={NAVY}
-              style={{ letterSpacing: "0.2em" }}
-            >
-              HALL
-            </text>
           </g>
         </g>
 
@@ -259,18 +237,7 @@ export function GateScene({ className }: { className?: string }) {
               side="#8fd9b6"
               top="#effcf6"
             />
-            <rect x="270" y="350" width="170" height="22" fill="#3ddc97" />
-            <text
-              x="355"
-              y="366"
-              textAnchor="middle"
-              fontSize="12"
-              fontWeight="800"
-              fill={NAVY}
-              style={{ letterSpacing: "0.18em" }}
-            >
-              LIBRARY
-            </text>
+            <path d="M262 350 L355 318 L448 350 Z" fill="#3ddc97" />
             {[0, 1].map((r) =>
               [0, 1, 2, 3].map((c) => (
                 <rect
