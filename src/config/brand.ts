@@ -18,3 +18,9 @@ export const brand = {
 } as const;
 
 export type Brand = typeof brand;
+
+/**
+ * For now Kamplug runs at one school. Campus pickers, places and search only
+ * offer this campus; the others stay in the data for later.
+ */
+export const focusCampusId = "c_unilag";

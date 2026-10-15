@@ -261,18 +261,34 @@ async function maintain(fn: (db: DbSnapshot) => Meta | void): Promise<void> {
 }
 
 let seeded: Promise<void> | null = null;
+/** Bump when the campus list in services/mock/seed/campuses.ts gains places. */
+const CAMPUS_REV = 2;
 let sampleChecked = false;
 
 /** First run: the campus list. */
 async function prepare() {
   seeded ??= (async () => {
-    const { seeded: done } = await readMeta(["seeded"]);
-    if (done) return;
+    const { seeded: done, campusRev } = await readMeta(["seeded", "campusRev"]);
+    if (done && Number(campusRev ?? 1) >= CAMPUS_REV) return;
     const seed = await generateSeed();
     await maintain((d) => {
-      if (d.campuses.length) return { seeded: true };
-      d.campuses = seed.campuses;
-      return { seeded: true };
+      if (!d.campuses.length) {
+        d.campuses = seed.campuses;
+        return { seeded: true, campusRev: CAMPUS_REV };
+      }
+      // Campuses already exist: add any halls, faculties, landmarks and pickup
+      // spots added to the list since, keeping everything already there.
+      for (const sc of seed.campuses) {
+        const c = d.campuses.find((x) => x.id === sc.id);
+        if (!c) {
+          d.campuses.push(sc);
+          continue;
+        }
+        for (const z of sc.zones) if (!c.zones.some((x) => x.id === z.id)) c.zones.push(z);
+        for (const p of sc.pickupPoints)
+          if (!c.pickupPoints.some((x) => x.id === p.id)) c.pickupPoints.push(p);
+      }
+      return { seeded: true, campusRev: CAMPUS_REV };
     });
   })().catch((e) => {
     seeded = null;

@@ -12,6 +12,7 @@ import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { safeNext } from "@/lib/safe-next";
 import { useSpot } from "@/stores/spot";
+import { focusCampusId } from "@/config/brand";
 import { useCampuses } from "@/queries/catalog";
 import { useObjectUrl } from "@/queries/media";
 import { useSession, useUpdateProfile } from "@/queries/session";
@@ -53,7 +54,7 @@ export function WelcomeFlow() {
     setName(user.name);
     setPhone(user.phone);
     // The campus they picked a spot on before signing up, if they haven't chosen one yet.
-    setCampusId(user.campusId ?? useSpot.getState().spot?.campusId ?? "");
+    setCampusId(user.campusId ?? useSpot.getState().spot?.campusId ?? focusCampusId);
   }, [user]);
 
   // Move focus to each new step's heading so keyboard and screen-reader users land on it.

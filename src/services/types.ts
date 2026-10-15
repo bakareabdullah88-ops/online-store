@@ -48,7 +48,7 @@ export type ImageRef =
 
 /* -------------------------------- Campus ---------------------------------- */
 
-export type ZoneKind = "hostel" | "faculty" | "gate" | "market" | "offcampus";
+export type ZoneKind = "hostel" | "faculty" | "landmark" | "gate" | "market" | "offcampus";
 
 export type CampusZone = { id: ID; name: string; kind: ZoneKind };
 

@@ -6,12 +6,15 @@ import { services } from "@/services";
 import type { BrandQuery } from "@/services/contracts";
 import type { Page, ProductQuery, ProductWithBrand } from "@/services/types";
 import { qk } from "./keys";
+import { focusCampusId } from "@/config/brand";
 
 export function useCampuses() {
   return useQuery({
     queryKey: qk.campuses,
     queryFn: () => services.catalog.listCampuses(),
     staleTime: Infinity,
+    // Only the campus Kamplug runs at right now (see focusCampusId).
+    select: (all) => all.filter((c) => c.id === focusCampusId),
   });
 }
 
