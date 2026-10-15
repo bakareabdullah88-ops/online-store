@@ -60,7 +60,7 @@ export function PageHeader({
       )}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[22px] leading-tight font-bold tracking-[-0.025em] text-balance md:text-[26px]">
+          <h1 className="text-[28px] leading-[1.02] font-extrabold tracking-[-0.045em] text-balance md:text-[36px]">
             {title}
           </h1>
           {description && <p className="mt-0.5 text-small text-muted">{description}</p>}

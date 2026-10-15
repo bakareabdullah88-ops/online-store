@@ -12,7 +12,7 @@ import { useEffect, useRef } from "react";
 const NAVY = "#1b1f3b";
 
 /** A box with a lit top and a shaded right side, so a flat rectangle reads as a block. */
-function Block({
+export function Block({
   x,
   y,
   w,
@@ -40,7 +40,17 @@ function Block({
   );
 }
 
-function Palm({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number; delay?: number }) {
+export function Palm({
+  x,
+  y,
+  s = 1,
+  delay = 0,
+}: {
+  x: number;
+  y: number;
+  s?: number;
+  delay?: number;
+}) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
       <path
@@ -62,6 +72,37 @@ function Palm({ x, y, s = 1, delay = 0 }: { x: number; y: number; s?: number; de
       </g>
     </g>
   );
+}
+
+/** Pointer parallax for a scene: writes the pointer position to --px/--py on the
+ * enclosing section; each `.lp-layer[data-depth]` moves by its depth. */
+export function useParallax(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current?.closest("section") ?? ref.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.setProperty("--px", px.toFixed(3));
+        el.style.setProperty("--py", py.toFixed(3));
+      });
+    };
+    const onLeave = () => {
+      el.style.setProperty("--px", "0");
+      el.style.setProperty("--py", "0");
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [ref]);
 }
 
 /** Puffy clouds with a lit top and a shaded underside; three depths, three speeds. */
@@ -119,33 +160,7 @@ export function Clouds3D() {
 export function GateScene({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Pointer parallax: write the position to CSS variables; each layer moves by its depth.
-  useEffect(() => {
-    const el = ref.current?.closest("section") ?? ref.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let raf = 0;
-    const onMove = (e: PointerEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const r = el.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        el.style.setProperty("--px", px.toFixed(3));
-        el.style.setProperty("--py", py.toFixed(3));
-      });
-    };
-    const onLeave = () => {
-      el.style.setProperty("--px", "0");
-      el.style.setProperty("--py", "0");
-    };
-    el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerleave", onLeave);
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerleave", onLeave);
-    };
-  }, []);
+  useParallax(ref);
 
   return (
     <div ref={ref} className={className} aria-hidden>

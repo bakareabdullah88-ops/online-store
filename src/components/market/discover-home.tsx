@@ -33,7 +33,8 @@ import { useSession } from "@/queries/session";
 import { useToggleFollow } from "@/queries/social";
 import type { Brand, CategoryId, Order } from "@/services/types";
 import { useUi } from "@/stores/ui";
-import { Clouds3D, GateScene, RoadStrip } from "@/components/landing/gate-scene";
+import { Clouds3D } from "@/components/landing/gate-scene";
+import { LagoonScene } from "@/components/scenes/campus-scenes";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import { QuickAdd } from "./quick-add";
 
@@ -143,8 +144,7 @@ function Hero({
           <SearchBar />
         </div>
       </div>
-      <GateScene className="relative mt-2 h-[170px] w-full overflow-hidden sm:h-[230px] md:h-[27vw] md:max-h-[390px]" />
-      <RoadStrip />
+      <LagoonScene className="relative mt-2 h-[170px] w-full sm:h-[230px] md:h-[24vw] md:max-h-[340px]" />
     </section>
   );
 }

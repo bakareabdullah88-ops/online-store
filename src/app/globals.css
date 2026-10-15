@@ -1256,3 +1256,33 @@ html {
     transform: none !important;
   }
 }
+
+/* Scene extras: the dotted order route runs, awnings flap. */
+.lp-dash {
+  animation: lp-dash 1.2s linear infinite;
+}
+.lp-awning {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: lp-awning 2.6s ease-in-out infinite;
+}
+@keyframes lp-dash {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+@keyframes lp-awning {
+  0%,
+  100% {
+    transform: skewX(0deg) scaleY(1);
+  }
+  50% {
+    transform: skewX(-4deg) scaleY(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-dash,
+  .lp-awning {
+    animation: none !important;
+  }
+}

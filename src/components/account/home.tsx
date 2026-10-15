@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneBanner, LibraryScene } from "@/components/scenes/campus-scenes";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Compass } from "lucide-react";
@@ -164,6 +165,9 @@ export function BuyerHome() {
 
   return (
     <div className={pagePad}>
+      <SceneBanner className="-mt-5 mb-6 h-[160px] sm:h-[200px] md:mt-0 md:h-[240px]">
+        <LibraryScene className="absolute inset-0" />
+      </SceneBanner>
       <PageHeader
         crumbs={[{ label: "Market", href: "/home" }, { label: "Dashboard" }]}
         title={mounted && firstName ? <Greeting name={firstName} /> : "Home"}

@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneBanner, MarketScene } from "@/components/scenes/campus-scenes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Bike,
@@ -647,6 +648,9 @@ export function OrdersBoard() {
 
   return (
     <div>
+      <SceneBanner className="-mt-5 mb-6 h-[160px] sm:h-[200px] md:mt-0 md:h-[240px]">
+        <MarketScene className="absolute inset-0" />
+      </SceneBanner>
       <NavPageHeader
         title="Orders"
         description={

@@ -160,7 +160,7 @@ export default function LandingPage() {
               <span className="size-2 rounded-full bg-[#3ddc97]" aria-hidden />
               Live on {campuses.length} campuses
             </p>
-            <h1 className="mt-5 text-[clamp(52px,9vw,116px)] leading-[0.9] font-extrabold tracking-[-0.06em]">
+            <h1 className="mt-5 text-[clamp(38px,11.5vw,116px)] leading-[0.9] font-extrabold tracking-[-0.06em] whitespace-nowrap">
               Wetin you <span className="text-[#3a5bff]">need?</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-[18px] leading-snug md:text-[20px]">
