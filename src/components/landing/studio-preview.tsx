@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Bell, Check, MessageCircle, Receipt, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { KamplugMark } from "@/components/app/kamplug-mark";
+import { KamplugTile } from "@/components/app/kamplug-mark";
 import { cn } from "@/lib/cn";
 
 /** A drawing, not data: the names and amounts below are examples. */
@@ -79,9 +79,7 @@ export function StudioPreview() {
         <div className="flex size-full flex-col overflow-hidden rounded-2xl bg-[var(--app-bg)] shadow-md ring-1 ring-line">
           {/* top bar */}
           <div className="flex h-14 items-center gap-6 border-b border-line bg-surface px-5">
-            <span className="grid size-8 place-items-center rounded-full bg-primary text-on-primary">
-              <KamplugMark className="size-4" />
-            </span>
+            <KamplugTile className="size-8" />
             <span className="rounded-full bg-success-soft px-3 py-1 text-[12px] font-medium text-success">
               Selling
             </span>
