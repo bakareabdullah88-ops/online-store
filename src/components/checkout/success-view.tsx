@@ -28,7 +28,7 @@ export function SuccessView() {
         <EmptyState
           illustration="orders"
           title="We couldn't find that checkout"
-          body="It may have expired, but anything you paid for is in Orders."
+          body="It may have expired, but anything you ordered is in Orders."
           action={<ButtonLink href="/orders">See your orders</ButtonLink>}
         />
       </div>
