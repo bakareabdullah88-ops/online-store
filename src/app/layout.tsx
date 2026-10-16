@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { brand } from "@/config/brand";
 import { defaultFontPreset, emphasis, fontPresetCss } from "@/config/font-presets";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
