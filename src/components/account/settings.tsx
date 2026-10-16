@@ -8,7 +8,6 @@ import {
   Camera,
   Globe,
   LogOut,
-  Palette,
   ShieldAlert,
   Trash2,
   UserRound,
@@ -20,9 +19,6 @@ import { Field, Input, PasswordInput } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/misc";
 import { Select } from "@/components/ui/overlay";
 import { Dialog } from "@/components/ui/sheet";
-import { SegmentedControl } from "@/components/ui/tabs";
-import { FontPicker } from "@/components/ui/font-picker";
-import { useTheme, type ThemePreference } from "@/components/providers/theme";
 import { useCampuses } from "@/queries/catalog";
 import { useObjectUrl } from "@/queries/media";
 import {
@@ -361,7 +357,6 @@ function NotificationPrefs({ user }: { user: User }) {
 
 export function SettingsView() {
   const { user } = useSession();
-  const { preference, setPreference } = useTheme();
   const remove = useDeleteAccount();
   const signOut = useSignOut();
   const clearBag = useBag((s) => s.clear);
@@ -390,32 +385,6 @@ export function SettingsView() {
         description="Choose what we tell you about."
       >
         <NotificationPrefs user={user} />
-      </Section>
-      <Section
-        title="Appearance"
-        icon={<Palette />}
-        tone="var(--chart-violet)"
-        description="Theme and font style. Saved on this device."
-      >
-        <div className="flex flex-col gap-6">
-          <div>
-            <p className="mb-2 text-small font-medium">Theme</p>
-            <SegmentedControl<ThemePreference>
-              label="Theme"
-              value={preference}
-              onChange={setPreference}
-              options={[
-                { value: "light", label: "Light" },
-                { value: "dark", label: "Dark" },
-                { value: "system", label: "Match device" },
-              ]}
-            />
-          </div>
-          <div>
-            <p className="mb-2 text-small font-medium">Font style</p>
-            <FontPicker />
-          </div>
-        </div>
       </Section>
       <Section
         title="Language"

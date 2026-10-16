@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Settings, Star } from "lucide-react";
 import { Popover } from "@/components/ui/overlay";
-import { AppearanceControls } from "@/components/shell/appearance";
 import { useSession, useSignOut } from "@/queries/session";
 import { useCampus } from "@/queries/catalog";
 import { toast } from "@/stores/toast";
@@ -60,8 +59,6 @@ export function AccountMenu({ side = "bottom" }: { side?: "right" | "bottom" }) 
       >
         <Star className="size-4 text-muted" /> My reviews
       </Link>
-      <div className="my-1 h-px bg-line" />
-      <AppearanceControls className="px-2.5 py-2" />
       <div className="my-1 h-px bg-line" />
       <button
         type="button"

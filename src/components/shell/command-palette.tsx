@@ -11,7 +11,6 @@ import {
   CornerDownLeft,
   Heart,
   LayoutGrid,
-  Moon,
   Receipt,
   Search,
   Settings,
@@ -22,7 +21,6 @@ import {
 import { AppImage } from "@/components/ui/app-image";
 import { Kbd } from "@/components/ui/misc";
 import { Spinner } from "@/components/ui/spinner";
-import { useTheme } from "@/components/providers/theme";
 import { categories } from "@/config/categories";
 import { spring } from "@/design/motion";
 import { formatNaira } from "@/domain/money";
@@ -45,7 +43,6 @@ export function CommandPalette() {
   const { data, isFetching } = useSearch(deferred);
   const router = useRouter();
   const { user } = useSession();
-  const { resolved, setPreference } = useTheme();
   const { recentSearches, addRecentSearch, clearRecentSearches } = usePrefs();
   const reduce = useReducedMotion();
 
@@ -79,11 +76,6 @@ export function CommandPalette() {
       icon: Store,
     },
     { label: "Settings", href: "/account/settings", icon: Settings },
-    {
-      label: resolved === "dark" ? "Switch to light theme" : "Switch to dark theme",
-      action: () => setPreference(resolved === "dark" ? "light" : "dark"),
-      icon: Moon,
-    },
   ];
 
   return (
