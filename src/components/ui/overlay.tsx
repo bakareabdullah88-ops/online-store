@@ -154,6 +154,8 @@ export function Select<T extends string>({
   id,
   invalid,
   describedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: {
   value: T | undefined;
   onValueChange: (v: T) => void;
@@ -164,19 +166,23 @@ export function Select<T extends string>({
   id?: string;
   invalid?: boolean;
   describedBy?: string;
+  /** Set by <Field> when it wraps the select, like it does for inputs. */
+  "aria-invalid"?: boolean | "true" | "false";
+  "aria-describedby"?: string;
 }) {
+  const isInvalid = invalid || ariaInvalid === true || ariaInvalid === "true";
   return (
     <RSelect.Root value={value} onValueChange={(v) => onValueChange(v as T)}>
       <RSelect.Trigger
         id={id}
         aria-label={label}
-        aria-invalid={invalid || undefined}
-        aria-describedby={describedBy}
+        aria-invalid={isInvalid || undefined}
+        aria-describedby={describedBy ?? ariaDescribedBy}
         className={cn(
           "flex h-11 w-full items-center justify-between gap-2 rounded-md bg-surface px-3.5 text-left text-body text-ink",
           "shadow-[inset_0_0_0_1px_var(--line-strong)] hover:shadow-[inset_0_0_0_1px_var(--muted)]",
           "focus-visible:shadow-[inset_0_0_0_1.5px_var(--ink),0_0_0_4px_var(--accent-soft)] focus-visible:outline-none",
-          "aria-invalid:shadow-[inset_0_0_0_1.5px_var(--danger)] data-[placeholder]:text-faint",
+          "aria-invalid:shadow-[inset_0_0_0_1.5px_var(--danger)] data-[placeholder]:text-muted",
           className,
         )}
       >

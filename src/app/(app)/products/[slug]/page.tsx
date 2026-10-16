@@ -5,7 +5,7 @@ import { ProductSkeleton, ProductView } from "@/components/market/product/produc
 
 export const metadata: Metadata = {
   title: "Product",
-  description: "Made by a student brand on Kiosk.",
+  description: "Made by a student brand on Kamplug.",
 };
 
 export default function ProductPage() {

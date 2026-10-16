@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Camera, Check } from "lucide-react";
+import { AddressPicker } from "@/components/address/address-picker";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Avatar, ProgressBar } from "@/components/ui/misc";
@@ -11,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { spring } from "@/design/motion";
 import { cn } from "@/lib/cn";
 import { safeNext } from "@/lib/safe-next";
+import { useSpot } from "@/stores/spot";
+import { focusCampusId } from "@/config/brand";
 import { useCampuses } from "@/queries/catalog";
 import { useObjectUrl } from "@/queries/media";
 import { useSession, useUpdateProfile } from "@/queries/session";
@@ -35,11 +38,22 @@ export function WelcomeFlow() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [campusId, setCampusId] = useState<string>("");
+  /** Null until they choose; until then it's what's saved, or a guess from the landing page. */
+  const [hallPick, setHall] = useState<string | null>(null);
+  const [facultyPick, setFaculty] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarId, setAvatarId] = useState<string | undefined>();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const avatarUrl = useObjectUrl(avatarId);
+  const campus = campuses.data?.find((c) => c.id === campusId);
+  // A hall or faculty picked on the landing page is a good first guess; they can change it.
+  const spot = useSpot((st) => st.spot);
+  const spotZone =
+    spot?.campusId === campusId ? campus?.zones.find((z) => z.id === spot.zoneId) : undefined;
+  const hall = hallPick ?? user?.hallZoneId ?? (spotZone?.kind === "hostel" ? spotZone.id : "");
+  const faculty =
+    facultyPick ?? user?.facultyZoneId ?? (spotZone?.kind === "faculty" ? spotZone.id : "");
   const seeded = useRef(false);
 
   useEffect(() => {
@@ -51,8 +65,25 @@ export function WelcomeFlow() {
     seeded.current = true;
     setName(user.name);
     setPhone(user.phone);
-    setCampusId(user.campusId ?? "");
+    // The campus they picked a spot on before signing up, if they haven't chosen one yet.
+    setCampusId(user.campusId ?? useSpot.getState().spot?.campusId ?? focusCampusId);
   }, [user]);
+
+  // Move focus to each new step's heading so keyboard and screen-reader users land on it.
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      const h = document.querySelector<HTMLHeadingElement>("[data-wizard] h1");
+      if (!h) return;
+      h.tabIndex = -1;
+      h.focus({ preventScroll: true });
+    }, 380);
+    return () => window.clearTimeout(t);
+  }, [step]);
 
   const go = (to: number) => {
     setDir(to > step ? 1 : -1);
@@ -73,7 +104,15 @@ export function WelcomeFlow() {
 
   const finish = (withAvatar: boolean) =>
     update.mutate(
-      { name, campusId, phone, ...(withAvatar && avatarId ? { avatarImageId: avatarId } : {}) },
+      {
+        name,
+        campusId,
+        phone,
+        // Null clears one they took out; leaving it out keeps what's saved.
+        ...(hall || hallPick !== null ? { hallZoneId: hall || null } : {}),
+        ...(faculty || facultyPick !== null ? { facultyZoneId: faculty || null } : {}),
+        ...(withAvatar && avatarId ? { avatarImageId: avatarId } : {}),
+      },
       {
         onSuccess: (u) => {
           toast.success(`You're all set, ${u.name.split(" ")[0]}`, {
@@ -120,7 +159,7 @@ export function WelcomeFlow() {
         </span>
       </div>
 
-      <div className="relative mt-8 overflow-hidden">
+      <div data-wizard className="relative mt-8 overflow-hidden">
         <AnimatePresence mode="wait" custom={dir} initial={false}>
           <motion.div
             key={step}
@@ -153,7 +192,12 @@ export function WelcomeFlow() {
                             type="button"
                             role="radio"
                             aria-checked={active}
-                            onClick={() => setCampusId(c.id)}
+                            onClick={() => {
+                              if (c.id === campusId) return;
+                              setCampusId(c.id);
+                              setHall("");
+                              setFaculty("");
+                            }}
                             className={cn(
                               "relative flex flex-col items-start rounded-md bg-surface p-3.5 text-left transition-shadow",
                               active
@@ -181,6 +225,31 @@ export function WelcomeFlow() {
                         );
                       })}
                 </div>
+                {campus && (
+                  <div className="mt-6 flex flex-col gap-4 border-t border-line-thin pt-6">
+                    <p className="text-body text-muted">
+                      Shops from your hall and faculty show up first.
+                    </p>
+                    <AddressPicker
+                      campus={campus}
+                      value={hall}
+                      onChange={setHall}
+                      kinds={["hostel"]}
+                      label="Your hall"
+                      optional
+                      clearable
+                    />
+                    <AddressPicker
+                      campus={campus}
+                      value={faculty}
+                      onChange={setFaculty}
+                      kinds={["faculty"]}
+                      label="Your faculty"
+                      optional
+                      clearable
+                    />
+                  </div>
+                )}
                 <Button
                   size="lg"
                   className="mt-8 w-full"
@@ -239,7 +308,7 @@ export function WelcomeFlow() {
                   Add a profile photo
                 </h1>
                 <p className="mt-2 text-body text-muted">
-                  It helps riders and sellers recognise you at pickup. You can skip this.
+                  It helps sellers recognise you at pickup or delivery. You can skip this.
                 </p>
                 <div className="mt-8 flex items-center gap-5">
                   <div className="relative">
@@ -252,7 +321,11 @@ export function WelcomeFlow() {
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       className="sr-only"
-                      onChange={(e) => onFile(e.target.files?.[0])}
+                      onChange={(e) => {
+                        onFile(e.target.files?.[0]);
+                        // Picking the same file again should still work.
+                        e.currentTarget.value = "";
+                      }}
                       aria-label="Upload profile photo"
                     />
                     <Button

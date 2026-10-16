@@ -20,7 +20,7 @@ export default function NotFound() {
           illustration="lost"
           title="This page took a wrong turn"
           body="The link may be old, or the brand may have moved. Let's get you back to campus."
-          action={<ButtonLink href="/explore">Explore</ButtonLink>}
+          action={<ButtonLink href="/explore">Back to the market</ButtonLink>}
           secondary={
             <ButtonLink href="/" variant="secondary">
               Home

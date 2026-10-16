@@ -1,21 +1,12 @@
-import { accessList, userIdFor } from "@/config/access";
-import { features } from "@/config/features";
 import { ServiceError } from "../errors";
 import type { Brand, UserRecord, User } from "../types";
 import { getDb, getSessionUserId } from "./db";
 import type { DbSnapshot } from "./seed";
 
-/** The access-list entry behind an account, in invite-only mode. */
-export function accessEntryFor(userId: string) {
-  return accessList.find((e) => userIdFor(e) === userId);
-}
-
 export async function currentUser(db?: DbSnapshot): Promise<UserRecord | null> {
   const d = db ?? (await getDb());
   const id = await getSessionUserId();
   if (!id) return null;
-  // Invite-only: accounts not (or no longer) on the list are signed out.
-  if (features.inviteOnly && !accessEntryFor(id)) return null;
   return d.users.find((u) => u.id === id) ?? null;
 }
 
@@ -35,8 +26,10 @@ export async function requireBrand(db: DbSnapshot): Promise<{ user: UserRecord; 
 /** Strip private fields before returning a user to the UI. */
 export function publicUser(u: UserRecord): User {
   const { passwordHash, passwordSalt, ...rest } = u;
-  const role = features.inviteOnly ? (accessEntryFor(u.id)?.role ?? "member") : "member";
-  return { ...structuredClone(rest), role };
+  return {
+    ...structuredClone(rest),
+    hasPassword: !!passwordHash,
+  };
 }
 
 /** Return detached copies so UI mutations never leak into the store. */

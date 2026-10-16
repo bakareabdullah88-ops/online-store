@@ -21,7 +21,7 @@ function isAbsoluteUrl(value: string): boolean {
 
 export function parseEnv(raw: Record<string, string | undefined>): Env {
   const problems: string[] = [];
-  const source = raw.NEXT_PUBLIC_DATA_SOURCE || "mock";
+  const source = raw.NEXT_PUBLIC_DATA_SOURCE || "remote";
   if (source !== "mock" && source !== "remote")
     problems.push(`NEXT_PUBLIC_DATA_SOURCE must be "mock" or "remote" (got "${source}")`);
 
@@ -49,7 +49,8 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
 // Each NEXT_PUBLIC_* must be referenced literally so Next can inline it.
 export const env = parseEnv({
   NEXT_PUBLIC_DATA_SOURCE: process.env.NEXT_PUBLIC_DATA_SOURCE,
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  // NEXT_PUBLIC_APP_URL is the same thing under the name Better Auth setups use.
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL,
   NEXT_PUBLIC_MOCK_LATENCY: process.env.NEXT_PUBLIC_MOCK_LATENCY,
 });
 

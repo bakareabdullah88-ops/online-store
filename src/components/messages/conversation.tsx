@@ -13,6 +13,9 @@ import { errorMessage } from "@/services/errors";
 import { toast } from "@/stores/toast";
 import type { QuickReply } from "./quick-replies";
 
+/** Unsent text per conversation, kept for this visit. */
+const drafts = new Map<string, string>();
+
 /** Draft card: the chosen reply types itself in, then can be edited, swapped or sent. */
 function DraftCard({
   reply,
@@ -50,11 +53,11 @@ function DraftCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
       transition={spring.smooth}
-      className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,color-mix(in_oklab,var(--chart-blue)_10%,var(--surface)),color-mix(in_oklab,var(--chart-violet)_14%,var(--surface)))] p-4 ring-1 ring-line"
+      className="relative border-t border-line-thin pt-4"
     >
       <div className="flex items-center gap-2 text-[13px] font-medium">
         <span
@@ -131,7 +134,7 @@ function DraftCard({
                 disabled={sending || !text.trim()}
                 onClick={() => onSend(text.trim())}
                 aria-label="Send this reply"
-                className="grid size-10 place-items-center rounded-full bg-chart-violet text-white shadow-[0_8px_20px_-6px_var(--chart-violet)] disabled:opacity-50"
+                className="grid size-10 place-items-center rounded-full bg-primary text-on-primary disabled:opacity-50"
               >
                 <SendHorizontal className="size-4" />
               </motion.button>
@@ -164,7 +167,13 @@ export function Conversation({
 }) {
   const { data: thread, isPending } = useThread(threadId, as);
   const send = useSendMessage(as);
-  const [body, setBody] = useState("");
+  const [body, setBodyState] = useState(() => drafts.get(threadId) ?? "");
+  // Half-typed replies survive switching conversations.
+  const setBody = (v: string) => {
+    if (v) drafts.set(threadId, v);
+    else drafts.delete(threadId);
+    setBodyState(v);
+  };
   const [tools, setTools] = useState(false);
   const [draft, setDraft] = useState<QuickReply | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -183,7 +192,7 @@ export function Conversation({
       { threadId, body: text },
       {
         onSuccess: after,
-        onError: (e) => toast.error("Message not sent", { description: errorMessage(e) }),
+        onError: (e) => toast.error("That didn't send", { description: errorMessage(e) }),
       },
     );
   };
@@ -191,7 +200,16 @@ export function Conversation({
     const text = body.trim();
     if (!text) return;
     setBody("");
-    deliver(text);
+    send.mutate(
+      { threadId, body: text },
+      {
+        onError: (e) => {
+          // Put the text back so nothing typed is lost.
+          setBody(text);
+          toast.error("That didn't send", { description: errorMessage(e) });
+        },
+      },
+    );
   };
 
   let lastStamp = "";
@@ -226,8 +244,8 @@ export function Conversation({
                   <motion.li
                     key={m.id}
                     layout={!reduce}
-                    initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={spring.smooth}
                     className={cn("flex flex-col", mine ? "items-end" : "items-start")}
                   >
@@ -238,8 +256,8 @@ export function Conversation({
                       className={cn(
                         "max-w-[78%] rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed",
                         mine
-                          ? "rounded-tr-md bg-[color-mix(in_oklab,var(--chart-violet)_12%,var(--surface))] text-ink"
-                          : "rounded-tl-md bg-[color-mix(in_oklab,var(--chart-blue)_9%,var(--surface))] text-ink",
+                          ? "rounded-tr-md bg-accent-soft text-ink"
+                          : "rounded-tl-md bg-surface-2 text-ink ring-1 ring-line",
                       )}
                     >
                       <p className="break-words whitespace-pre-wrap">{m.body}</p>
@@ -269,11 +287,11 @@ export function Conversation({
           replies && (
             <motion.div
               key="tools"
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: 6, filter: "blur(6px)" }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
               transition={spring.smooth}
-              className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-2/80 p-1.5 ring-1 ring-line sm:grid-cols-3"
+              className="grid grid-cols-2 gap-1.5 sm:grid-cols-3"
               role="group"
               aria-label="Quick replies"
             >
@@ -288,7 +306,7 @@ export function Conversation({
                     setTools(false);
                     setDraft(r);
                   }}
-                  className="flex flex-col items-start gap-3 rounded-xl px-3.5 py-3 text-left text-[13px] font-medium transition-colors hover:bg-surface hover:shadow-xs"
+                  className="flex flex-col items-start gap-3 rounded-xl px-3.5 py-3 text-left text-[13px] font-medium ring-1 ring-line transition-colors hover:bg-ink/[0.03]"
                 >
                   <span
                     className="grid size-6 place-items-center rounded-md"
@@ -322,18 +340,35 @@ export function Conversation({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            // Enter sends; Shift+Enter (or Alt+Enter) starts a new line. Never while an
+            // input method (Chinese, Japanese, some phone keyboards) is still composing.
+            if (e.key === "Enter" && !e.shiftKey && !e.altKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               submit();
+            } else if (e.key === "Escape" && tools) {
+              e.preventDefault();
+              setTools(false);
             }
           }}
           rows={1}
           maxLength={1000}
-          placeholder="Send message…"
-          className="field-sizing-content max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[14px] outline-none placeholder:text-faint"
+          placeholder="Message…"
+          enterKeyHint="send"
+          autoCapitalize="sentences"
+          autoCorrect="on"
+          autoComplete="off"
+          spellCheck
+          aria-describedby={`composer-hint-${threadId}`}
+          // 16px on phones so iOS doesn't zoom the page when the box is focused.
+          className="field-sizing-content max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-[16px] outline-none placeholder:text-faint md:text-[14px]"
         />
+        <span id={`composer-hint-${threadId}`} className="sr-only">
+          Enter sends. Shift and Enter starts a new line.
+        </span>
         <motion.button
           type="submit"
+          // Keep the keyboard open on phones: tapping send doesn't take focus from the box.
+          onPointerDown={(e) => e.preventDefault()}
           whileTap={{ scale: 0.9 }}
           transition={spring.snappy}
           disabled={!body.trim()}
@@ -353,9 +388,7 @@ export function Conversation({
             aria-label={tools ? "Hide quick replies" : "Show quick replies"}
             className={cn(
               "grid size-10 shrink-0 place-items-center rounded-xl transition-colors",
-              tools || draft
-                ? "bg-accent-soft text-accent"
-                : "text-chart-violet hover:bg-ink/[0.05]",
+              tools || draft ? "bg-accent-soft text-accent" : "text-accent-ink hover:bg-ink/[0.05]",
             )}
           >
             <Wand2 className="size-[18px]" />

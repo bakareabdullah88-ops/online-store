@@ -6,6 +6,7 @@ import { useUi } from "@/stores/ui";
 import { AppSync } from "./app-sync";
 import { ModeCurtain } from "./mode-curtain";
 import { OfflineBanner } from "./offline-banner";
+import { SpotClaim } from "./spot-claim";
 
 // Interaction-only overlays: their code loads when first opened (or when the
 // browser is idle), never on the critical path of a page load.
@@ -65,9 +66,10 @@ export function GlobalChrome() {
   return (
     <Suspense fallback={null}>
       <AppSync />
-      <ModeCurtain />
       <OfflineBanner />
+      <SpotClaim />
       <Overlays />
+      <ModeCurtain />
     </Suspense>
   );
 }

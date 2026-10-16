@@ -3,22 +3,13 @@ import { Suspense } from "react";
 import { Page } from "@/components/shell/page";
 import { SignupForm } from "@/components/auth/signup-form";
 import { AuthFormSkeleton } from "@/components/auth/skeleton";
-import { InviteOnly } from "@/components/auth/invite-only";
-import { features } from "@/config/features";
 
 export const metadata: Metadata = {
-  title: "Get access",
-  description: "How to get a Kiosk login.",
+  title: "Create an account",
+  description: "Join Kamplug to buy from and sell to students on your campus.",
 };
 
 export default function SignupPage() {
-  if (features.inviteOnly) {
-    return (
-      <Page className="w-full max-w-md">
-        <InviteOnly />
-      </Page>
-    );
-  }
   return (
     <Page className="w-full max-w-md">
       <Suspense fallback={<AuthFormSkeleton fields={3} />}>

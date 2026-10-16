@@ -1,14 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, Loader2, X } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ProgressBar } from "@/components/ui/misc";
+import { Ribbons } from "@/components/ui/ribbons";
 import { Celebration } from "@/components/checkout/celebration";
-import { useCurtain } from "@/components/shell/mode-curtain";
 import { categories, categoryById } from "@/config/categories";
 import { spring } from "@/design/motion";
 import { slugify } from "@/lib/ids";
@@ -59,16 +60,12 @@ function Preview({ s, campusName }: { s: State; campusName: string }) {
     seed,
   };
   return (
-    <div
-      className="card overflow-hidden shadow-lg"
-      aria-label="Live preview of your shop"
-      role="img"
-    >
-      <div className="aspect-[16/7]">
+    <div className="card pt-5" aria-label="Live preview of your shop" role="img">
+      <div className="relative aspect-[16/7] overflow-hidden rounded-lg">
         <AppImage image={cover} alt="" variant="cover" />
       </div>
-      <div className="p-5">
-        <div className="-mt-12 size-16 overflow-hidden rounded-full ring-4 ring-surface">
+      <div className="pt-5">
+        <div className="relative -mt-12 ml-4 size-16 overflow-hidden rounded-full ring-4 ring-canvas">
           <AppImage image={logo} alt="" variant="logo" name={s.name || "Your brand"} />
         </div>
         <p className="mt-3 eyebrow text-muted">
@@ -97,15 +94,14 @@ export function OpenShopWizard() {
   const campus = useCampus(user?.campusId);
   const reduce = useReducedMotion();
   const create = useCreateBrand();
+  const router = useRouter();
   const checkHandle = useHandleAvailable();
-  const startCurtain = useCurtain((s) => s.start);
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [created, setCreated] = useState<Brand | null>(null);
-  const [handleState, setHandleState] = useState<"idle" | "checking" | "ok" | "taken" | "invalid">(
-    "idle",
-  );
+  // The last availability answer, for the handle it was about.
+  const [checked, setChecked] = useState<{ handle: string; ok: boolean } | null>(null);
   const [s, setS] = useState<State>({
     name: "",
     handle: "",
@@ -129,25 +125,39 @@ export function OpenShopWizard() {
   useEffect(() => () => useUi.setState({ shopJustOpened: false }), []);
 
   // Live handle availability (debounced).
-  const { mutate: check } = checkHandle;
+  const { mutate: check, mutateAsync: checkNow } = checkHandle;
   useEffect(() => {
     if (!s.handle) return;
     if (!handleSchema.safeParse(s.handle).success) return;
+    const handle = s.handle;
     const t = window.setTimeout(() => {
-      setHandleState("checking");
-      check(s.handle, { onSuccess: (ok) => setHandleState(ok ? "ok" : "taken") });
+      check(handle, { onSuccess: (ok) => setChecked({ handle, ok }) });
     }, 350);
     return () => window.clearTimeout(t);
   }, [s.handle, check]);
   const handleValid = !s.handle || handleSchema.safeParse(s.handle).success;
-  const shownHandleState = !s.handle ? "idle" : !handleValid ? "invalid" : handleState;
+  const shownHandleState = !s.handle
+    ? "idle"
+    : !handleValid
+      ? "invalid"
+      : checked?.handle === s.handle
+        ? checked.ok
+          ? "ok"
+          : "taken"
+        : "checking";
 
   // Default pickup point once the campus is known.
   const firstPoint = campus?.pickupPoints[0]?.id;
-  const fulfilment =
+  const withPoint =
     s.fulfilment.pickupPointIds.length === 0 && s.fulfilment.pickup && firstPoint
       ? { ...s.fulfilment, pickupPointIds: [firstPoint] }
       : s.fulfilment;
+  // Where they sell from starts at their hall, if they told us.
+  const hall = user?.hallZoneId;
+  const fulfilment =
+    !withPoint.baseZoneId && hall && campus?.zones.some((z) => z.id === hall)
+      ? { ...withPoint, baseZoneId: hall }
+      : withPoint;
 
   const go = (to: number) => {
     setDir(to > step ? 1 : -1);
@@ -176,8 +186,28 @@ export function OpenShopWizard() {
     return Object.keys(e).length === 0;
   };
 
-  const next = () => {
+  // Continue pressed before the live check answered: check right away, then move on.
+  const [awaitingHandle, setAwaitingHandle] = useState(false);
+
+  const next = async () => {
     if (!validateStep()) return;
+    if (step === 0 && shownHandleState !== "ok") {
+      setAwaitingHandle(true);
+      try {
+        const handle = s.handle;
+        const ok = await checkNow(handle);
+        setChecked({ handle, ok });
+        if (!ok) {
+          setErrors({ handle: "That handle is taken" });
+          return;
+        }
+      } catch (e) {
+        toast.error("Couldn't check that handle", { description: errorMessage(e) });
+        return;
+      } finally {
+        setAwaitingHandle(false);
+      }
+    }
     if (step < steps.length - 1) go(step + 1);
   };
 
@@ -202,9 +232,35 @@ export function OpenShopWizard() {
         useUi.setState({ shopJustOpened: true });
         setCreated(b);
       },
-      onError: (e) => toast.error("Couldn't open your shop", { description: errorMessage(e) }),
+      onError: (e) => {
+        // A handle someone else just took sends you back to the step where you can change it.
+        const fields = (e as { fields?: Record<string, string> }).fields;
+        if (fields?.handle) {
+          go(0);
+          setErrors({ handle: fields.handle });
+          setChecked({ handle: s.handle, ok: false });
+          return;
+        }
+        toast.error("Couldn't open your shop", { description: errorMessage(e) });
+      },
     });
   };
+
+  // Move focus to the new step's heading so keyboard and screen-reader users land on it.
+  const firstStep = useRef(true);
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false;
+      return;
+    }
+    const t = window.setTimeout(() => {
+      const h = document.querySelector<HTMLHeadingElement>("[data-wizard] h1");
+      if (!h) return;
+      h.tabIndex = -1;
+      h.focus({ preventScroll: true });
+    }, 380);
+    return () => window.clearTimeout(t);
+  }, [step]);
 
   const variants = {
     enter: (d: number) => (reduce ? { opacity: 0 } : { opacity: 0, x: d * 48 }),
@@ -214,26 +270,30 @@ export function OpenShopWizard() {
 
   if (created) {
     return (
-      <div className="mx-auto max-w-lg py-10 text-center">
-        <Celebration />
-        <motion.h1
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spring.smooth, delay: 0.25 }}
-          className="mt-8 font-display text-display-lg text-balance"
-        >
-          {created.name} is open
-        </motion.h1>
-        <p className="mt-3 text-body-lg text-muted">
-          Your shop is live at kiosk/{created.handle}. Add a product so students can start ordering.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Button size="lg" onClick={() => startCurtain("selling", "/studio/products/new")}>
-            Add your first product
-          </Button>
-          <Button size="lg" variant="secondary" onClick={() => startCurtain("selling", "/studio")}>
-            Go to Shop Studio
-          </Button>
+      <div className="relative mx-auto max-w-lg py-10 text-center">
+        <Ribbons />
+        <div className="relative z-10">
+          <Celebration />
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring.smooth, delay: 0.25 }}
+            className="mt-8 font-display text-display-lg text-balance"
+          >
+            {created.name} is open
+          </motion.h1>
+          <p className="mt-3 text-body-lg text-muted">
+            Your shop is live at kamplug/{created.handle}. Add a product so students can start
+            ordering.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button size="lg" onClick={() => router.push("/studio/products/new")}>
+              Add your first product
+            </Button>
+            <Button size="lg" variant="secondary" onClick={() => router.push("/studio")}>
+              Go to Shop Studio
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -275,7 +335,7 @@ export function OpenShopWizard() {
           ))}
         </ol>
 
-        <div className="relative mt-10 min-h-[440px] overflow-hidden">
+        <div data-wizard className="relative mt-10 min-h-[440px] overflow-hidden">
           <AnimatePresence mode="wait" custom={dir} initial={false}>
             <motion.form
               key={step}
@@ -289,7 +349,7 @@ export function OpenShopWizard() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (step === steps.length - 1) launch();
-                else next();
+                else void next();
               }}
             >
               {step === 0 && (
@@ -331,22 +391,21 @@ export function OpenShopWizard() {
                     }
                     hint={
                       shownHandleState === "ok"
-                        ? `kiosk/${s.handle} is yours`
-                        : "Your shop link, e.g. kiosk/moremithrift"
+                        ? `kamplug/${s.handle} is yours`
+                        : "Your shop link, e.g. kamplug/moremithrift"
                     }
                   >
                     <Input
                       value={s.handle}
                       maxLength={24}
                       onChange={(e) => {
-                        setHandleState("idle");
                         setS((x) => ({
                           ...x,
                           handle: e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""),
                           handleTouched: true,
                         }));
                       }}
-                      leading={<span className="font-mono text-small">kiosk/</span>}
+                      leading={<span className="font-mono text-small">kamplug/</span>}
                       className="pl-16 font-mono"
                       trailing={
                         <span
@@ -445,6 +504,7 @@ export function OpenShopWizard() {
                     variant="cover"
                     label="Upload a cover image"
                     onUploaded={(id, ref) => setS((x) => ({ ...x, cover: { id, ref } }))}
+                    withButton
                   />
                   <div className="flex items-center gap-4">
                     <ImagePicker
@@ -460,10 +520,10 @@ export function OpenShopWizard() {
                       variant="logo"
                       label="Upload a logo"
                       onUploaded={(id, ref) => setS((x) => ({ ...x, logo: { id, ref } }))}
+                      withButton
                     />
                     <p className="text-small text-muted">
-                      Hover or tap the images to upload. Square logos look best; covers are wide
-                      (16:6).
+                      Square logos look best. Covers are wide (16:6). PNG, JPG or WebP.
                     </p>
                   </div>
                 </div>
@@ -532,11 +592,11 @@ export function OpenShopWizard() {
                   <div className="lg:hidden">
                     <Preview s={{ ...s, fulfilment }} campusName={campusName} />
                   </div>
-                  <dl className="card grid grid-cols-[120px_1fr] gap-y-2 p-5 text-small">
+                  <dl className="card grid grid-cols-[120px_1fr] gap-y-2 py-5 text-small">
                     <dt className="text-muted">Name</dt>
                     <dd>{s.name}</dd>
                     <dt className="text-muted">Link</dt>
-                    <dd className="font-mono">kiosk/{s.handle}</dd>
+                    <dd className="font-mono">kamplug/{s.handle}</dd>
                     <dt className="text-muted">Category</dt>
                     <dd>{s.category ? categoryById(s.category).name : ""}</dd>
                     <dt className="text-muted">Fulfilment</dt>
@@ -572,7 +632,7 @@ export function OpenShopWizard() {
                   type="submit"
                   size="lg"
                   className="ml-auto"
-                  loading={create.isPending}
+                  loading={create.isPending || awaitingHandle}
                   trailingIcon={
                     step < steps.length - 1 ? <ArrowRight className="size-4.5" /> : undefined
                   }

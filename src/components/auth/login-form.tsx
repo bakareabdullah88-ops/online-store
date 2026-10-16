@@ -12,7 +12,7 @@ import { safeNext } from "@/lib/safe-next";
 import { signInSchema } from "@/services/inputs";
 import { useSignIn } from "@/queries/session";
 import { toast } from "@/stores/toast";
-import { features } from "@/config/features";
+import { GoogleButton, SignInError } from "./google-button";
 
 type Values = z.input<typeof signInSchema>;
 
@@ -44,15 +44,17 @@ export function LoginForm() {
     <div className="w-full max-w-md">
       <h1 className="font-display text-display-md">Welcome back</h1>
       <p className="mt-2 text-body text-muted">
-        {features.inviteOnly ? "No login yet? " : "New here? "}
+        New here?{" "}
         <Link
           href={`/signup${next ? `?next=${encodeURIComponent(next)}` : ""}`}
           className="font-medium text-ink underline underline-offset-4"
         >
-          {features.inviteOnly ? "How to get access" : "Create an account"}
+          Create an account
         </Link>
       </p>
+      <SignInError code={params.get("error")} />
       <form onSubmit={onSubmit} noValidate className="mt-8 flex flex-col gap-5">
+        <GoogleButton next={next} />
         <Field label="Email" error={form.formState.errors.email?.message}>
           <Input
             type="email"
@@ -68,7 +70,7 @@ export function LoginForm() {
           aside={
             <Link
               href="/forgot-password"
-              className="text-small text-muted underline-offset-4 hover:text-ink hover:underline"
+              className="tap-area text-small text-muted underline-offset-4 hover:text-ink hover:underline"
             >
               Forgot password?
             </Link>

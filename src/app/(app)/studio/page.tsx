@@ -4,7 +4,7 @@ import { Page } from "@/components/shell/page";
 import { ShopPerformance } from "@/components/studio/performance";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
 
-export const metadata: Metadata = { title: "Performance", robots: { index: false } };
+export const metadata: Metadata = { title: "Dashboard", robots: { index: false } };
 
 export default function StudioPage() {
   return (

@@ -1,290 +1,201 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Activity,
-  BarChart3,
-  CalendarDays,
-  Download,
-  Filter,
-  Gauge,
-  ListChecks,
-  Package,
-  Receipt,
-  Repeat,
-  ShoppingBag,
-  Sparkles,
-  Trophy,
-  Users,
-  Wallet,
-} from "lucide-react";
-import { PageHeader } from "@/components/app/page-header";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BadgeCheck, ExternalLink, Plus, Star } from "lucide-react";
 import { pagePad } from "@/components/app/layout";
-import { Stagger, StaggerItem } from "@/components/app/stagger";
-import { DashCard, StatCard } from "@/components/dash/card";
+import { DashCard } from "@/components/dash/card";
 import { DateRangeControl, useRangeParam } from "@/components/dash/date-range";
-import { DailyDots, WeekdayDots } from "@/components/dash/dot-matrix";
-import { HatchedBars } from "@/components/dash/bars";
-import { FunnelChart } from "@/components/dash/funnel-chart";
-import { InsightCard } from "@/components/dash/insight";
-import { QuickJump } from "@/components/dash/quick-jump";
+import { HeroFigure } from "@/components/dash/hero";
 import { SetupStrip } from "@/components/dash/setup";
 import { DashboardSkeleton } from "@/components/dash/skeleton";
-import { StepLine } from "@/components/dash/step-line";
 import { TodoList } from "@/components/dash/todo";
+import { AppImage } from "@/components/ui/app-image";
 import { ButtonLink } from "@/components/ui/button";
-import { rangeLabel, weekdayName, type SellerDashboard } from "@/domain/analytics";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SegmentedControl } from "@/components/ui/tabs";
+import { ShareButton } from "@/components/market/share-button";
+import { rangeLabel } from "@/domain/analytics";
 import { formatNaira, formatNairaCompact } from "@/domain/money";
-import { formatNumber } from "@/lib/format";
+import { formatCompact, formatNumber } from "@/lib/format";
 import { useMyBrand, useShopDashboard } from "@/queries/studio";
+import type { Brand } from "@/services/types";
+import { ShopInsights } from "./analytics";
 
-const kobo = (n: number) => Math.round(n);
-
-function downloadCsv(d: SellerDashboard) {
-  const rows = [
-    ["date", "orders", "revenue_naira"],
-    ...d.daily.map((p) => [p.date, String(p.orders), (p.amountKobo / 100).toFixed(2)]),
-  ];
-  const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `performance-${d.range.from}-to-${d.range.to}.csv`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
+/** Your shop the way students see it: cover photo, logo, the counts that matter, and a way to share it. No box around it. */
+function ShopFront({ brand }: { brand: Brand | null | undefined }) {
+  if (!brand) {
+    return <Skeleton className="h-[188px] w-full md:h-[210px]" rounded="lg" />;
+  }
   return (
-    <p className="pointer-events-none absolute inset-x-6 top-1/2 -translate-y-1/2 text-center text-small text-muted">
-      {children}
-    </p>
+    <section>
+      <div className="relative h-24 overflow-hidden rounded-xl bg-surface-2 md:h-32">
+        <AppImage
+          image={brand.cover}
+          alt=""
+          variant="cover"
+          sizes="(min-width: 1280px) 1200px, 100vw"
+        />
+      </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="flex min-w-0 flex-1 items-end gap-3.5">
+          <span className="relative -mt-9 ml-4 size-[72px] shrink-0 overflow-hidden rounded-2xl bg-surface ring-4 ring-(--app-bg) md:-mt-11 md:ml-6 md:size-20">
+            <AppImage image={brand.logo} alt="" variant="logo" name={brand.name} />
+          </span>
+          <div className="min-w-0 pb-0.5">
+            <h1 className="flex items-center gap-1.5 text-[22px] leading-tight font-semibold tracking-[-0.02em] md:text-[26px]">
+              <span className="truncate">{brand.name}</span>
+              {brand.verified && (
+                <BadgeCheck className="size-5 shrink-0 text-accent" aria-label="Verified shop" />
+              )}
+            </h1>
+            <p className="truncate text-small text-muted">kamplug/{brand.handle}</p>
+          </div>
+        </div>
+        <dl className="flex items-center gap-5 text-center md:gap-7">
+          <div>
+            <dt className="text-[12px] text-muted">Followers</dt>
+            <dd className="text-[17px] font-semibold tabular">
+              {formatCompact(brand.followerCount)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-muted">Products</dt>
+            <dd className="text-[17px] font-semibold tabular">
+              {formatNumber(brand.productCount)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[12px] text-muted">Rating</dt>
+            <dd className="flex items-center justify-center gap-1 text-[17px] font-semibold tabular">
+              {brand.ratingCount ? (
+                <>
+                  <Star className="size-4 fill-[#f59e0b] text-[#f59e0b]" aria-hidden />
+                  {brand.rating.toFixed(1)}
+                </>
+              ) : (
+                <span className="text-muted">–</span>
+              )}
+            </dd>
+          </div>
+        </dl>
+        <div className="flex gap-2">
+          <ButtonLink
+            href={`/brands/${brand.handle}`}
+            variant="secondary"
+            leadingIcon={<ExternalLink className="size-4" />}
+            className="flex-1 md:flex-none"
+          >
+            View shop
+          </ButtonLink>
+          <ShareButton
+            title={brand.name}
+            text={`${brand.name} on Kamplug`}
+            path={`/brands/${brand.handle}`}
+          />
+        </div>
+      </div>
+    </section>
   );
 }
 
-/** Shop "Performance" dashboard (image 3 + the video's overview). */
+type View = "overview" | "insights";
+const views = [
+  { value: "overview", label: "Overview" },
+  { value: "insights", label: "Insights" },
+] as const;
+
+/**
+ * The shop's one dashboard. Overview: revenue, what needs doing, what's selling.
+ * Insights: the funnel, busy days and how each product sells. Same date range for both.
+ */
 export function ShopPerformance() {
   const { preset, range, setPreset } = useRangeParam();
   const { data: brand } = useMyBrand();
   const { data: d } = useShopDashboard(range);
-  const compare = (v: string) => `vs ${v} before`;
-  const noTraffic = !!d && d.funnel.every((s) => s.value === 0 && s.prev === 0);
-  const noOrders = !!d && d.orders.value === 0;
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/studio";
+  const view: View = params.get("view") === "insights" ? "insights" : "overview";
+  const setView = (v: View) => {
+    const next = new URLSearchParams(params.toString());
+    if (v === "overview") next.delete("view");
+    else next.set("view", v);
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
 
   return (
     <div className={pagePad}>
-      <PageHeader
-        icon={Gauge}
-        crumbs={[{ label: brand?.name ?? "Shop", href: "/studio" }, { label: "Performance" }]}
-        title="Performance"
-        description={`How ${brand?.name ?? "your shop"} did from ${rangeLabel(range)}`}
-        actions={<DateRangeControl preset={preset} range={range} onChange={setPreset} />}
-      />
-      {!d ? (
-        <div className="mt-6">
+      <ShopFront brand={brand} />
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <SegmentedControl<View>
+          value={view}
+          onChange={setView}
+          options={views}
+          label="Dashboard view"
+        />
+        <DateRangeControl preset={preset} range={range} onChange={setPreset} />
+      </div>
+      {view === "insights" ? (
+        <div className="mt-4">
+          <ShopInsights range={range} />
+        </div>
+      ) : !d ? (
+        <div className="mt-4">
           <DashboardSkeleton />
         </div>
       ) : (
-        <Stagger className="mt-6 grid grid-cols-1 gap-4">
-          <StaggerItem>
-            <SetupStrip />
-          </StaggerItem>
-          <StaggerItem className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            <StatCard
-              icon={<Receipt />}
-              label="Revenue"
-              value={d.revenue.value}
-              format={(n) => formatNaira(Math.round(n))}
-              tone="var(--chart-blue)"
-              spark={d.daily.map((p) => p.amountKobo)}
-              change={d.revenue.change}
-              compare={compare(formatNairaCompact(kobo(d.revenue.prev)))}
-            />
-            <StatCard
-              icon={<ShoppingBag />}
-              label="Orders"
-              value={d.orders.value}
-              format={(n) => formatNumber(Math.round(n))}
-              tone="var(--chart-orange)"
-              spark={d.daily.map((p) => p.orders)}
-              change={d.orders.change}
-              compare={compare(formatNumber(d.orders.prev))}
-            />
-            <StatCard
-              icon={<Users />}
-              label="Customers"
-              value={d.customers.value}
-              format={(n) => formatNumber(Math.round(n))}
-              tone="var(--chart-pink)"
-              spark={d.weekdays.map((w) => w.orders)}
-              change={d.customers.change}
-              compare={compare(formatNumber(d.customers.prev))}
-            />
-            <StatCard
-              icon={<BarChart3 />}
-              label="Conversion"
-              value={d.conversion.value}
-              format={(n) => `${n.toFixed(1)}%`}
-              tone="var(--chart-violet)"
-              spark={d.funnel.map((f) => f.value)}
-              change={d.conversion.change}
-              compare={compare(`${d.conversion.prev.toFixed(1)}%`)}
-            />
-          </StaggerItem>
+        <div className="mt-4 flex flex-col">
+          <HeroFigure
+            label={`Revenue, ${rangeLabel(range)}`}
+            valueKobo={d.revenue.value}
+            change={d.revenue.change}
+            compare={`vs ${formatNairaCompact(Math.round(d.revenue.prev))} the period before`}
+            points={d.daily}
+            stats={[
+              { label: "Orders", value: formatNumber(d.orders.value) },
+              { label: "Customers", value: formatNumber(d.customers.value) },
+              { label: "Conversion", value: `${d.conversion.value.toFixed(1)}%` },
+            ]}
+            footer={
+              <button
+                type="button"
+                onClick={() => setView("insights")}
+                className="tap-area text-small font-medium text-accent-ink hover:underline"
+              >
+                See the funnel, busiest days and each product
+              </button>
+            }
+          />
 
-          <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.1fr)_minmax(0,1fr)]">
-            <DashCard
-              title="Sales funnel"
-              icon={<Filter />}
-              tone="var(--chart-blue)"
-              bodyClassName="px-0 pb-0 md:px-0 md:pb-0"
-              actions={[
-                {
-                  label: "See product analytics",
-                  href: `/studio/analytics?range=${preset}`,
-                  icon: <BarChart3 />,
-                },
-                { label: "Open orders", href: "/studio/orders", icon: <Receipt /> },
-              ]}
-            >
-              <div className="relative px-5 md:px-6">
-                <FunnelChart
-                  steps={d.funnel}
-                  unit={(s) =>
-                    s.key === "views" ? "views" : s.key === "bag" ? "adds to bag" : "orders"
-                  }
-                />
-                {noTraffic && (
-                  <Empty>
-                    Views, adds to bag and orders show up here once people find your products.
-                  </Empty>
-                )}
-              </div>
-              <QuickJump
-                prompt="What would you like to check next?"
-                placeholder="Search your products, or type / for shortcuts"
-                search={(q) => `/studio/products?q=${encodeURIComponent(q)}`}
-                shortcuts={[
-                  { token: "new orders", href: "/studio/orders?status=placed" },
-                  {
-                    token: "orders",
-                    href: "/studio/orders",
-                    withQuery: (q) => `/studio/orders?q=${encodeURIComponent(q)}`,
-                  },
-                  { token: "low stock", href: "/studio/products?stock=low" },
-                  { token: "drafts", href: "/studio/products?status=draft" },
-                  {
-                    token: "customers",
-                    href: "/studio/customers",
-                    withQuery: (q) => `/studio/customers?q=${encodeURIComponent(q)}`,
-                  },
-                  { token: "reviews", href: "/studio/reviews" },
-                ]}
-              />
-            </DashCard>
-            <DashCard
-              title="Gross volume"
-              icon={<Wallet />}
-              tone="var(--chart-green)"
-              actions={[{ label: "Finance", href: "/studio/finance", icon: <Receipt /> }]}
-            >
-              <p className="text-[40px] leading-none font-medium tracking-[-0.04em] tabular md:text-[52px]">
-                {formatNaira(kobo(d.volume.totalKobo))}
-              </p>
-              <p className="mt-2 text-small text-muted">Order totals, {rangeLabel(range)}</p>
-              <div className="my-6 h-px bg-line" />
-              <HatchedBars parts={d.volume.parts} />
-            </DashCard>
-          </StaggerItem>
+          <SetupStrip />
 
-          <StaggerItem className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.9fr)]">
+          <div className="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
             <DashCard
-              title="Repeat buyers"
-              icon={<Repeat />}
-              tone="var(--chart-pink)"
-              actions={[{ label: "See customers", href: "/studio/customers", icon: <Users /> }]}
-            >
-              <p className="text-small text-muted">
-                {d.retention.rate === null
-                  ? "No buyers in this range yet"
-                  : `${Math.round(d.retention.rate)}% of this range's buyers had ordered before`}
-              </p>
-              <div className="relative mt-auto pt-12">
-                <StepLine points={d.retention.series} />
-              </div>
-            </DashCard>
-            <DashCard
-              title="Orders by day"
-              icon={<CalendarDays />}
-              tone="var(--chart-orange)"
-              actions={[{ label: "Open orders", href: "/studio/orders", icon: <Receipt /> }]}
-            >
-              <div className="mt-auto flex flex-wrap items-end justify-between gap-4">
-                <p className="text-[52px] leading-none font-medium tracking-[-0.04em] tabular md:text-[64px]">
-                  {formatNumber(d.orders.value)}
-                </p>
-                <div className="relative">
-                  <WeekdayDots days={d.weekdays} peak={d.peakDay} />
-                </div>
-                <div className="text-right">
-                  <p className="text-small text-muted">vs last period</p>
-                  <p className="mt-1 text-[22px] font-medium tabular">
-                    {d.orders.value - d.orders.prev >= 0 ? "+" : "−"}
-                    {formatNumber(Math.abs(d.orders.value - d.orders.prev))}
-                  </p>
-                </div>
-              </div>
-              {d.peakDay !== null && (
-                <p className="sr-only">Busiest day: {weekdayName(d.peakDay)}</p>
-              )}
-            </DashCard>
-            <InsightCard
-              className="md:col-span-2 xl:col-span-1"
-              value={d.insight?.value ?? "—"}
-              label={
-                d.insight?.label ?? "Your completion rate appears after your first finished order."
-              }
-              href="/studio/orders"
-              empty={!d.insight}
-            />
-          </StaggerItem>
-
-          <StaggerItem className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <DashCard
-              title="Revenue by day"
-              icon={<Activity />}
-              tone="var(--chart-violet)"
-              actions={[
-                { label: "Download CSV", onSelect: () => downloadCsv(d), icon: <Download /> },
-              ]}
-            >
-              <div className="relative">
-                <DailyDots points={d.daily} format={(v) => formatNaira(kobo(v))} />
-                {noOrders && <Empty>No sales in this range yet.</Empty>}
-              </div>
-            </DashCard>
-            <DashCard
-              title="To do"
-              icon={<ListChecks />}
-              tone="#f59e0b"
+              title="Needs your attention"
               aside={
                 <Link
                   href="/studio/orders"
-                  className="text-small font-medium text-accent hover:underline"
+                  className="tap-area text-small font-medium text-accent-ink hover:underline"
                 >
-                  See all
+                  All orders
                 </Link>
               }
             >
               <TodoList items={d.todo} />
             </DashCard>
-          </StaggerItem>
 
-          <StaggerItem>
             <DashCard
               title="Top products"
-              icon={<Trophy />}
-              tone="#f59e0b"
-              actions={[{ label: "All products", href: "/studio/products", icon: <Package /> }]}
+              aside={
+                <Link
+                  href="/studio/products"
+                  className="tap-area text-small font-medium text-accent-ink hover:underline"
+                >
+                  All products
+                </Link>
+              }
             >
               {d.topProducts.length === 0 ? (
                 <div className="flex flex-col items-start gap-3 py-2">
@@ -294,35 +205,33 @@ export function ShopPerformance() {
                   <ButtonLink
                     href="/studio/products/new"
                     size="sm"
-                    leadingIcon={<Sparkles className="size-4" />}
+                    leadingIcon={<Plus className="size-4" />}
                   >
                     Add a product
                   </ButtonLink>
                 </div>
               ) : (
-                <ol className="divide-y divide-line">
+                <ol className="divide-y divide-line-thin">
                   {d.topProducts.map((p, i) => (
                     <li key={p.productId} className="flex items-center gap-3 py-3">
-                      <span className="grid size-7 place-items-center rounded-full bg-surface text-[12px] font-semibold tabular ring-1 ring-line">
-                        {i + 1}
-                      </span>
+                      <span className="w-5 text-small text-muted tabular">{i + 1}</span>
                       <Link
                         href={`/studio/products/${p.productId}`}
-                        className="min-w-0 flex-1 truncate text-[14px] font-medium hover:underline"
+                        className="tap-area min-w-0 flex-1 truncate text-[14px] font-medium hover:underline"
                       >
                         {p.name}
                       </Link>
                       <span className="text-small text-muted tabular">{p.unitsSold} sold</span>
                       <span className="w-24 text-right text-[14px] font-semibold tabular">
-                        {formatNaira(kobo(p.revenueKobo))}
+                        {formatNaira(Math.round(p.revenueKobo))}
                       </span>
                     </li>
                   ))}
                 </ol>
               )}
             </DashCard>
-          </StaggerItem>
-        </Stagger>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -19,7 +19,6 @@ const buyerRoutes = [
   "/account/places",
   "/account/reviews",
   "/account/settings",
-  "/account/members",
 ];
 const sellerRoutes = [
   "/studio",

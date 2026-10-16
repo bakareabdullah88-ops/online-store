@@ -115,6 +115,8 @@ export interface MessageService {
   listThreads(as: "buyer" | "brand"): Promise<Thread[]>;
   getThread(id: ID, as: "buyer" | "brand"): Promise<Thread>;
   startThread(input: { brandId: ID; productId?: ID }): Promise<Thread>;
+  /** A shop opens (or finds) its conversation with the buyer of one of its orders. */
+  startThreadWithBuyer(input: { orderId: ID }): Promise<Thread>;
   send(input: { threadId: ID; body: string; as: "buyer" | "brand" }): Promise<Thread>;
 }
 
@@ -174,7 +176,8 @@ export interface StudioService {
   deleteProducts(ids: ID[]): Promise<void>;
 
   listOrders(): Promise<Order[]>;
-  updateOrderStatus(id: ID, status: OrderStatus): Promise<Order>;
+  /** `note`: optional reason when declining or cancelling; the buyer sees it. */
+  updateOrderStatus(id: ID, status: OrderStatus, note?: string): Promise<Order>;
 
   listCustomers(): Promise<Customer[]>;
   listReviews(): Promise<Review[]>;

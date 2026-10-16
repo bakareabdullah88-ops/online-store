@@ -8,7 +8,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  env: {
+    // Always the real backend. Automated tests set NEXT_PUBLIC_DATA_SOURCE=mock
+    // to run without a database.
+    NEXT_PUBLIC_DATA_SOURCE: process.env.NEXT_PUBLIC_DATA_SOURCE || "remote",
+  },
   cacheComponents: true,
+  // 90 for the round category photos, which are small but should look crisp.
+  images: { qualities: [75, 90] },
   partialPrefetching: true,
   poweredByHeader: false,
   reactStrictMode: true,

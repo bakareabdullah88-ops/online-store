@@ -1,16 +1,43 @@
 import { clear, createStore, del, getMany, set, setMany, type UseStore } from "idb-keyval";
 import { generateSeed, type DbSnapshot } from "./seed";
+import { stripSample } from "./sample-sync";
 
 /**
  * In-memory repositories hydrated from IndexedDB and written through on change.
  * One key per collection keeps writes small; the whole dataset is < 1MB.
  */
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
+
+/**
+ * Where the data lives. By default the browser's IndexedDB (one person's
+ * device). The server installs a driver backed by Postgres so the same
+ * service code serves every member from one shared database.
+ */
+export type Driver = {
+  getDb(): Promise<DbSnapshot>;
+  commit(names: CollectionName[]): Promise<void>;
+  getSessionUserId(): Promise<string | null>;
+  setSessionUserId(id: string | null): Promise<void>;
+  removeMedia(ids: string[]): Promise<void>;
+};
+
+let driver: Driver | null = null;
+
+export function installDriver(d: Driver) {
+  driver = d;
+}
+
+/** True when the service code runs on the server against the shared database. */
+export const hasDriver = () => driver !== null;
+
+export function removeMediaViaDriver(ids: string[]) {
+  return driver ? driver.removeMedia(ids) : Promise.resolve();
+}
 
 export type CollectionName = keyof DbSnapshot;
 
-const COLLECTIONS: CollectionName[] = [
+export const COLLECTIONS: CollectionName[] = [
   "campuses",
   "users",
   "brands",
@@ -25,11 +52,20 @@ const COLLECTIONS: CollectionName[] = [
 ];
 
 /** Collections from v1 that no longer exist. */
-const RETIRED = ["col:wallet", "col:payouts", "col:metrics", "meta:photos"];
+const RETIRED = [
+  "col:wallet",
+  "col:payouts",
+  "col:metrics",
+  "meta:photos",
+  "meta:sampleAt",
+  "meta:sampleVersion",
+];
 
 /** Ordered migrations: key = version being migrated TO. */
 const migrations: Record<number, (db: DbSnapshot) => void> = {
   2: purgeSampleData,
+  // The sample shops and preview account are gone for good.
+  3: stripSample,
 };
 
 const isSampleUser = (id: string) =>
@@ -127,6 +163,7 @@ async function writeAll(db: DbSnapshot) {
 }
 
 export async function getDb(): Promise<DbSnapshot> {
+  if (driver) return driver.getDb();
   if (snapshot) return snapshot;
   loading ??= loadFromIdb().then((db) => {
     snapshot = db;
@@ -140,6 +177,7 @@ let flushScheduled: Promise<void> | null = null;
 
 /** Persist changed collections (batched per tick). */
 export function commit(...names: CollectionName[]): Promise<void> {
+  if (driver) return driver.commit(names);
   if (!hasIdb() || !snapshot) return Promise.resolve();
   for (const n of names) pending.add(n);
   flushScheduled ??= Promise.resolve().then(async () => {
@@ -158,11 +196,13 @@ export function commit(...names: CollectionName[]): Promise<void> {
 }
 
 export async function getSessionUserId(): Promise<string | null> {
+  if (driver) return driver.getSessionUserId();
   await getDb();
   return sessionUserId;
 }
 
 export async function setSessionUserId(id: string | null): Promise<void> {
+  if (driver) return driver.setSessionUserId(id);
   await getDb();
   sessionUserId = id;
   if (!hasIdb()) return;

@@ -1,55 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
-import { Bell, Grid2X2, Search } from "lucide-react";
-import { useState } from "react";
-import { BottomSheet } from "@/components/ui/sheet";
+import { Bell, Menu, ShoppingBag } from "lucide-react";
 import { useMode } from "@/components/shell/mode";
-import { cn } from "@/lib/cn";
 import { useUi } from "@/stores/ui";
 import { AccountMenu } from "./account-menu";
-import { KioskMark } from "./kiosk-mark";
-import { NavGrid } from "./more-menu";
+import { MessagesButton } from "./messages-button";
+import { MobileSidebar } from "./mobile-sidebar";
 import { useNavBadges } from "./nav-badges";
-import { WorkspaceSwitch } from "./workspace-switch";
+import { KamplugWordmark } from "./kamplug-mark";
 
 const iconButton =
-  "pressable relative grid size-10 place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink";
+  "pressable relative grid size-10 shrink-0 place-items-center rounded-xl text-ink-2 transition-colors hover:bg-ink/[0.05] hover:text-ink max-[380px]:size-9";
 
-/** Phone header: logo, everything-menu, search, notifications and account. */
+function Dot({ n }: { n: number }) {
+  if (!n) return null;
+  return (
+    <span className="absolute -top-0.5 -right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-badge px-1 text-[10px] font-bold text-white tabular ring-2 ring-surface">
+      {n > 99 ? "99+" : n}
+    </span>
+  );
+}
+
+/** Phone header, kept short: menu and logo, then messages, alerts, bag and account.
+ * Search and the buying/selling switch live at the top of the menu. */
 export function MobileTopBar() {
   const mode = useMode();
   const badges = useNavBadges();
-  const setCommandOpen = useUi((s) => s.setCommandOpen);
-  const [menu, setMenu] = useState(false);
+  const menu = useUi((s) => s.menuOpen);
+  const setMenu = useUi((s) => s.setMenuOpen);
+  const menuCount = mode === "selling" ? badges.newOrders : badges.activeOrders;
   return (
     <header
       style={{ viewTransitionName: "site-header" }}
-      className="sticky top-0 z-(--z-header) px-3 pt-[calc(env(safe-area-inset-top)+8px)] md:hidden"
+      className="sticky top-0 z-(--z-header) border-b border-line bg-surface pt-[env(safe-area-inset-top)] md:hidden"
     >
-      <motion.div
-        initial={{ y: -12, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex h-14 items-center gap-1 rounded-[18px] glass-bar px-2"
-      >
-        <Link
-          href={mode === "selling" ? "/studio" : "/home"}
-          aria-label="Kiosk home"
-          className="grid size-10 shrink-0 pressable place-items-center rounded-xl bg-primary text-on-primary shadow-md"
-        >
-          <KioskMark className="size-5" />
-        </Link>
-        <WorkspaceSwitch compact className="ml-1" />
-        <span className="flex-1" />
+      <div className="flex h-14 items-center gap-0.5 px-2">
         <button
           type="button"
-          aria-label="Search"
-          onClick={() => setCommandOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={menu}
+          onClick={() => setMenu(true)}
           className={iconButton}
         >
-          <Search className="size-5" />
+          <Menu className="size-5" />
+          {menuCount > 0 && (
+            <span className="absolute top-2 right-2 size-2 rounded-full bg-badge ring-2 ring-surface" />
+          )}
         </button>
+        <Link
+          href={mode === "selling" ? "/studio" : "/home"}
+          aria-label="Kamplug home"
+          className="ml-1 flex shrink-0 items-center"
+        >
+          <KamplugWordmark className="text-[22px]" />
+        </Link>
+        <span className="min-w-0 flex-1" />
+        <MessagesButton />
         <Link
           href="/notifications"
           aria-label={
@@ -58,30 +65,24 @@ export function MobileTopBar() {
           className={iconButton}
         >
           <Bell className="size-5" />
-          {badges.notifications > 0 && (
-            <span className="absolute top-2 right-2.5 size-2 rounded-full bg-badge ring-2 ring-surface" />
-          )}
+          <Dot n={badges.notifications} />
         </Link>
-        <button
-          type="button"
-          aria-label="All pages"
-          onClick={() => setMenu(true)}
-          className={cn(iconButton)}
-        >
-          <Grid2X2 className="size-5" />
-        </button>
-        <AccountMenu />
-      </motion.div>
-      <BottomSheet
-        open={menu}
-        onOpenChange={setMenu}
-        title="All pages"
-        description="Everything in this workspace"
-      >
-        <div className="pb-4">
-          <NavGrid onNavigate={() => setMenu(false)} />
-        </div>
-      </BottomSheet>
+        {mode === "buying" && (
+          <Link
+            href="/bag"
+            aria-label={badges.bag ? `Bag, ${badges.bag} items` : "Bag"}
+            className={iconButton}
+            data-bag-target
+          >
+            <ShoppingBag className="size-5" />
+            <Dot n={badges.bag} />
+          </Link>
+        )}
+        <span className="ml-1 shrink-0">
+          <AccountMenu />
+        </span>
+      </div>
+      <MobileSidebar open={menu} onOpenChange={setMenu} />
     </header>
   );
 }

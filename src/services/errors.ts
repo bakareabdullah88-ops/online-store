@@ -28,10 +28,7 @@ export function isServiceError(e: unknown): e is ServiceError {
 }
 
 /** Human message for any thrown value. */
-export function errorMessage(
-  e: unknown,
-  fallback = "Something went wrong. Please try again.",
-): string {
+export function errorMessage(e: unknown, fallback = "That didn't go through. Try again?"): string {
   if (isServiceError(e)) return e.message;
   if (e instanceof Error && e.message) return e.message;
   return fallback;

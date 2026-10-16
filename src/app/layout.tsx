@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { brand } from "@/config/brand";
 import { defaultFontPreset, emphasis, fontPresetCss } from "@/config/font-presets";
@@ -24,7 +25,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: brand.social.twitter,
     title: brand.name,
     description: brand.shortDescription,
   },
@@ -36,10 +36,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f8f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e1012" },
-  ],
+  themeColor: "#f4f5f8",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -57,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );

@@ -8,8 +8,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { discountPercent, formatNaira } from "@/domain/money";
 import { stockState, totalStock } from "@/domain/variants";
 import { cn } from "@/lib/cn";
+import { useNearness } from "@/queries/nearby";
 import type { ProductWithBrand } from "@/services/types";
+import { DistanceLine, RelationBadge } from "./nearby";
 import { WishlistButton } from "./wishlist-button";
+
+function NearBadge({ product: p }: { product: ProductWithBrand }) {
+  const n = useNearness(p.brand.fulfilment, p.brand.campusId);
+  return <RelationBadge relation={n.relation} />;
+}
 
 export function productTransitionName(id: string) {
   return `product-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -26,6 +33,7 @@ export function ProductCard({
   className,
   size = "md",
   showBrand = true,
+  action,
 }: {
   product: ProductWithBrand;
   morph?: boolean;
@@ -33,11 +41,13 @@ export function ProductCard({
   className?: string;
   size?: "md" | "lg";
   showBrand?: boolean;
+  /** A control pinned to the photo's bottom-right corner, such as a quick add. */
+  action?: React.ReactNode;
 }) {
   const off = discountPercent(p.priceKobo, p.compareAtKobo);
   const stock = stockState(totalStock(p));
   const image = (
-    <div className="size-full transition-transform duration-500 ease-out group-hover:scale-[1.035]">
+    <div className="size-full transition-opacity group-hover:opacity-90">
       <AppImage
         image={p.images[0]}
         alt={p.name}
@@ -47,12 +57,12 @@ export function ProductCard({
     </div>
   );
   return (
-    <article className={cn("group card relative lift p-2.5", className)}>
+    <article className={cn("group relative", className)}>
       <Link
         href={`/products/${p.slug}`}
         className="block rounded-md focus-visible:outline-offset-4"
       >
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[16px] bg-surface-2">
+        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-sand">
           {morph ? (
             <ViewTransition name={productTransitionName(p.id)} share="morph" default="none">
               {image}
@@ -76,6 +86,7 @@ export function ProductCard({
                 Few left
               </span>
             )}
+            <NearBadge product={p} />
             {p.brand.vacation && (
               <span className="rounded-full bg-surface/90 px-2 py-1 font-mono text-[10px] font-semibold text-ink uppercase">
                 Shop on break
@@ -83,7 +94,7 @@ export function ProductCard({
             )}
           </div>
         </div>
-        <div className={cn("mt-2.5 flex flex-col px-1 pb-1", size === "lg" ? "gap-1" : "gap-0.5")}>
+        <div className={cn("mt-2 flex flex-col", size === "lg" ? "gap-1" : "gap-0.5")}>
           {showBrand && <p className="truncate eyebrow text-muted">{p.brand.name}</p>}
           <h3
             className={cn(
@@ -116,14 +127,24 @@ export function ProductCard({
               </span>
             )}
           </div>
+          <DistanceLine
+            fulfilment={p.brand.fulfilment}
+            campusId={p.brand.campusId}
+            className="mt-0.5 text-[12px]"
+          />
         </div>
       </Link>
       <WishlistButton
         productId={p.id}
         productName={p.name}
         size="sm"
-        className="absolute top-4 right-4"
+        className="absolute top-2 right-2"
       />
+      {action && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/5]">
+          <div className="pointer-events-auto absolute right-2 bottom-2">{action}</div>
+        </div>
+      )}
     </article>
   );
 }

@@ -4,9 +4,10 @@ import { newId, slugify } from "@/lib/ids";
 import { hashString } from "@/lib/random";
 import { categoryById } from "@/config/categories";
 import type { Customer, StudioService } from "../contracts";
+import type { CreateBrandInput } from "../inputs";
 import { ServiceError } from "../errors";
 import { schemas, type Schemas } from "./schemas";
-import type { Brand, ImageRef, Product, Promo } from "../types";
+import type { Brand, Campus, Fulfilment, ImageRef, Product, Promo } from "../types";
 import { commit, getDb } from "./db";
 import { clone, requireBrand, requireUser } from "./context";
 import { latency, quick } from "./latency";
@@ -48,9 +49,38 @@ function buildProduct(
   if (expected.length !== keys.size || !expected.every((k) => keys.has(k))) {
     throw new ServiceError("VALIDATION", "Stock is missing for some option combinations.");
   }
-  const kept = (input.keepImages ?? []) as ImageRef[];
+  // The editor sends every photo, in the order the seller arranged them. Keep
+  // ones the product already has (any kind), and new uploads, which are
+  // always { kind: "blob", id }. Anything else (an outside URL, made-up art)
+  // is dropped, so nobody can attach arbitrary images.
+  const same = (a: ImageRef, b: unknown) => {
+    const r = b as Partial<Record<string, unknown>> | null;
+    if (!r || r.kind !== a.kind) return false;
+    if (a.kind === "blob") return r.id === a.id;
+    if (a.kind === "url") return r.src === a.src;
+    return r.seed === a.seed && r.motif === a.motif && r.palette === a.palette;
+  };
+  const upload = (b: unknown): ImageRef | null => {
+    const r = b as Partial<Record<string, unknown>> | null;
+    return r?.kind === "blob" && typeof r.id === "string" && /^[A-Za-z0-9_-]{1,80}$/.test(r.id)
+      ? { kind: "blob", id: r.id }
+      : null;
+  };
+  const kept = (input.keepImages ?? []).flatMap((k) => {
+    const had = existing?.images.find((img) => same(img, k));
+    const ref = had ?? upload(k);
+    return ref ? [ref] : [];
+  });
   const uploaded: ImageRef[] = input.imageIds.map((id) => ({ kind: "blob", id }));
-  const images = [...kept, ...uploaded];
+  const seen = new Set<string>();
+  const images = [...kept, ...uploaded]
+    .filter((img) => {
+      const key = JSON.stringify(img);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 8);
   const now = new Date().toISOString();
   return {
     id: existing?.id ?? newId("p"),
@@ -83,6 +113,35 @@ function refreshCounts(db: DbSnapshot, brand: Brand) {
   brand.productCount = db.products.filter(
     (p) => p.brandId === brand.id && p.status === "published",
   ).length;
+}
+
+/** Keep only pickup points and spots that exist on the shop's campus. */
+function cleanFulfilment(
+  f: CreateBrandInput["fulfilment"],
+  campus: Campus | undefined,
+): Fulfilment {
+  const zones = new Set(campus?.zones.map((z) => z.id));
+  const points = new Set(campus?.pickupPoints.map((p) => p.id));
+  const base = f.baseZoneId && zones.has(f.baseZoneId) ? f.baseZoneId : undefined;
+  const pickupPointIds = f.pickupPointIds.filter((id) => points.has(id));
+  const zoneIds = f.zoneIds.filter((id) => zones.has(id));
+  if (f.pickup && pickupPointIds.length === 0)
+    throw new ServiceError("VALIDATION", "Choose at least one pickup point", {
+      pickupPointIds: "Choose at least one pickup point",
+    });
+  if (f.delivery && zoneIds.length === 0)
+    throw new ServiceError("VALIDATION", "Choose at least one zone you deliver to", {
+      zoneIds: "Choose at least one zone you deliver to",
+    });
+  return {
+    pickup: f.pickup,
+    delivery: f.delivery,
+    deliveryFeeKobo: f.deliveryFeeKobo,
+    prepMinutes: f.prepMinutes,
+    pickupPointIds,
+    zoneIds,
+    ...(base ? { baseZoneId: base } : {}),
+  };
 }
 
 export const mockStudio: StudioService = {
@@ -122,7 +181,10 @@ export const mockStudio: StudioService = {
         ? { kind: "blob", id: input.coverImageId }
         : { kind: "art", motif: cat.motif, palette: cat.palette, seed },
       campusId,
-      fulfilment: input.fulfilment,
+      fulfilment: cleanFulfilment(
+        input.fulfilment,
+        db.campuses.find((c) => c.id === campusId),
+      ),
       openHours: { days: [1, 2, 3, 4, 5, 6], opens: "09:00", closes: "20:00" },
       vacation: false,
       rating: 0,
@@ -177,7 +239,11 @@ export const mockStudio: StudioService = {
     if (input.bio !== undefined) brand.bio = input.bio;
     if (input.logoImageId) brand.logo = { kind: "blob", id: input.logoImageId };
     if (input.coverImageId) brand.cover = { kind: "blob", id: input.coverImageId };
-    if (input.fulfilment) brand.fulfilment = input.fulfilment;
+    if (input.fulfilment)
+      brand.fulfilment = cleanFulfilment(
+        input.fulfilment,
+        db.campuses.find((c) => c.id === brand.campusId),
+      );
     if (input.vacation !== undefined) brand.vacation = input.vacation;
     if (input.openHours) brand.openHours = input.openHours;
     if (input.payoutAccount) {
@@ -357,6 +423,9 @@ export const mockStudio: StudioService = {
   },
 
   async setProductsStatus(ids, status) {
+    if (status !== "published" && status !== "draft")
+      throw new ServiceError("VALIDATION", "Choose published or draft.");
+    if (!Array.isArray(ids)) throw new ServiceError("VALIDATION", "Choose some products.");
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
@@ -386,13 +455,20 @@ export const mockStudio: StudioService = {
     );
   },
 
-  async updateOrderStatus(id, status) {
+  async updateOrderStatus(id, status, note) {
+    if (note !== undefined && typeof note !== "string")
+      throw new ServiceError("VALIDATION", "Write the reason as text.");
+    const reason = note?.trim() || undefined;
+    if (reason && reason.length > 200)
+      throw new ServiceError("VALIDATION", "Keep the reason under 200 characters.");
+    if (reason && status !== "declined" && status !== "cancelled")
+      throw new ServiceError("VALIDATION", "A reason only goes with declining or cancelling.");
     await latency(0.6);
     const db = await getDb();
     const { brand } = await requireBrand(db);
     const order = db.orders.find((o) => o.id === id && o.brandId === brand.id);
     if (!order) throw new ServiceError("NOT_FOUND", "Order not found.");
-    const next = applySellerTransition(db, id, status);
+    const next = applySellerTransition(db, id, status, reason);
     await commit("orders", "products", "notifications");
     return clone(next);
   },
@@ -475,7 +551,7 @@ export const mockStudio: StudioService = {
     const db = await getDb();
     const { brand } = await requireBrand(db);
     if (db.promos.some((p) => p.code === input.code)) {
-      throw new ServiceError("CONFLICT", "That code is already in use on Kiosk.", {
+      throw new ServiceError("CONFLICT", "That code is already in use on Kamplug.", {
         code: "Already in use",
       });
     }

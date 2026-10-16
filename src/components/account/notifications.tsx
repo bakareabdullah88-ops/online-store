@@ -70,16 +70,16 @@ export function NotificationsView() {
       ) : !data?.length ? (
         <EmptyState
           illustration="notifications"
-          title="No notifications yet"
-          body="Order updates, replies and drops from brands you follow land here."
-          action={<ButtonLink href="/explore">Explore</ButtonLink>}
+          title="Nothing new yet"
+          body="Order updates, replies and new drops from shops you follow will show up here."
+          action={<ButtonLink href="/explore">Find shops</ButtonLink>}
         />
       ) : (
         <div className="flex flex-col gap-8">
           {[...groups.entries()].map(([day, items]) => (
             <section key={day} aria-label={day}>
               <h2 className="mb-2 eyebrow text-muted">{day}</h2>
-              <ul className="card divide-y divide-line overflow-hidden">
+              <ul className="card divide-y divide-line-thin border-b border-line-thin">
                 <AnimatePresence initial={false}>
                   {items.map((n) => {
                     const Icon = icons[n.kind] ?? Bell;
@@ -126,7 +126,7 @@ export function NotificationsView() {
                           <Link
                             href={n.href}
                             onClick={() => !n.read && mark.mutate(n.id)}
-                            className="flex items-start gap-4 px-4 py-4 transition-colors hover:bg-ink/[0.03] md:px-5"
+                            className="flex items-start gap-4 py-4 transition-opacity hover:opacity-80"
                           >
                             {body}
                           </Link>
@@ -134,7 +134,7 @@ export function NotificationsView() {
                           <button
                             type="button"
                             onClick={() => !n.read && mark.mutate(n.id)}
-                            className="flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-ink/[0.03] md:px-5"
+                            className="flex w-full items-start gap-4 py-4 text-left transition-opacity hover:opacity-80"
                           >
                             {body}
                           </button>

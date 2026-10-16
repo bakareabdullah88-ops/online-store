@@ -13,12 +13,12 @@ export const fontPresets = [
   {
     id: "modern",
     label: "Modern",
-    description: "Bold geometric sans",
+    description: "Characterful headings, clean text",
     display: {
-      family: "Plus Jakarta Sans",
-      cssVar: "--ff-jakarta",
-      weight: 700,
-      tracking: "-0.035em",
+      family: "Bricolage Grotesque",
+      cssVar: "--ff-bricolage",
+      weight: 800,
+      tracking: "-0.04em",
     },
     body: { family: "Plus Jakarta Sans", cssVar: "--ff-jakarta" },
   },

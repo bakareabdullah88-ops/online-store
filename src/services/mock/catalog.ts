@@ -1,3 +1,4 @@
+import { compareNearness, isOnMap, nearness, type Nearness } from "@/domain/distance";
 import { totalStock } from "@/domain/variants";
 import type { CatalogService } from "../contracts";
 import { ServiceError } from "../errors";
@@ -22,6 +23,14 @@ export function withBrand(db: DbSnapshot, p: Product): ProductWithBrand {
       vacation: b.vacation,
       rating: b.rating,
       verified: b.verified,
+      fulfilment: {
+        pickup: b.fulfilment.pickup,
+        delivery: b.fulfilment.delivery,
+        deliveryFeeKobo: b.fulfilment.deliveryFeeKobo,
+        prepMinutes: b.fulfilment.prepMinutes,
+        pickupPointIds: b.fulfilment.pickupPointIds.slice(0, 1),
+        ...(b.fulfilment.baseZoneId ? { baseZoneId: b.fulfilment.baseZoneId } : {}),
+      },
     },
   };
 }
@@ -64,7 +73,12 @@ export function breakdown(reviews: Review[]): RatingBreakdown {
   return { average, count, histogram };
 }
 
-function isVisible(db: DbSnapshot, p: Product) {
+/** What a shop shows the public: everything but its payout details. */
+export function publicBrand(b: Brand): Brand {
+  return { ...clone(b), payoutAccount: null };
+}
+
+export function isVisible(db: DbSnapshot, p: Product) {
   return p.status === "published" && db.brands.some((b) => b.id === p.brandId);
 }
 
@@ -82,7 +96,7 @@ export const mockCatalog: CatalogService = {
     const pageSize = Math.min(48, Math.max(1, query.pageSize ?? 24));
     const brandsById = new Map(db.brands.map((b) => [b.id, b]));
 
-    let list = db.products.filter((p) => (query.includeDrafts ? true : isVisible(db, p)));
+    let list = db.products.filter((p) => isVisible(db, p));
     if (query.ids) {
       const set = new Set(query.ids);
       list = list.filter((p) => set.has(p.id));
@@ -112,6 +126,21 @@ export const mockCatalog: CatalogService = {
     if (query.minRating) list = list.filter((p) => p.rating >= query.minRating!);
     if (query.inStock) list = list.filter((p) => totalStock(p) > 0);
 
+    // Distance from the buyer, worked out once per shop.
+    const near = query.near ?? {};
+    const nearByBrand = new Map<string, Nearness>();
+    const nearOf = (brandId: string) => {
+      let n = nearByBrand.get(brandId);
+      if (!n) {
+        const b = brandsById.get(brandId);
+        const campus = db.campuses.find((c) => c.id === b?.campusId);
+        n = nearness(b?.fulfilment, campus, near);
+        nearByBrand.set(brandId, n);
+      }
+      return n;
+    };
+    if (query.walking && isOnMap(near.zoneId)) list = list.filter((p) => nearOf(p.brandId).walking);
+
     const scores = new Map<string, number>();
     if (query.q?.trim()) {
       for (const p of list) scores.set(p.id, scoreProduct(p, brandsById.get(p.brandId), query.q));
@@ -133,6 +162,8 @@ export const mockCatalog: CatalogService = {
           return b.priceKobo - a.priceKobo;
         case "rating":
           return b.rating - a.rating || b.ratingCount - a.ratingCount;
+        case "nearest":
+          return compareNearness(nearOf(a.brandId), nearOf(b.brandId)) || byPopular(a, b);
         default:
           return byPopular(a, b);
       }
@@ -195,7 +226,7 @@ export const mockCatalog: CatalogService = {
     } else {
       list.sort((a, b) => b.followerCount - a.followerCount);
     }
-    return clone(query.limit ? list.slice(0, query.limit) : list);
+    return (query.limit ? list.slice(0, query.limit) : list).map(publicBrand);
   },
 
   async getBrand(handle) {
@@ -203,7 +234,7 @@ export const mockCatalog: CatalogService = {
     const db = await getDb();
     const b = db.brands.find((x) => x.handle === handle.toLowerCase());
     if (!b) throw new ServiceError("NOT_FOUND", "We couldn't find that brand.");
-    return clone(b);
+    return publicBrand(b);
   },
 
   async getProductReviews(productId) {
@@ -242,10 +273,15 @@ export const mockCatalog: CatalogService = {
     const brands = db.brands
       .filter((b) => normalize(`${b.name} ${b.handle} ${b.tagline} ${b.category}`).includes(nq))
       .slice(0, Math.max(3, Math.floor(limit / 2)));
-    return { products, brands: clone(brands) };
+    return { products, brands: brands.map(publicBrand) };
   },
 
   async recordEvent(event) {
+    if (
+      (event?.type !== "view" && event?.type !== "add_to_bag") ||
+      typeof event.productId !== "string"
+    )
+      throw new ServiceError("VALIDATION", "Unknown event.");
     const db = await getDb();
     const p = db.products.find((x) => x.id === event.productId);
     if (!p) return;

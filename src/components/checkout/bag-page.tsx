@@ -24,12 +24,12 @@ export function BagPage() {
         }
       />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="min-w-0 lg:col-span-7">
+        <div className="min-w-0 [--row-bg:var(--app-bg)] lg:col-span-7">
           <BagContents />
         </div>
         {!isEmpty && (
           <aside className="lg:col-span-5">
-            <div className="card p-6 lg:sticky lg:top-24">
+            <div className="card py-6 lg:sticky lg:top-24">
               <h2 className="text-title font-semibold">Summary</h2>
               <BagSummary className="mt-4" />
               <ButtonLink

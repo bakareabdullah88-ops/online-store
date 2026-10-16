@@ -14,7 +14,7 @@ export function useNotifications() {
     queryKey: qk.notifications,
     queryFn: () => services.notifications.list(),
     enabled: isSignedIn,
-    refetchInterval: 15_000,
+    refetchInterval: 45_000,
   });
 }
 
@@ -45,7 +45,7 @@ export function useThreads(as: "buyer" | "brand") {
     queryKey: qk.threads(as),
     queryFn: () => services.messages.listThreads(as),
     enabled: isSignedIn,
-    refetchInterval: 20_000,
+    refetchInterval: 45_000,
   });
 }
 
@@ -71,6 +71,18 @@ export function useStartThread() {
     onSuccess: (t) => {
       qc.setQueryData(qk.thread(t.id, "buyer"), t);
       void qc.invalidateQueries({ queryKey: qk.threads("buyer") });
+    },
+  });
+}
+
+/** Seller side: open the conversation with an order's buyer (creating it if needed). */
+export function useMessageBuyer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => services.messages.startThreadWithBuyer({ orderId }),
+    onSuccess: (t) => {
+      qc.setQueryData(qk.thread(t.id, "brand"), t);
+      void qc.invalidateQueries({ queryKey: qk.threads("brand") });
     },
   });
 }

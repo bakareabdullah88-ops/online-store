@@ -307,7 +307,7 @@ The site stopped being a demo. What changed and why:
 - **Navigation.** The left rail and sidebar took about 320px, which squeezed every page on 1280–1366px
   laptops (tables scrolled sideways, labels truncated). They're replaced by a floating liquid-glass
   top bar like zentra's and LoopAI's: logo, a Market ⇄ shop switch, the workspace's main pages as
-  pills (the active one is a dark pill that slides), a **More** grid for the rest, search,
+  pills (the active one was a dark pill that slid; see §11), a **More** grid for the rest, search,
   notifications, bag and account. Phones keep the floating pill nav, plus a top bar with an
   "all pages" grid.
 - **Look.** Signed-in pages sit on a tinted, slowly drifting colour field (slightly different
@@ -325,3 +325,138 @@ The site stopped being a demo. What changed and why:
   and the list entry; the login works after the entry is pushed. This gates the front door only:
   with data still in each browser it isn't a security boundary, and the real version (invite-only
   sign-up on the backend) replaces it.
+
+## 11. Sample data while we build, plain header
+
+- **Sample data is back, on purpose and labelled.** Section 9 removed the demo so nothing fake
+  passed for real. While Kamplug is still being built, an empty app shows visitors nothing, so the
+  sample shops, photos and orders return behind `features.sampleData`, with a notice on the landing
+  page and on every app page saying it's sample data and the app is still being built.
+- **No sign-up to look around.** With sample data on, the auth gate signs visitors in to a shared
+  preview account instead of sending them to log in. It can't be deleted and has no password.
+  Logging in with a real account replaces it. Invite-only access is unchanged for real accounts.
+- **Easy to take out.** Every sample id contains `_demo_` (real ids can't: their alphabet has no
+  "o"). On load the database adds the set, rebuilds it every three days so dates stay current, or
+  removes it once the flag is off, keeping real accounts' data. The end-to-end tests build with it
+  off, and `tests/unit/sample.test.ts` covers it.
+- **A plain header and background.** The floating glass bar with pill links is replaced by a normal
+  full-width header: text links with an underline under the current page, and inline count
+  badges. The drifting colour blobs are replaced by a flat background a shade apart from the
+  landing page.
+- **Opening a shop is celebrated.** Streamers draw themselves across the screen and keep waving
+  while paper ribbons fall, behind the content (static ribbons with reduced motion).
+
+## 12. The market ⇄ shop switch
+
+- The slide-up curtain is replaced by a circle in the destination's colour (green for selling,
+  blue for buying) that grows from where you tapped, so the switch feels connected to your finger.
+- In the middle the bag turns into a shop (or back), the shop's name appears, and live numbers count
+  up: new orders waiting and money this month on the way in; orders on the way and bag items on the
+  way out. Zero values are left out.
+- The route swaps underneath; after at least ~650ms (so the numbers can be read) the circle shrinks
+  into the new page's logo. The cover has its own view-transition layer so the page cross-fade under
+  it never makes it see-through. Reduced motion: a quick crossfade.
+- **Arriving.** After the circle shrinks away, a welcome card slides in under the header in the
+  side's colour: your shop's logo and name (or a greeting by name when buying), a line of live details
+  (rating, followers and new orders; or campus, orders on the way and bag), and one next step
+  (review orders or add a product; track orders or discover). A soft light sweeps across it once.
+  It tucks away after 6.5s, pausing while the pointer is on it, and can be dismissed.
+- **Always know where you are.** A thin line in the side's colour runs along the top of the header
+  (blue while buying, green while selling) and draws across each time you switch. The switch itself
+  says "Buying" and "Selling".
+
+## 13. Simpler, sharper
+
+- **Cards** are the surface colour with a 1px border and 12px corners: no blur, no shadow. Hover on
+  clickable cards only darkens the border; nothing lifts or scales. Chart fills are flat tints
+  instead of stripes, and decorative glows are gone.
+- **Page headers** are a title and a line of description. The coloured icon bubble is gone, and
+  the breadcrumb only appears on deeper pages (an order, a product), where it adds something.
+- **Icons** sit plain, without coloured tiles, on stat cards, card titles, categories and the More
+  menu.
+- **Less repetition.** The search boxes on Home and Performance repeated the header search, so
+  they're gone. Product tiles are just the photo and its text, without a card frame.
+- **Quieter motion.** Sections fade in (no slide or blur); the page title no longer slides in; the
+  bell no longer wiggles; empty-state art no longer floats. The switch keeps its circle, icon and
+  numbers but drops the pulsing rings and glow; the arrival card drops the light sweep, badge and
+  countdown bar. The landing page loses its tilted callouts, scribbled arrow and blurred blobs.
+
+## 14. The backend
+
+- **Same code, shared database.** The service code that ran in each browser now also runs on the
+  server. `services/mock/db.ts` takes a `Driver`; on the server (`src/server/store.ts`) it's
+  Postgres, in the browser it's still IndexedDB. The business rules (stock, order transitions,
+  who may do what, invite-only) live in one place and are already covered by the unit tests, so
+  nothing had to be rewritten and the UI didn't change.
+- **Storage.** Every record is a JSON row in `kamplug_docs (collection, id, data)`. Each write
+  takes the next number from a sequence (`seq`); a server keeps everything in memory and, per
+  request, fetches only rows with a higher `seq` (one small query, usually empty). Deletes are
+  tombstones so other servers hear about them.
+- **Concurrency.** A request works on its own copy and writes back only the records it changed,
+  in one transaction, checking each was untouched since it read it. If not, nothing is written
+  and the call runs again on fresh data (up to five times). Writers take a lock for the moment
+  they write, so `seq` numbers appear in order. Tested: three people buying the last item at
+  once get exactly one order.
+- **Why not tables per entity yet.** It would mean rewriting every query the services make. At
+  campus scale (thousands of records) the in-memory approach is fast and simple. When it
+  outgrows that (tens of thousands of products, or many writes a second), move the busiest
+  collections (events, orders) to real tables behind the same driver.
+- **Sessions** are random 32-byte tokens in an HTTP-only cookie; only their SHA-256 is stored.
+  Passwords stay PBKDF2-SHA-256 (100k iterations, salted), now computed on the server.
+- **The preview account is read-only** on the server, because every visitor shares it. In
+  `mock` mode each browser had its own copy, so it could change freely.
+- **Photos** are stored in Postgres (`kamplug_media`) and served with a year-long cache. The browser
+  shrinks anything over 2000px or 3.5MB to WebP first (Vercel caps request bodies at 4.5MB).
+  Moving to Vercel Blob later only changes `src/server/media.ts`.
+- **Live updates** are a 20-second poll of `/api/sync` while the tab is visible; a tab ignores
+  changes it made itself.
+- **Provider.** Neon Postgres through the Vercel Marketplace (the recommended Postgres on
+  Vercel; it sets `DATABASE_URL`). The `pg` driver with `attachDatabasePool`, so it also works
+  against any Postgres locally.
+- **Trusting nothing from the browser.** The service code was written for one person's own
+  browser, so a review went through it as if an attacker were calling `/api/rpc` directly, and
+  these were fixed: drafts no longer show up in public listings or wishlists; shops' payout details
+  are only returned to the shop itself; a checkout can't put one shop's product under another
+  shop, buy from your own shop, list a shop twice, or repeat a line to get around stock; a limited
+  promo can't apply twice in one checkout; deleting an account only deletes photos that account
+  uploaded; kept product images must already be on the product; notification settings, inbox
+  roles, product status, promo dates, event types and checkout sizes are all checked. Sign-in,
+  sign-up and the analytics beacon are rate limited per address.
+- **Still to do** before a big launch: roll up old analytics events (they're kept forever), move
+  photos to Vercel Blob, a shared rate limiter (today's is per server), and email for password
+  resets.
+
+## 15. Kamplug: Google sign-in, Cloudflare R2, the name
+
+- **The name** is Kamplug everywhere people can see it (`config/brand.ts`, copy, docs). Internal
+  keys that existing data depends on keep their old names (browser storage keys, the invite
+  list's hashing pepper), since renaming them would sign people out or break the list. Server
+  tables and the session cookie are `kamplug_*` (nothing had been deployed with the old names).
+- **Google sign-in** uses Better Auth for the OAuth part only (state, PKCE, the callback), with its
+  own tables in the same Neon database. Kamplug keeps its own session and user records, so the
+  service code, invite-only rules and the preview are unchanged. `/api/session/google` turns
+  Better Auth's verified user into a Kamplug sign-in and ends Better Auth's session.
+- **Email ownership.** Open sign-up never verified emails, so a stranger could have signed up with
+  someone else's address. When Google later confirms that address, the account goes to the Google
+  user and the old password is removed (with a notification saying so).
+- **Photos** go to Cloudflare R2 through the server (no bucket CORS setup needed; the browser
+  already shrinks them under Vercel's 4.5MB request limit). `/api/media/:id` redirects to
+  `R2_PUBLIC_URL`; pages use that URL directly instead of downloading blobs. Without R2 settings,
+  photos stay in Postgres.
+- **One switch fewer.** The backend switches on when `DATABASE_URL` exists at build time
+  (`next.config.ts`), so deploying with Neon connected is enough.
+
+## 16. Open sign-up, nothing fake
+
+- **Standard accounts.** Anyone can sign up with email and password or with Google, and log in
+  the same ways. The invite list, the Members page, the admin role and the "get access" screens are
+  gone. "Forgot password?" only appears once reset emails can be sent (`features.passwordResetEmail`).
+- **No sample data.** The sample shops, their photos, the shared preview account and the "still
+  building" notice are gone. Databases and browsers that still have sample records (ids containing
+  `_demo_`) are cleaned once (`services/mock/sample-sync.ts`), keeping everything real accounts made.
+- **Nothing made up on screen.** The landing page's mock app screenshots and example chats/orders,
+  the promo codes suggested at checkout, the placeholder support email and handle, and the
+  simulated delivery map with a moving rider are removed. Delivery orders show where it's going and
+  who's delivering it; status comes only from the seller.
+- **Always the real backend.** `NEXT_PUBLIC_DATA_SOURCE` defaults to `remote`. The in-browser store
+  remains only so unit and end-to-end tests can run without a database (`pnpm build:test`).

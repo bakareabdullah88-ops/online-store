@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { FileText, type LucideIcon } from "lucide-react";
+import type { AppIcon } from "@/components/icons/kamplug-icons";
 import type { ReactNode } from "react";
 import { useMode } from "@/components/shell/mode";
 import { isActive, marketNav, shopNav } from "@/config/nav";
@@ -9,7 +10,7 @@ import { useMyBrand } from "@/queries/studio";
 import { PageHeader, type Crumb } from "./page-header";
 
 /** Finds the nav entry for the current page, for its icon and breadcrumb. */
-function useNavContext(): { icon: LucideIcon; tone: string; crumbs: Crumb[] } {
+function useNavContext(): { icon: LucideIcon | AppIcon; tone: string; crumbs: Crumb[] } {
   const path = usePathname() ?? "/";
   const mode = useMode();
   const { data: brand } = useMyBrand();
@@ -22,7 +23,6 @@ function useNavContext(): { icon: LucideIcon; tone: string; crumbs: Crumb[] } {
     for (const item of s.items)
       if (isActive(item, path)) {
         const crumbs: Crumb[] = [root];
-        if (s.title) crumbs.push({ label: s.title });
         if (path !== item.href) crumbs.push({ label: item.label, href: item.href });
         return { icon: item.icon, tone: item.tone, crumbs };
       }
@@ -45,7 +45,7 @@ export function NavPageHeader({
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
-  icon?: LucideIcon;
+  icon?: LucideIcon | AppIcon;
   /** Last breadcrumb; defaults to the title when it's plain text. */
   current?: string;
   className?: string;

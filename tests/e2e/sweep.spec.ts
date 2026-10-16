@@ -86,7 +86,6 @@ test("seller pages, with one product", async ({ page }) => {
   });
   for (const path of [
     "/studio",
-    "/studio/analytics",
     "/studio/products",
     "/studio/products/new",
     "/studio/orders",

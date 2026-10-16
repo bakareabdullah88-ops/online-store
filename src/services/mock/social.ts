@@ -1,9 +1,9 @@
 import type { SocialService } from "../contracts";
 import { ServiceError } from "../errors";
 import { commit, getDb } from "./db";
-import { clone, requireUser } from "./context";
+import { requireUser } from "./context";
 import { latency, quick } from "./latency";
-import { withBrand } from "./catalog";
+import { isVisible, publicBrand, withBrand } from "./catalog";
 
 export const mockSocial: SocialService = {
   async toggleFollow(brandId) {
@@ -27,9 +27,11 @@ export const mockSocial: SocialService = {
     await quick();
     const db = await getDb();
     const user = await requireUser(db);
-    if (!db.products.some((p) => p.id === productId))
-      throw new ServiceError("NOT_FOUND", "Product not found.");
     const saved = user.wishlistProductIds.includes(productId);
+    // Taking something off always works; saving needs a product people can see.
+    const product = db.products.find((p) => p.id === productId);
+    if (!saved && (!product || !isVisible(db, product)))
+      throw new ServiceError("NOT_FOUND", "Product not found.");
     user.wishlistProductIds = saved
       ? user.wishlistProductIds.filter((id) => id !== productId)
       : [productId, ...user.wishlistProductIds];
@@ -43,7 +45,7 @@ export const mockSocial: SocialService = {
     const user = await requireUser(db);
     return user.wishlistProductIds
       .map((id) => db.products.find((p) => p.id === id))
-      .filter((p): p is NonNullable<typeof p> => !!p)
+      .filter((p): p is NonNullable<typeof p> => !!p && isVisible(db, p))
       .map((p) => withBrand(db, p));
   },
 
@@ -51,6 +53,6 @@ export const mockSocial: SocialService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    return clone(db.brands.filter((b) => user.followingBrandIds.includes(b.id)));
+    return db.brands.filter((b) => user.followingBrandIds.includes(b.id)).map(publicBrand);
   },
 };

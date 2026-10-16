@@ -29,9 +29,12 @@ export function ReviewDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const mine = useMyReviews();
-  const reviewed = new Set(
-    (mine.data ?? []).filter((r) => r.orderId === order.id).map((r) => r.productId),
-  );
+  // Items posted in this dialog count straight away, before the reviews list refetches.
+  const [posted, setPosted] = useState<string[]>([]);
+  const reviewed = new Set([
+    ...(mine.data ?? []).filter((r) => r.orderId === order.id).map((r) => r.productId),
+    ...posted,
+  ]);
   const pending = order.items.filter((i) => !reviewed.has(i.productId));
   const item = pending[0];
   const review = useReviewItem();
@@ -56,6 +59,7 @@ export function ReviewDialog({
     setErrors({});
     review.mutate(parsed.data, {
       onSuccess: () => {
+        setPosted((p) => [...p, parsed.data.productId]);
         setRating(0);
         setBody("");
         toast.success("Thanks for the review", {
@@ -83,7 +87,7 @@ export function ReviewDialog({
             <Button variant="secondary" onClick={() => onOpenChange(false)}>
               Later
             </Button>
-            <Button loading={review.isPending} onClick={submit}>
+            <Button loading={review.isPending} disabled={review.isPending} onClick={submit}>
               Post review
             </Button>
           </>
@@ -124,6 +128,7 @@ export function ReviewDialog({
             </div>
             <Field
               label="Your review"
+              optional
               error={errors.body}
               hint="What did you like? How was the fit, taste or packaging?"
             >

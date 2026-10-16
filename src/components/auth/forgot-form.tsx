@@ -13,6 +13,7 @@ import { applyServiceErrors } from "@/lib/form";
 import { resetSchema } from "@/services/inputs";
 import { useRequestReset } from "@/queries/session";
 import { features } from "@/config/features";
+import { GoogleButton } from "./google-button";
 
 type Values = z.input<typeof resetSchema>;
 
@@ -33,14 +34,16 @@ export function ForgotForm() {
         <span className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent">
           <MailCheck className="size-7" />
         </span>
-        <h1 className="mt-6 font-display text-display-md">Reset your password</h1>
+        <h1 className="mt-6 font-display text-display-md">Forgot your password?</h1>
         <p className="mt-3 text-body text-muted">
-          Password reset by email isn&apos;t switched on yet. It arrives together with account email
-          verification.
+          No stress. If your Kamplug account uses a Gmail or Google address, continue with Google
+          below and you&apos;re straight back in. No password needed.
         </p>
-        <p className="mt-3 text-body text-muted">
-          Until then, if you can&apos;t log in, ask the person who gave you your login for a new
-          password.
+        <div className="mt-6">
+          <GoogleButton next="/home" />
+        </div>
+        <p className="mt-6 text-small text-muted">
+          Reset links by email are coming soon. Until then, Google is the quickest way back in.
         </p>
         <div className="mt-8 flex flex-wrap gap-2">
           <ButtonLink href="/login" size="lg">

@@ -11,37 +11,43 @@
 
 :root {
   /* Surfaces: neutral grey canvas, white panels (dashboard references) */
-  --canvas: #eff0f2;
-  --canvas-sunk: #e7e8eb;
+  --canvas: #f4f5f8;
+  --canvas-sunk: #eceef4;
   --surface: #ffffff;
-  --surface-2: #f6f7f8;
-  --sand: #f0f1f3;
-  --line: #e6e7ea;
-  --line-strong: #d3d5da;
+  --surface-2: #f4f5f8;
+  --sand: #eef0f6;
+  --line: #e4e6ee;
+  --line-strong: #cfd3e1;
+  /* Very thin grey separators between open sections and rows (signed-in pages) */
+  --line-thin: rgb(27 31 59 / 0.09);
 
   /* Ink */
-  --ink: #111214;
-  --ink-2: #2e3036;
-  --muted: #545862;
-  --faint: #9a9ea6;
+  --ink: #1b1f3b;
+  --ink-2: #2f3456;
+  --muted: #5a5f78;
+  --faint: #9a9eb5;
 
   /* Primary: black pills, selected rows, dark panels */
-  --primary: #16171a;
-  --primary-hover: #2b2d32;
+  --primary: #1b1f3b;
+  --primary-hover: #2a2f55;
   --on-primary: #ffffff;
 
-  /* Accent: blue while buying */
-  --accent: #2f45d8;
-  --accent-hover: #2337bd;
-  --accent-soft: #e8ebfd;
-  --accent-ink: #2235b5;
+  /* Brand: cobalt, the same as the landing page: wordmark, main buttons, key states. */
+  --brand: #3a5bff;
+  --brand-ink: #2f4ee6;
+  --accent: #3a5bff;
+  --accent-hover: #2a45d6;
+  --accent-soft: #eef1ff;
+  --accent-ink: #2a3fc4;
   --on-accent: #ffffff;
+  /* The solid edge under raised buttons and panels. */
+  --accent-edge: #1f37b8;
 
-  /* Named accents: green for selling, blue for buying */
-  --studio: #1d7a4b;
-  --ember: #2f45d8;
-  --studio-contrast: #86e0b0;
-  --ember-contrast: #aab5ff;
+  /* Both sides of the app share the brand colour. */
+  --studio: #3a5bff;
+  --ember: #3a5bff;
+  --studio-contrast: #b9c6ff;
+  --ember-contrast: #b9c6ff;
 
   /* Charts */
   --chart-blue: #2f54ff;
@@ -72,24 +78,23 @@
   /* Marketing call-to-action: the same light mint in both themes. */
   --mint-cta: #8fe3b8;
   --on-mint-cta: #0d3b24;
+  /* "Add to bag" on product lists: the same warm yellow in both themes. */
+  --buy: #ffd23f;
+  --on-buy: #1b1f3b;
 
   /* App backdrop (signed-in pages sit on this, slightly tinted vs the landing page) */
-  --app-bg: #edf0f7;
-  --blob-1: #c9d4ff;
-  --blob-2: #e4d6ff;
-  --blob-3: #c8f0dc;
-  --blob-4: #ffe2cc;
-  /* Liquid glass */
-  --glass-fill: rgb(255 255 255 / 0.72);
-  --glass-fill-strong: rgb(255 255 255 / 0.86);
-  --glass-border: rgb(255 255 255 / 0.85);
+  --app-bg: #f4f5f8;
+  /* Cards sit close to the background: a near-white fill and a hairline edge, no big drop shadow. */
+  --glass-fill: rgb(255 255 255 / 0.82);
+  --glass-fill-strong: rgb(255 255 255 / 0.9);
+  --glass-border: transparent;
   --glass-edge: rgb(15 23 42 / 0.07);
-  --shadow-card:
-    0 0 0 1px var(--glass-edge), inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 1px 2px rgb(16 24 40 / 0.04), 0 14px 34px -18px rgb(30 41 82 / 0.28);
-  --shadow-card-hover:
-    0 0 0 1px rgb(15 23 42 / 0.09), inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 2px 4px rgb(16 24 40 / 0.05), 0 24px 48px -20px rgb(30 41 82 / 0.38);
+  --lg-fill: rgb(255 255 255 / 0.7);
+  --lg-edge: rgb(15 17 21 / 0.08);
+  --lg-hi: rgb(255 255 255 / 0.9);
+  --lg-lo: rgb(255 255 255 / 0.25);
+  --shadow-card: none;
+  --shadow-card-hover: 0 0 0 1px var(--line-strong);
 
   --overlay: rgb(17 18 20 / 0.42);
   --skeleton: #eceef1;
@@ -98,9 +103,10 @@
   /* Elevation */
   --shadow-xs: 0 1px 0 rgb(17 18 20 / 0.04);
   --shadow-sm: 0 1px 2px rgb(17 18 20 / 0.06), 0 1px 1px rgb(17 18 20 / 0.03);
-  --shadow-md: 0 8px 24px -10px rgb(17 18 20 / 0.14), 0 2px 4px rgb(17 18 20 / 0.04);
-  --shadow-lg: 0 24px 48px -16px rgb(17 18 20 / 0.2), 0 4px 10px rgb(17 18 20 / 0.05);
-  --shadow-xl: 0 40px 80px -20px rgb(17 18 20 / 0.28), 0 8px 18px rgb(17 18 20 / 0.06);
+  /* Three real levels: sm (controls), md (popovers, floating bits), lg (sheets, dialogs). */
+  --shadow-md: 0 4px 12px -4px rgb(17 18 20 / 0.1), 0 1px 2px rgb(17 18 20 / 0.04);
+  --shadow-lg: 0 12px 28px -10px rgb(17 18 20 / 0.16), 0 2px 6px rgb(17 18 20 / 0.04);
+  --shadow-xl: var(--shadow-lg);
 
   /* Z-index scale */
   --z-raised: 10;
@@ -115,7 +121,8 @@
 
   /* Layout */
   --header-h: 60px;
-  --tabbar-h: 84px;
+  /* Phones have no bottom bar any more (the menu is a sidebar). */
+  --tabbar-h: 0px;
   --rail-w: 76px;
   --sidebar-w: 248px;
   --gutter: 16px;
@@ -128,42 +135,40 @@
   color-scheme: light;
 }
 
-[data-mode="selling"] {
-  --accent: #1d7a4b;
-  --accent-hover: #17653e;
-  --accent-soft: #e2f3e9;
-  --accent-ink: #17653e;
-  --on-accent: #ffffff;
-}
+/* Selling uses the same brand green; the mode shows in the switch and header, not a new colour. */
 
 .dark {
-  --canvas: #0b0c0e;
-  --canvas-sunk: #070809;
-  --surface: #15171a;
-  --surface-2: #1b1e22;
+  --canvas: #0e1022;
+  --canvas-sunk: #090b18;
+  --surface: #161936;
+  --surface-2: #1c2042;
   --sand: #1e2125;
-  --line: #24272c;
-  --line-strong: #383c43;
+  --line: #272b4d;
+  --line-strong: #393e66;
+  --line-thin: rgb(255 255 255 / 0.08);
 
-  --ink: #f2f3f5;
-  --ink-2: #d0d3d8;
-  --muted: #9ca1aa;
+  --ink: #f1f2f8;
+  --ink-2: #cfd2e6;
+  --muted: #9da2c0;
   --faint: #6e737c;
 
-  --primary: #f2f3f5;
+  --primary: #f1f2f8;
   --primary-hover: #ffffff;
-  --on-primary: #0b0c0e;
+  --on-primary: #0e1022;
 
-  --accent: #8091ff;
-  --accent-hover: #97a4ff;
-  --accent-soft: #1c2250;
-  --accent-ink: #a9b4ff;
-  --on-accent: #0b0f2b;
+  --brand: #3a5bff;
+  --brand-ink: #9fb0ff;
+  --accent: #7d93ff;
+  --accent-hover: #9fb0ff;
+  --accent-soft: #1d2350;
+  --accent-ink: #b3c0ff;
+  --on-accent: #0b0f2a;
+  --accent-edge: #3a5bff;
 
-  --studio: #4fd39a;
-  --ember: #8091ff;
-  --studio-contrast: #1d7a4b;
-  --ember-contrast: #2f45d8;
+  --studio: #7d93ff;
+  --ember: #7d93ff;
+  --studio-contrast: #2a3fc4;
+  --ember-contrast: #2a3fc4;
 
   --chart-blue: #6f86ff;
   --chart-blue-2: #3b4fae;
@@ -189,21 +194,17 @@
   --info-soft: #11263a;
   --badge: #ff5a5a;
 
-  --app-bg: #0a0b10;
-  --blob-1: #1c2a6b;
-  --blob-2: #2e1f5e;
-  --blob-3: #0f3b2a;
-  --blob-4: #3b2414;
-  --glass-fill: rgb(22 24 30 / 0.66);
-  --glass-fill-strong: rgb(24 26 33 / 0.86);
-  --glass-border: rgb(255 255 255 / 0.08);
-  --glass-edge: rgb(255 255 255 / 0.06);
-  --shadow-card:
-    0 0 0 1px var(--glass-edge), inset 0 1px 0 rgb(255 255 255 / 0.05),
-    0 14px 34px -18px rgb(0 0 0 / 0.7);
-  --shadow-card-hover:
-    0 0 0 1px rgb(255 255 255 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 24px 48px -20px rgb(0 0 0 / 0.8);
+  --app-bg: #0e1022;
+  --glass-fill: rgb(23 25 29 / 0.82);
+  --glass-fill-strong: rgb(24 26 31 / 0.9);
+  --glass-border: transparent;
+  --glass-edge: rgb(255 255 255 / 0.07);
+  --lg-fill: rgb(24 26 31 / 0.68);
+  --lg-edge: rgb(255 255 255 / 0.09);
+  --lg-hi: rgb(255 255 255 / 0.12);
+  --lg-lo: rgb(255 255 255 / 0.03);
+  --shadow-card: none;
+  --shadow-card-hover: 0 0 0 1px var(--line-strong);
 
   --overlay: rgb(0 0 0 / 0.6);
   --skeleton: #1d2025;
@@ -211,20 +212,11 @@
 
   --shadow-xs: 0 1px 0 rgb(0 0 0 / 0.3);
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 8px 20px -8px rgb(0 0 0 / 0.6), 0 2px 4px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 20px 44px -14px rgb(0 0 0 / 0.7), 0 4px 10px rgb(0 0 0 / 0.35);
-  --shadow-xl: 0 36px 72px -18px rgb(0 0 0 / 0.8), 0 8px 18px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -4px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 28px -10px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-xl: var(--shadow-lg);
 
   color-scheme: dark;
-}
-
-.dark[data-mode="selling"],
-.dark [data-mode="selling"] {
-  --accent: #4fd39a;
-  --accent-hover: #6ddfae;
-  --accent-soft: #12291f;
-  --accent-ink: #86e0b0;
-  --on-accent: #04130c;
 }
 
 @theme inline {
@@ -235,6 +227,7 @@
   --color-sand: var(--sand);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-line-thin: var(--line-thin);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
@@ -242,6 +235,8 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
@@ -313,12 +308,13 @@
 
   /* Radii: deliberately small and varied */
   --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 28px;
+  /* Tight radius scale: controls 8, cards 12, sheets 16. Pills stay rounded-full. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -364,6 +360,12 @@
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Page and section titles use the heading face everywhere, landing included. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
   }
 
   /* Headlines take their weight from the font style (src/config/font-presets.ts). */
@@ -450,14 +452,12 @@
 }
 
 @utility hairline {
-  box-shadow:
-    inset 0 0 0 1px var(--line),
-    0 1px 2px rgb(16 24 40 / 0.04),
-    0 12px 28px -20px rgb(30 41 82 / 0.3);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
+/* Bottom padding that never drops below 16px and grows past the home indicator. */
 @utility safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 @utility text-balance {
@@ -515,6 +515,18 @@
   isolation: isolate;
 }
 
+/* The market/shop switch cover stays solid and on top while the page swaps under it. */
+::view-transition-group(mode-curtain) {
+  animation: none;
+  z-index: 200;
+}
+::view-transition-old(mode-curtain) {
+  display: none;
+}
+::view-transition-new(mode-curtain) {
+  animation: none;
+}
+
 /* Persistent chrome never slides */
 ::view-transition-group(site-header),
 ::view-transition-group(tab-bar),
@@ -543,9 +555,11 @@
     opacity: 0;
   }
 }
+/* New pages swing down into place from above, tilted back slightly (as on the landing page). */
 @keyframes vt-rise {
   from {
-    transform: translateY(12px);
+    transform: perspective(1200px) translateY(-14px) rotateX(6deg);
+    transform-origin: 50% 0%;
   }
 }
 @keyframes vt-slide-in-right {
@@ -634,85 +648,106 @@
 /*  Usage: class="hatch [--hatch:var(--chart-blue)]"                   */
 /* ------------------------------------------------------------------ */
 
+/* Chart fill: a flat tint of --hatch (the stripes were busy). */
 @utility hatch {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--hatch, currentColor) 0 2px,
-    transparent 2px 7px
-  );
+  background-color: color-mix(in oklab, var(--hatch, currentColor) 45%, transparent);
 }
 
 /* Frosted glass for floating bars */
 @utility glass {
   background-color: color-mix(in oklab, var(--surface) 72%, transparent);
+  /* One declaration only: the build adds the Safari prefix itself (writing both made it drop the standard one). */
   backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+}
+
+/* Liquid glass: a translucent pane that blurs what's behind it, with a lit top edge.
+   Used for the landing navbar and floating icon bubbles. */
+@utility liquid-glass {
+  background-color: var(--lg-fill);
+  backdrop-filter: blur(28px) saturate(1.8);
+  border: 1px solid var(--lg-edge);
+  box-shadow:
+    inset 0 1px 0 var(--lg-hi),
+    inset 0 -1px 0 var(--lg-lo),
+    0 10px 30px -12px rgb(15 17 21 / 0.22);
+}
+
+/* Scroll reveal: content is visible by default (no JS, screenshots); only elements that
+   start below the fold are hidden on mount and slide in once they scroll into view. */
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: perspective(900px) translate3d(var(--reveal-x, 0), var(--reveal-y, 28px), 0)
+    rotateX(var(--reveal-rx, 0deg));
+  transform-origin: 50% 0%;
+}
+[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@utility animate-marquee {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }
 
 /* ------------------------------------------------------------------ */
 /*  Liquid glass, cards and motion helpers                              */
 /* ------------------------------------------------------------------ */
 
-/* A glass card: translucent fill, blurred backdrop, a light top edge and soft depth. */
+/*
+ * An open section: no box, no fill, no radius, no shadow. Content sits on the
+ * page and is set apart from what comes before it by one very thin grey line.
+ */
 @utility card {
   position: relative;
-  border-radius: 22px;
-  background-color: var(--glass-fill);
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-card);
-}
-
-/* Lifts on hover, presses in on tap. */
-@utility lift {
-  transition:
-    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
-  }
-  &:active {
-    transform: translateY(0) scale(0.985);
-  }
+  border-top: 1px solid var(--line-thin);
 }
 
 @utility glass-bar {
-  background-color: var(--glass-fill-strong);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-card);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+/* A bigger invisible hit area (about 44px tall) for small text links and icons,
+   without changing how they look or how much room they take. */
+@utility tap-area {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -12px -6px;
+  }
 }
 
 @utility pressable {
   transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
   &:active {
-    transform: scale(0.94);
+    transform: scale(0.97);
   }
 }
 
-/* Coloured icon tile; set --tone to a colour. */
+/* Icon tile: a quiet neutral square (--tone is accepted but no longer colours it). */
 @utility tone-tile {
-  color: var(--tone);
-  background: linear-gradient(
-    145deg,
-    color-mix(in oklab, var(--tone) 22%, var(--surface)),
-    color-mix(in oklab, var(--tone) 9%, var(--surface))
-  );
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--tone) 22%, transparent),
-    0 6px 14px -8px color-mix(in oklab, var(--tone) 60%, transparent);
+  color: var(--ink-2);
+  background: var(--surface-2);
 }
 
-/* Solid gradient tile for page headers. */
+/* Solid icon tile. */
 @utility tone-solid {
-  color: white;
-  background: linear-gradient(145deg, color-mix(in oklab, var(--tone) 82%, white), var(--tone));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.35),
-    0 10px 22px -10px color-mix(in oklab, var(--tone) 75%, transparent);
+  color: var(--on-primary);
+  background: var(--primary);
 }
 
 .app-backdrop {
@@ -723,38 +758,6 @@
   background: var(--app-bg);
   pointer-events: none;
 }
-.app-backdrop > span {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-  opacity: 0.85;
-  animation: drift 26s ease-in-out infinite alternate;
-}
-.app-backdrop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    color-mix(in oklab, var(--ink) 9%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
-  mask-image: linear-gradient(to bottom, black, transparent 70%);
-  opacity: 0.5;
-}
-
-@keyframes drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(4vw, 3vh, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(-3vw, 5vh, 0) scale(0.95);
-  }
-}
-
 @keyframes float {
   0%,
   100% {
@@ -779,7 +782,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-backdrop > span,
   [class*="animate-[float"] {
     animation: none;
   }
@@ -787,4 +789,572 @@
 
 html {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Buddies: animated profile pictures (components/app/buddy.tsx)             */
+/* ------------------------------------------------------------------------- */
+.buddy .buddy-open {
+  opacity: 0;
+}
+.buddy-live .buddy-idle {
+  transform-box: view-box;
+  transform-origin: 50px 90px;
+  animation: buddy-bob 3.4s ease-in-out infinite;
+}
+.buddy-live .buddy-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: buddy-blink 5.2s infinite;
+}
+.buddy-live .buddy-act,
+.buddy-live .buddy-arm {
+  transform-box: view-box;
+}
+.buddy-live .buddy-act {
+  transform-origin: 50px 88px;
+}
+.buddy-live .buddy-arm-l {
+  animation: buddy-sway-l 3.4s ease-in-out infinite;
+}
+.buddy-live .buddy-arm-r {
+  animation: buddy-sway-r 3.4s ease-in-out infinite;
+}
+.buddy-live [data-act="wave"] .buddy-arm-r {
+  animation: buddy-wave 1.3s ease-in-out;
+}
+.buddy-live [data-act="jump"] {
+  animation: buddy-jump 0.95s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.buddy-live [data-act="jump"] .buddy-arm-l {
+  animation: buddy-cheer-l 0.95s ease-in-out;
+}
+.buddy-live [data-act="jump"] .buddy-arm-r {
+  animation: buddy-cheer-r 0.95s ease-in-out;
+}
+.buddy-live [data-act="spin"] {
+  transform-origin: 50px 56px;
+  animation: buddy-spin 1s cubic-bezier(0.6, 0, 0.3, 1);
+}
+.buddy-live [data-act="wink"] .buddy-eye-l {
+  animation: buddy-wink 0.8s ease-in-out;
+}
+.buddy-live [data-act="dance"] {
+  animation: buddy-dance 1.5s ease-in-out;
+}
+.buddy-live [data-act="dance"] .buddy-arm-l {
+  animation: buddy-cheer-l 0.5s ease-in-out 3;
+}
+.buddy-live [data-act="dance"] .buddy-arm-r {
+  animation: buddy-cheer-r 0.5s ease-in-out 3 0.25s;
+}
+.buddy-live [data-act="wave"] .buddy-smile,
+.buddy-live [data-act="jump"] .buddy-smile,
+.buddy-live [data-act="dance"] .buddy-smile {
+  opacity: 0;
+}
+.buddy-live [data-act="wave"] .buddy-open,
+.buddy-live [data-act="jump"] .buddy-open,
+.buddy-live [data-act="dance"] .buddy-open {
+  opacity: 1;
+}
+
+@keyframes buddy-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-2.5px) scale(0.985, 1.02);
+  }
+}
+@keyframes buddy-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes buddy-wink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  25%,
+  70% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes buddy-sway-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes buddy-sway-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+}
+@keyframes buddy-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  18% {
+    transform: rotate(-125deg);
+  }
+  32% {
+    transform: rotate(-85deg);
+  }
+  46% {
+    transform: rotate(-125deg);
+  }
+  60% {
+    transform: rotate(-85deg);
+  }
+  76% {
+    transform: rotate(-125deg);
+  }
+}
+@keyframes buddy-cheer-l {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(115deg);
+  }
+}
+@keyframes buddy-cheer-r {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(-115deg);
+  }
+}
+@keyframes buddy-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(0) scale(1.1, 0.88);
+  }
+  42% {
+    transform: translateY(-16px) scale(0.94, 1.08);
+  }
+  72% {
+    transform: translateY(0) scale(1.1, 0.9);
+  }
+  86% {
+    transform: translateY(0) scale(0.97, 1.03);
+  }
+}
+@keyframes buddy-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes buddy-dance {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  20%,
+  60% {
+    transform: rotate(-9deg) translateX(-3px);
+  }
+  40%,
+  80% {
+    transform: rotate(9deg) translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .buddy * {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------------- */
+/* Landing illustrations: drifting clouds, a keke driving past, swaying trees */
+/* ------------------------------------------------------------------------- */
+.lp-anim {
+  transform-box: view-box;
+}
+.lp-cloud {
+  animation: lp-drift var(--lp-dur, 34s) linear infinite;
+  animation-delay: var(--lp-delay, 0s);
+}
+.lp-drive {
+  animation: lp-drive 14s linear infinite;
+}
+.lp-drive-slow {
+  animation: lp-drive 22s linear infinite;
+  animation-delay: -9s;
+}
+.lp-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lp-spin 0.6s linear infinite;
+}
+.lp-tick {
+  transform-box: view-box;
+  animation: lp-spin 12s steps(60) infinite;
+}
+.lp-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lp-sway 3.6s ease-in-out infinite;
+}
+.lp-bob {
+  animation: lp-bob 3.2s ease-in-out infinite;
+}
+.lp-bob-late {
+  animation: lp-bob 3.2s ease-in-out infinite -1.6s;
+}
+.lp-fly {
+  animation: lp-fly 18s linear infinite;
+}
+.lp-wave {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: lp-wave 1.4s ease-in-out infinite;
+}
+.lp-pop {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  animation: lp-pop 4.8s ease-in-out infinite;
+  animation-delay: var(--lp-delay, 0s);
+}
+.lp-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lp-twinkle 2.4s ease-in-out infinite;
+  animation-delay: var(--lp-delay, 0s);
+}
+.lp-stripes {
+  animation: lp-stripes 16s linear infinite;
+}
+
+@keyframes lp-drift {
+  from {
+    transform: translateX(-40vw);
+  }
+  to {
+    transform: translateX(120vw);
+  }
+}
+@keyframes lp-drive {
+  from {
+    transform: translateX(-220px);
+  }
+  to {
+    transform: translateX(1660px);
+  }
+}
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lp-sway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+@keyframes lp-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes lp-fly {
+  from {
+    transform: translate(-120px, 0);
+  }
+  50% {
+    transform: translate(760px, -30px);
+  }
+  to {
+    transform: translate(1640px, 10px);
+  }
+}
+@keyframes lp-wave {
+  0%,
+  100% {
+    transform: skewY(0deg) scaleX(1);
+  }
+  50% {
+    transform: skewY(-8deg) scaleX(0.92);
+  }
+}
+@keyframes lp-pop {
+  0%,
+  8% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  16%,
+  80% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  90%,
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+@keyframes lp-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15) rotate(45deg);
+    opacity: 1;
+  }
+}
+@keyframes lp-stripes {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-cloud,
+  .lp-drive,
+  .lp-drive-slow,
+  .lp-wheel,
+  .lp-tick,
+  .lp-sway,
+  .lp-bob,
+  .lp-bob-late,
+  .lp-fly,
+  .lp-wave,
+  .lp-pop,
+  .lp-twinkle,
+  .lp-stripes {
+    animation: none !important;
+  }
+  .lp-pop {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lp-answer {
+  from {
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Depth: layers drift with the pointer (--px/--py from -0.5 to 0.5), farther ones less. */
+.lp-layer {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-layer[data-depth="far"] {
+  transform: translate3d(calc(var(--px, 0) * -12px), calc(var(--py, 0) * -6px), 0);
+}
+.lp-layer[data-depth="mid"] {
+  transform: translate3d(calc(var(--px, 0) * -26px), calc(var(--py, 0) * -12px), 0);
+}
+.lp-layer[data-depth="near"] {
+  transform: translate3d(calc(var(--px, 0) * -48px), calc(var(--py, 0) * -20px), 0);
+}
+/* Things land from above with a squash, like they have weight. */
+.lp-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lp-drop 1.1s cubic-bezier(0.3, 0.9, 0.35, 1) both;
+}
+.lp-grow {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lp-grow 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.lp-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lp-shadow 1.1s cubic-bezier(0.3, 0.9, 0.35, 1) 0.2s both;
+}
+.lp-float {
+  animation: lp-bob 5s ease-in-out infinite;
+}
+.lp-walk {
+  animation: lp-walk 10s ease-in-out infinite alternate;
+}
+@keyframes lp-drop {
+  0% {
+    transform: translateY(-260px) scale(0.96, 1.06);
+  }
+  55% {
+    transform: translateY(0) scale(1.04, 0.93);
+  }
+  75% {
+    transform: translateY(-10px) scale(0.99, 1.02);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes lp-grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes lp-shadow {
+  from {
+    transform: scaleX(0.2);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes lp-walk {
+  from {
+    transform: translateX(-70px);
+  }
+  to {
+    transform: translateX(70px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-layer,
+  .lp-drop,
+  .lp-grow,
+  .lp-shadow,
+  .lp-float,
+  .lp-walk {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Scene extras: the dotted order route runs, awnings flap. */
+.lp-dash {
+  animation: lp-dash 1.2s linear infinite;
+}
+.lp-awning {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: lp-awning 2.6s ease-in-out infinite;
+}
+@keyframes lp-dash {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+@keyframes lp-awning {
+  0%,
+  100% {
+    transform: skewX(0deg) scaleY(1);
+  }
+  50% {
+    transform: skewX(-4deg) scaleY(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-dash,
+  .lp-awning {
+    animation: none !important;
+  }
+}
+
+/* Clouds drifting the other way, swelling, and slowly rising and sinking. */
+.lp-cloud-rev {
+  animation: lp-drift-rev var(--lp-dur, 34s) linear infinite;
+  animation-delay: var(--lp-delay, 0s);
+}
+.lp-puff {
+  transform-origin: 50% 80%;
+  animation: lp-puff 7s ease-in-out infinite;
+}
+.lp-rise {
+  animation: lp-rise 11s ease-in-out infinite;
+}
+@keyframes lp-drift-rev {
+  from {
+    transform: translateX(120vw);
+  }
+  to {
+    transform: translateX(-40vw);
+  }
+}
+@keyframes lp-puff {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.08, 1.12);
+  }
+}
+@keyframes lp-rise {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-22px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-cloud-rev,
+  .lp-puff,
+  .lp-rise {
+    animation: none !important;
+  }
+}
+/* The landing headline flipping down to the next language. */
+@keyframes lp-flip {
+  from {
+    transform: rotateX(-85deg) translateY(-12px);
+  }
+  to {
+    transform: rotateX(0deg) translateY(0);
+  }
+}
+
+/* Sections scrolled out of view stop animating (see PauseOffscreen). */
+[data-paused],
+[data-paused] * {
+  animation-play-state: paused !important;
+}
+/* Drifting clouds get their own layer so moving them never repaints the page. */
+.lp-cloud,
+.lp-cloud-rev {
+  will-change: transform;
 }

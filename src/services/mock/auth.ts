@@ -9,8 +9,7 @@ import { currentUser, publicUser, requireUser } from "./context";
 import { latency } from "./latency";
 import { features } from "@/config/features";
 import { removeMedia } from "./media";
-import { accessList, userIdFor } from "@/config/access";
-import { emailHash, normaliseEmail } from "@/lib/access-hash";
+import { normaliseEmail } from "@/lib/email";
 
 function validation(error: { issues: { path: PropertyKey[]; message: string }[] }): never {
   const fields: Record<string, string> = {};
@@ -69,14 +68,9 @@ export const mockAuth: AuthService = {
     if (!parsed.success) validation(parsed.error);
     const input = parsed.data;
     await latency();
-    if (features.inviteOnly) {
-      throw new ServiceError(
-        "FORBIDDEN",
-        "Kiosk is invite-only for now. Ask the Kiosk team for a login.",
-      );
-    }
     const db = await getDb();
-    if (db.users.some((u) => u.email === input.email)) {
+    const email = normaliseEmail(input.email);
+    if (db.users.some((u) => normaliseEmail(u.email) === email)) {
       throw new ServiceError(
         "CONFLICT",
         "An account with this email already exists. Try logging in.",
@@ -88,7 +82,7 @@ export const mockAuth: AuthService = {
     const salt = randomSalt();
     const user = newUserRecord({
       id: newId("u"),
-      email: input.email,
+      email,
       name: input.name,
       passwordHash: await hashPassword(input.password, salt),
       passwordSalt: salt,
@@ -113,30 +107,8 @@ export const mockAuth: AuthService = {
         password: "That email and password don't match",
       });
     };
-    if (features.inviteOnly) {
-      const hash = await emailHash(input.email);
-      const entry = accessList.find((e) => e.emailHash === hash);
-      if (!entry || !(await verifyPassword(input.password, entry.salt, entry.passwordHash)))
-        return fail();
-      const id = userIdFor(entry);
-      let member = db.users.find((u) => u.id === id);
-      // First login on this device: create the account from the invite.
-      if (!member) {
-        member = newUserRecord({
-          id,
-          email: normaliseEmail(input.email),
-          name: entry.name,
-          passwordHash: entry.passwordHash,
-          passwordSalt: entry.salt,
-        });
-        db.users.push(member);
-        db.notifications.push(welcomeNote(member));
-        await commit("users", "notifications");
-      }
-      await setSessionUserId(member.id);
-      return publicUser(member);
-    }
-    const user = db.users.find((u) => u.email === input.email);
+    const email = normaliseEmail(input.email);
+    const user = db.users.find((u) => normaliseEmail(u.email) === email);
     if (!user || !user.passwordHash) return fail();
     const ok = await verifyPassword(input.password, user.passwordSalt, user.passwordHash);
     if (!ok) return fail();
@@ -171,10 +143,14 @@ export const mockAuth: AuthService = {
     await latency();
     const db = await getDb();
     const user = await requireUser(db);
-    const ok = await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash);
+    // Google-only accounts confirm with their email address instead of a password.
+    const ok = user.passwordHash
+      ? await verifyPassword(parsed.data.password, user.passwordSalt, user.passwordHash)
+      : normaliseEmail(parsed.data.password) === normaliseEmail(user.email);
     if (!ok) {
-      throw new ServiceError("UNAUTHORIZED", "That password isn't right.", {
-        password: "That password isn't right",
+      const what = user.passwordHash ? "password" : "email";
+      throw new ServiceError("UNAUTHORIZED", `That ${what} isn't right.`, {
+        password: `That ${what} isn't right`,
       });
     }
     const brandIds = new Set(user.brandIds);
@@ -211,10 +187,37 @@ export const mockAuth: AuthService = {
         campusId: "Pick a campus",
       });
     }
+    // Hall and faculty must be a hall and a faculty on their campus.
+    const zones = db.campuses.find((c) => c.id === input.campusId)?.zones ?? [];
+    const pick = (id: string | null | undefined, kind: "hostel" | "faculty") => {
+      if (id === undefined) return undefined;
+      if (id === null) return null;
+      if (!zones.some((z) => z.id === id && z.kind === kind)) {
+        const field = kind === "hostel" ? "hallZoneId" : "facultyZoneId";
+        throw new ServiceError(
+          "VALIDATION",
+          `Pick your ${kind === "hostel" ? "hall" : "faculty"} from the list`,
+          {
+            [field]: "Pick one from the list",
+          },
+        );
+      }
+      return id;
+    };
+    const hall = pick(input.hallZoneId, "hostel");
+    const faculty = pick(input.facultyZoneId, "faculty");
     user.name = input.name;
     user.campusId = input.campusId;
     user.phone = input.phone;
-    if (input.avatarImageId) user.avatar = { kind: "blob", id: input.avatarImageId };
+    if (input.removeAvatar) user.avatar = null;
+    else if (input.avatarImageId) user.avatar = { kind: "blob", id: input.avatarImageId };
+    if (input.buddy) user.buddy = { shape: input.buddy.shape, color: input.buddy.color };
+    if (hall !== undefined) user.hallZoneId = hall;
+    if (faculty !== undefined) user.facultyZoneId = faculty;
+    // A new campus clears the old campus's hall and faculty unless new ones came along.
+    if (user.hallZoneId && !zones.some((z) => z.id === user.hallZoneId)) user.hallZoneId = null;
+    if (user.facultyZoneId && !zones.some((z) => z.id === user.facultyZoneId))
+      user.facultyZoneId = null;
     user.onboarded = true;
     await commit("users");
     return publicUser(user);
@@ -224,8 +227,51 @@ export const mockAuth: AuthService = {
     await latency(0.4);
     const db = await getDb();
     const user = await requireUser(db);
-    user.notificationPrefs = { ...user.notificationPrefs, ...prefs };
+    // Only the known switches, and only true or false.
+    const next = { ...user.notificationPrefs };
+    for (const key of Object.keys(next) as (keyof typeof next)[]) {
+      const v = (prefs as Record<string, unknown> | null)?.[key];
+      if (typeof v === "boolean") next[key] = v;
+    }
+    user.notificationPrefs = next;
     await commit("users");
     return publicUser(user);
   },
 };
+
+/**
+ * Signs in someone whose email Google has just verified, creating their
+ * account on first visit. SERVER ONLY: it trusts the email, so it must never
+ * be callable from a browser (it isn't on mockAuth, which /api/rpc exposes).
+ */
+export async function signInWithVerifiedEmail(profile: { email: string; name: string }) {
+  const email = normaliseEmail(profile.email);
+  const db = await getDb();
+  let user = db.users.find((u) => normaliseEmail(u.email) === email);
+  if (user?.passwordHash) {
+    // Nobody proved they owned this address when the password was set; Google
+    // just did. Dropping the password stops anyone who signed up with someone
+    // else's email from getting into their account.
+    user.passwordHash = "";
+    user.passwordSalt = "";
+    db.notifications.push({
+      id: newId("n"),
+      userId: user.id,
+      kind: "system",
+      title: "You now log in with Google",
+      body: "Google confirmed this email is yours, so your old password was removed. Use Continue with Google next time.",
+      href: "/account/settings",
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  if (!user) {
+    const name = profile.name.trim().slice(0, 60) || email.split("@")[0]!;
+    user = newUserRecord({ id: newId("u"), email, name, passwordHash: "", passwordSalt: "" });
+    db.users.push(user);
+    db.notifications.push(welcomeNote(user));
+  }
+  await commit("users", "notifications");
+  await setSessionUserId(user.id);
+  return publicUser(user);
+}

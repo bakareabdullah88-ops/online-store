@@ -9,7 +9,7 @@ import { OpenShopWizard } from "@/components/studio/open-shop";
 
 export const metadata: Metadata = {
   title: "Open your shop",
-  description: "Open a free shop on Kiosk and sell to students on your campus.",
+  description: "Open a free shop on Kamplug and sell to students on your campus.",
 };
 
 export default function OpenShopPage() {

@@ -1,12 +1,5 @@
-import { BadgeCheck } from "lucide-react";
-import { AppPreview } from "@/components/landing/app-preview";
+import { AuthBrandPanel } from "@/components/auth/brand-panel";
 import { Logo } from "@/components/shell/logo";
-
-const points = [
-  "One account to buy and to sell",
-  "Pay on delivery or at pickup",
-  "Live order status from placed to delivered",
-];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,30 +12,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
       </div>
-      <aside
-        className="relative hidden overflow-hidden bg-canvas lg:flex lg:flex-col lg:justify-center lg:p-10"
-        aria-label="About Kiosk"
-      >
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,color-mix(in_oklab,var(--chart-mint)_40%,transparent),transparent_70%),radial-gradient(50%_45%_at_100%_100%,#ffe6cc,transparent_70%)] opacity-70 dark:opacity-20"
-          aria-hidden
-        />
-        <div className="relative">
-          <h2 className="max-w-md text-[34px] leading-tight font-bold tracking-[-0.035em]">
-            The campus marketplace, run by students.
-          </h2>
-          <ul className="mt-5 flex flex-col gap-2">
-            {points.map((p) => (
-              <li key={p} className="flex items-center gap-2.5 text-[15px] text-ink-2">
-                <BadgeCheck className="size-[18px] text-chart-green" /> {p}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-10 -mr-40">
-            <AppPreview />
-          </div>
-        </div>
-      </aside>
+      <AuthBrandPanel />
     </div>
   );
 }

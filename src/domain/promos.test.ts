@@ -4,7 +4,7 @@ import { evaluatePromo, normalizeCode } from "./promos";
 
 const base: Promo = {
   id: "p",
-  code: "KIOSK10",
+  code: "KAMPLUG10",
   brandId: null,
   kind: "percent",
   value: 10,
@@ -56,6 +56,6 @@ describe("promos", () => {
     expect(evaluatePromo(undefined, ctx)).toMatchObject({ ok: false });
   });
   it("normalizes codes", () => {
-    expect(normalizeCode(" kiosk 10 ")).toBe("KIOSK10");
+    expect(normalizeCode(" kamplug 10 ")).toBe("KAMPLUG10");
   });
 });

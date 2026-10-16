@@ -34,7 +34,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, leading, trailing, inputSize = "md", ...props },
   ref,
 ) {
-  const height = inputSize === "lg" ? "h-12 text-body-lg" : "h-10 text-body";
+  // 16px on phones so iOS doesn't zoom into the field.
+  const height =
+    inputSize === "lg"
+      ? "h-12 text-body-lg max-md:text-[16px]"
+      : "h-10 text-body max-md:text-[16px]";
   if (!leading && !trailing) {
     return <input ref={ref} className={cn(fieldControl, height, "px-3.5", className)} {...props} />;
   }
@@ -71,7 +75,7 @@ export const Textarea = forwardRef<
       ref={ref}
       className={cn(
         fieldControl,
-        "min-h-28 resize-y px-3.5 py-3 text-body leading-relaxed",
+        "min-h-28 resize-y px-3.5 py-3 text-body leading-relaxed max-md:text-[16px]",
         className,
       )}
       {...props}

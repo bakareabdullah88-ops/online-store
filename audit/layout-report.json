@@ -1,0 +1,146 @@
+[
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 360,
+    "height": 640,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 390,
+    "height": 844,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 430,
+    "height": 932,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 360,
+    "height": 640,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 390,
+    "height": 844,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 390,
+    "height": 844,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 20×20"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 430,
+    "height": 932,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 430,
+    "height": 932,
+    "dark": false,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 20×20"
+  },
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 360,
+    "height": 640,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 390,
+    "height": 844,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/account/settings",
+    "who": "buyer",
+    "width": 430,
+    "height": 932,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 360,
+    "height": 640,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 390,
+    "height": 844,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 390,
+    "height": 844,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 20×20"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 430,
+    "height": 932,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 48×28"
+  },
+  {
+    "route": "/studio/brand",
+    "who": "seller",
+    "width": 430,
+    "height": 932,
+    "dark": true,
+    "kind": "small-tap-target",
+    "detail": "button \"button\" is 20×20"
+  }
+]

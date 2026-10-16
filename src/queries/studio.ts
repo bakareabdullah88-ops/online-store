@@ -139,7 +139,7 @@ export function useStudioOrders() {
     queryKey: qk.studio.orders,
     queryFn: () => services.studio.listOrders(),
     enabled: useHasBrand(),
-    refetchInterval: 15_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -147,8 +147,8 @@ export function useStudioOrders() {
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
-      services.studio.updateOrderStatus(id, status),
+    mutationFn: ({ id, status, note }: { id: string; status: OrderStatus; note?: string }) =>
+      services.studio.updateOrderStatus(id, status, note),
     onMutate: async ({ id, status }) => {
       await qc.cancelQueries({ queryKey: qk.studio.orders });
       const prev = qc.getQueryData<Order[]>(qk.studio.orders);

@@ -14,7 +14,7 @@ import {
 test("landing sends visitors to sign up and gates the app", async ({ page }) => {
   const errors = trackErrors(page);
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /Buy from your campus/ })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Wetin you need/ })).toBeVisible();
   await page.goto("/home");
   await page.waitForURL(/\/login\?next=%2Fhome/);
   await page.goto("/studio/orders");
@@ -31,7 +31,8 @@ test("two real accounts: open a shop, buy, fulfil, message", async ({ page }) =>
 
   // Seller signs up, opens a shop and lists a product.
   await signUp(page, "Kemi Bakes", seller);
-  await openShop(page, `Kemi Bakes ${Date.now() % 10000}`, "Small chops, made fresh daily");
+  const shop = `Kemi Bakes ${Date.now() % 10000}`;
+  await openShop(page, shop, "Small chops, made fresh daily");
   await addProduct(page, {
     name: product,
     description: "Twelve warm puff-puffs, sugar dusted.",
@@ -54,10 +55,12 @@ test("two real accounts: open a shop, buy, fulfil, message", async ({ page }) =>
 
   // Seller sees the order and moves it to completed.
   await logIn(page, seller, "/studio");
-  await expect(page.getByRole("heading", { level: 1, name: "Performance" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: shop })).toBeVisible();
   await fulfilFirstOrder(page);
   await page.goto("/studio");
-  await expect(page.getByText("Gross volume")).toBeVisible();
+  // The sale now shows up under top products, next to the revenue figure.
+  await expect(page.getByText(/^Revenue, /)).toBeVisible();
+  await expect(page.getByRole("link", { name: product })).toBeVisible();
   await signOut(page);
 
   // Buyer sees it picked up and paid, and messages the shop.

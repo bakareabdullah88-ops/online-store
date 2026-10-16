@@ -40,44 +40,54 @@ function Ring({ done }: { done: boolean }) {
           strokeWidth="2"
           strokeDasharray="12 50"
           strokeLinecap="round"
-          className="origin-center animate-[spin_2.4s_linear_infinite]"
         />
       )}
     </svg>
   );
 }
 
-export function TodoList({ items }: { items: Todo[] }) {
+/**
+ * Things to do. By default only the open ones are listed, with their counts,
+ * and an "all caught up" line when there are none. `checklist` lists every
+ * step instead, ticking off the done ones (for getting started).
+ */
+export function TodoList({ items, checklist = false }: { items: Todo[]; checklist?: boolean }) {
+  const shown = checklist ? items : items.filter((t) => t.count > 0);
+  if (shown.length === 0) {
+    return (
+      <p className="flex items-center gap-2.5 py-2 text-small text-muted">
+        <Ring done /> All caught up. New tasks will show up here.
+      </p>
+    );
+  }
   return (
-    <ul className="flex flex-col gap-1">
-      {items.map((t) => {
+    <ul className="flex flex-col divide-y divide-line-thin">
+      {shown.map((t) => {
         const done = t.count === 0;
         return (
           <li key={t.id}>
             <Link
               href={t.href}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-surface",
-                !done && "bg-surface shadow-xs ring-1 ring-line",
-              )}
+              className="flex items-center gap-3 py-3 transition-opacity duration-150 hover:opacity-75"
             >
               <Ring done={done} />
               <span className="min-w-0 flex-1">
                 <span
-                  className={cn("block truncate text-[13.5px] font-semibold", done && "text-muted")}
+                  className={cn(
+                    "block truncate text-[13.5px] font-medium",
+                    done && "text-muted line-through decoration-line-strong",
+                  )}
                 >
                   {t.label}
                 </span>
-                <span className="block truncate text-[12px] text-muted">
-                  {done ? "All clear" : t.detail}
-                </span>
+                {!done && <span className="block truncate text-[12px] text-muted">{t.detail}</span>}
               </span>
-              {!done && (
-                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11.5px] font-semibold text-accent tabular">
+              {!done && !checklist && (
+                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11.5px] font-semibold text-accent-ink tabular">
                   {t.count}
                 </span>
               )}
-              <ChevronRight className="size-4 text-faint" />
+              <ChevronRight className="size-4 text-faint" aria-hidden />
             </Link>
           </li>
         );

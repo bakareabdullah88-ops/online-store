@@ -256,7 +256,7 @@ export function StudioPromotions() {
           action={<Button onClick={() => setEditing(blank)}>Create a code</Button>}
         />
       ) : (
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-x-10 md:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => (
               <motion.li
@@ -264,9 +264,9 @@ export function StudioPromotions() {
                 layout
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={spring.smooth}
-                className="card relative overflow-hidden"
+                className="card relative"
               >
-                <div className="flex items-start justify-between gap-3 border-b border-dashed border-line-strong p-5">
+                <div className="flex items-start justify-between gap-3 pt-5">
                   <div>
                     <button
                       type="button"
@@ -298,7 +298,7 @@ export function StudioPromotions() {
                     }
                   />
                 </div>
-                <div className="p-5">
+                <div className="pt-3 pb-5">
                   <p className="text-small">{describe(p)}</p>
                   <div className="mt-3 flex items-center gap-3">
                     {p.usageLimit ? (

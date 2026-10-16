@@ -6,6 +6,7 @@ import { Checkbox, Switch } from "@/components/ui/controls";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/overlay";
 import { spring } from "@/design/motion";
+import { kindLabel } from "@/config/zone-kinds";
 import type { Campus, Fulfilment } from "@/services/types";
 
 export type FulfilmentDraft = Omit<Fulfilment, "deliveryFeeKobo"> & { deliveryFee: string };
@@ -33,8 +34,26 @@ export function FulfilmentFields({
   const set = (patch: Partial<FulfilmentDraft>) => onChange({ ...value, ...patch });
   if (!campus) return <p className="text-small text-muted">Loading your campus…</p>;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-md bg-surface-2 p-4 hairline">
+    <div className="flex flex-col divide-y divide-line-thin">
+      <div className="py-4 first:pt-0 last:pb-0">
+        <Field
+          label="Where you sell from"
+          hint="Your hall, faculty or usual spot. Buyers see how far you are and how long the walk is."
+        >
+          <Select
+            label="Where you sell from"
+            value={value.baseZoneId}
+            placeholder="Choose a spot"
+            onValueChange={(v) => set({ baseZoneId: v })}
+            options={campus.zones.map((z) => ({
+              value: z.id,
+              label: z.name,
+              hint: kindLabel[z.kind],
+            }))}
+          />
+        </Field>
+      </div>
+      <div className="py-4 first:pt-0 last:pb-0">
         <Switch
           checked={value.pickup}
           onCheckedChange={(pickup) =>
@@ -58,7 +77,7 @@ export function FulfilmentFields({
               transition={spring.smooth}
               className="overflow-hidden"
             >
-              <fieldset className="mt-4 flex flex-col gap-3 border-t border-line pt-4">
+              <fieldset className="mt-4 flex flex-col gap-3 border-t border-line-thin pt-4">
                 <legend className="sr-only">Pickup points</legend>
                 {campus.pickupPoints.map((p) => (
                   <Checkbox
@@ -83,7 +102,7 @@ export function FulfilmentFields({
           )}
         </AnimatePresence>
       </div>
-      <div className="rounded-md bg-surface-2 p-4 hairline">
+      <div className="py-4 first:pt-0 last:pb-0">
         <Switch
           checked={value.delivery}
           onCheckedChange={(delivery) =>
@@ -107,7 +126,7 @@ export function FulfilmentFields({
               transition={spring.smooth}
               className="overflow-hidden"
             >
-              <div className="mt-4 flex flex-col gap-4 border-t border-line pt-4">
+              <div className="mt-4 flex flex-col gap-4 border-t border-line-thin pt-4">
                 <div>
                   <p className="mb-2 text-small font-medium">Zones you deliver to</p>
                   <div className="flex flex-wrap gap-2" role="group" aria-label="Delivery zones">

@@ -1,6 +1,6 @@
 # Deploying to Vercel
 
-Kiosk is a standard Next.js 16 app with no server secrets, database or API keys. All data lives in
+Kamplug is a standard Next.js 16 app with no server secrets, database or API keys. All data lives in
 each visitor's browser. Deploying is import and click.
 
 ## 1. Before you deploy
@@ -27,13 +27,15 @@ pnpm test:e2e         # optional locally; needs the build above
 
 ## 3. Environment variables
 
-None are required. Optional, set under **Project → Settings → Environment Variables**:
+None are required to deploy: without them the app runs with each browser keeping its own data.
+To switch on the shared backend (Neon, Google sign-in, Cloudflare R2), add the variables listed in
+the README under [The backend](../README.md#the-backend). Other optional ones:
 
 | Variable                   | When to set it                                                                                                                                                                  |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`     | When you add a custom domain, e.g. `https://kiosk.ng`. Otherwise canonical URLs, the sitemap and OG images use `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel sets automatically |
 | `NEXT_PUBLIC_MOCK_LATENCY` | Upper bound in ms of simulated network delay in the browser-only data layer. Default `900`; `0` turns it off                                                                    |
-| `NEXT_PUBLIC_DATA_SOURCE`  | Leave as `mock` until `src/services/remote` is implemented                                                                                                                      |
+| `NEXT_PUBLIC_DATA_SOURCE`  | Only to override: it's `remote` when `DATABASE_URL` is set and `mock` otherwise                                                                                                 |
 
 `NEXT_PUBLIC_*` values are inlined at build time, so **redeploy after changing them**.
 
@@ -64,16 +66,12 @@ None are required. Optional, set under **Project → Settings → Environment Va
   routes at build time.
 - `/sw.js` is served with `no-cache` so a new deploy's service worker is picked up on the next
   visit. To force every client to drop its cached pages, bump `VERSION` in `public/sw.js`.
-- Preview deployments behave exactly like production. Every visitor (and every preview URL) gets
-  its own empty data, because until the backend lands data is per browser and per origin.
+- Preview deployments use the same database as production unless you give the Preview
+  environment its own `DATABASE_URL` (a Neon branch works well for that).
 
 ## 6. Connecting the backend
 
-When a real backend exists:
-
-1. Implement `src/services/remote` against [`API_CONTRACT.md`](../API_CONTRACT.md).
-2. Set `NEXT_PUBLIC_DATA_SOURCE=remote` and any API base URL you add to `src/env.ts`.
-3. Replace the browser-only pieces flagged with `BACKEND-SEAM` (auth sessions, uploads, realtime
-   order updates), then switch on the features in `src/config/features.ts` (online payments,
-   password reset email, payouts) as each one becomes real.
-4. Add a Content-Security-Policy in `next.config.ts` that allows your API origin.
+The backend is built. Follow [The backend](../README.md#the-backend) in the README: add the
+variables, register the Google redirect URI, make the R2 bucket public, redeploy. Then switch on
+the remaining features in `src/config/features.ts` (online payments, password reset email,
+payouts) as each one becomes real; search for `BACKEND-SEAM`.

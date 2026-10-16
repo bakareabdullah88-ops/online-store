@@ -4,7 +4,16 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { BadgeCheck, Bike, Clock, MapPin, MessageCircle, ShoppingBag, Store } from "lucide-react";
+import {
+  BadgeCheck,
+  Bike,
+  Clock,
+  Footprints,
+  MapPin,
+  MessageCircle,
+  ShoppingBag,
+  Store,
+} from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,6 +22,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { ChatSheet } from "@/components/messages/chat-sheet";
 import { spring } from "@/design/motion";
 import { purchaseBlock, MAX_LINE_QUANTITY } from "@/domain/bag";
+import { formatWhen } from "@/domain/distance";
 import { discountPercent, formatNaira } from "@/domain/money";
 import {
   findVariant,
@@ -22,7 +32,7 @@ import {
   type Selection,
 } from "@/domain/variants";
 import { flyToBag } from "@/lib/fly-to-bag";
-import { useDocumentTitle } from "@/lib/hooks";
+import { useDocumentTitle, useTextEntryFocus } from "@/lib/hooks";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { cn } from "@/lib/cn";
 import {
@@ -34,12 +44,14 @@ import {
   useProducts,
   useRelatedProducts,
 } from "@/queries/catalog";
+import { useNearness } from "@/queries/nearby";
 import { useSession } from "@/queries/session";
 import { isServiceError } from "@/services/errors";
 import type { ProductWithBrand } from "@/services/types";
 import { useBag } from "@/stores/bag";
 import { useUi } from "@/stores/ui";
 import { toast } from "@/stores/toast";
+import { DistanceLine } from "../nearby";
 import { ProductCard, ProductCardSkeleton } from "../product-card";
 import { Rail } from "../rail";
 import { ReviewsBlock } from "../reviews";
@@ -106,6 +118,7 @@ export function ProductView() {
   const { data: brand } = useBrand(p?.brand.handle ?? "");
   const campus = useCampus(p?.brand.campusId);
   const { user } = useSession();
+  const typing = useTextEntryFocus();
   const reviews = useProductReviews(p?.id);
   const related = useRelatedProducts(p?.id);
   const moreFromBrand = useProducts(
@@ -133,6 +146,8 @@ export function ProductView() {
   const variant = p && key ? findVariant(p, key) : undefined;
   const stock = variant?.stock ?? 0;
   const price = p && key ? unitPrice(p, key) : (p?.priceKobo ?? 0);
+
+  const near = useNearness(brand?.fulfilment, brand?.campusId);
 
   if (isPending) return <ProductSkeleton />;
   if (error || !p) {
@@ -377,23 +392,22 @@ export function ProductView() {
           </div>
 
           {fulfilment && (
-            <div className="card mt-8 divide-y divide-line">
+            <div className="card mt-8 divide-y divide-line-thin border-b border-line-thin">
               {fulfilment.delivery && (
-                <div className="flex gap-3 p-4">
+                <div className="flex gap-3 py-4">
                   <Bike className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
                     <p className="font-medium">
                       Delivery · {formatNaira(fulfilment.deliveryFeeKobo)}
                     </p>
                     <p className="text-muted">
-                      To {fulfilment.zoneIds.length} zones on {campus?.shortName}. Promo codes like
-                      FREEDEL work at checkout.
+                      To {fulfilment.zoneIds.length} zones on {campus?.shortName}.
                     </p>
                   </div>
                 </div>
               )}
               {fulfilment.pickup && (
-                <div className="flex gap-3 p-4">
+                <div className="flex gap-3 py-4">
                   <MapPin className="mt-0.5 size-5 shrink-0" />
                   <div className="text-small">
                     <p className="font-medium">Free pickup</p>
@@ -403,15 +417,25 @@ export function ProductView() {
                   </div>
                 </div>
               )}
-              <div className="flex gap-3 p-4">
+              {(near.metres !== null || near.relation) && brand && (
+                <div className="flex gap-3 py-4">
+                  <Footprints className="mt-0.5 size-5 shrink-0" />
+                  <div className="text-small">
+                    <p className="font-medium">How far</p>
+                    <DistanceLine
+                      fulfilment={fulfilment}
+                      campusId={brand.campusId}
+                      badge
+                      eta
+                      className="mt-1 text-small"
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-3 py-4">
                 <Clock className="mt-0.5 size-5 shrink-0" />
                 <div className="text-small">
-                  <p className="font-medium">
-                    Usually ready in{" "}
-                    {fulfilment.prepMinutes >= 60
-                      ? `${Math.round(fulfilment.prepMinutes / 60)} hour${fulfilment.prepMinutes >= 120 ? "s" : ""}`
-                      : `${fulfilment.prepMinutes} minutes`}
-                  </p>
+                  <p className="font-medium">Usually ready {formatWhen(fulfilment.prepMinutes)}</p>
                   <p className="text-muted">
                     Each brand ships its own order. You&apos;ll track it live.
                   </p>
@@ -421,7 +445,7 @@ export function ProductView() {
           )}
 
           {p.details.length > 0 && (
-            <details className="group mt-8 border-t border-line pt-5" open>
+            <details className="group mt-8 border-t border-line-thin pt-5" open>
               <summary className="flex cursor-pointer list-none items-center justify-between text-title font-semibold [&::-webkit-details-marker]:hidden">
                 Details
                 <span className="text-muted transition-transform group-open:rotate-45" aria-hidden>
@@ -440,7 +464,7 @@ export function ProductView() {
           )}
 
           {!own && (
-            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line pt-6">
+            <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line-thin pt-6">
               <Button
                 variant="ghost"
                 leadingIcon={<MessageCircle className="size-4.5" />}
@@ -461,7 +485,7 @@ export function ProductView() {
       <section
         id="reviews"
         aria-labelledby="reviews-title"
-        className="mt-20 scroll-mt-24 border-t border-line pt-12"
+        className="mt-20 scroll-mt-24 border-t border-line-thin pt-12"
       >
         <h2 id="reviews-title" className="mb-8 font-display text-display-sm">
           What students say
@@ -478,7 +502,13 @@ export function ProductView() {
 
       {/* Sticky add-to-bag (phones & tablets) */}
       <div className="h-24 lg:hidden" aria-hidden />
-      <div className="fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-(--z-header) border-t border-line-thin bg-canvas/95 px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden",
+          // Out of the way while typing (a review, a message): the keyboard would lift it over the field.
+          typing && "hidden",
+        )}
+      >
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <div className="min-w-0">
             <p className="truncate text-small text-muted">{p.name}</p>

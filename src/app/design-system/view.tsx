@@ -522,7 +522,7 @@ export function DesignSystemView() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onClear={() => setSearch("")}
-                placeholder="Search Kiosk"
+                placeholder="Search Kamplug"
               />
             </Field>
             <Field label="Campus">

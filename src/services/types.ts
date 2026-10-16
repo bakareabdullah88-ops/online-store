@@ -4,6 +4,7 @@
  */
 import type { Kobo } from "@/domain/money";
 import type { ArtPalette } from "@/design/tokens";
+import type { Buddy } from "@/domain/buddy";
 
 export type ID = string;
 export type ISODate = string;
@@ -47,7 +48,7 @@ export type ImageRef =
 
 /* -------------------------------- Campus ---------------------------------- */
 
-export type ZoneKind = "hostel" | "faculty" | "gate" | "market" | "offcampus";
+export type ZoneKind = "hostel" | "faculty" | "landmark" | "gate" | "market" | "offcampus";
 
 export type CampusZone = { id: ID; name: string; kind: ZoneKind };
 
@@ -80,14 +81,21 @@ export type User = {
   phone: string;
   campusId: ID | null;
   avatar: ImageRef | null;
+  /** The animated cartoon used when there's no photo. Missing means the default for this account. */
+  buddy?: Buddy | null;
+  /** The hall they live in and the faculty they study in, for "same hostel/faculty". */
+  hallZoneId?: ID | null;
+  facultyZoneId?: ID | null;
   brandIds: ID[];
   followingBrandIds: ID[];
   wishlistProductIds: ID[];
   onboarded: boolean;
   notificationPrefs: NotificationPrefs;
   createdAt: ISODate;
-  /** Admins can create logins for other people (invite-only mode). */
-  role?: "admin" | "member";
+  /** The shared preview account (sample data). Can't change password or delete itself. */
+  preview?: boolean;
+  /** False for accounts that sign in with Google only. */
+  hasPassword?: boolean;
 };
 
 /** Never leaves the service layer. */
@@ -117,6 +125,8 @@ export type Fulfilment = {
   pickupPointIds: ID[];
   /** Campus zones the brand delivers to */
   zoneIds: ID[];
+  /** The hall, faculty or spot the shop works from. Used for distance and walk time. */
+  baseZoneId?: ID;
 };
 
 export type Brand = {
@@ -179,7 +189,11 @@ export type ProductWithBrand = Product & {
   brand: Pick<
     Brand,
     "id" | "handle" | "name" | "logo" | "campusId" | "vacation" | "rating" | "verified"
-  >;
+  > & {
+    /** How the shop gets orders to buyers, for list rows. */
+    fulfilment?: Pick<Fulfilment, "pickup" | "delivery" | "deliveryFeeKobo" | "prepMinutes"> &
+      Partial<Pick<Fulfilment, "baseZoneId" | "pickupPointIds">>;
+  };
 };
 
 /* -------------------------------- Reviews --------------------------------- */
@@ -356,7 +370,14 @@ export type SavedPlace = {
 
 /* ---------------------------------- Lists --------------------------------- */
 
-export type SortKey = "relevance" | "popular" | "newest" | "price_asc" | "price_desc" | "rating";
+export type SortKey =
+  | "relevance"
+  | "popular"
+  | "newest"
+  | "nearest"
+  | "price_asc"
+  | "price_desc"
+  | "rating";
 
 export type ProductQuery = {
   q?: string;
@@ -368,11 +389,13 @@ export type ProductQuery = {
   maxPriceKobo?: Kobo;
   minRating?: number;
   inStock?: boolean;
+  /** The buyer's spot, hall and faculty: used by "nearest" and the walking filter. */
+  near?: { zoneId?: ID | null; hallZoneId?: ID | null; facultyZoneId?: ID | null };
+  /** Only shops within walking distance of `near.zoneId`. */
+  walking?: boolean;
   sort?: SortKey;
   page?: number;
   pageSize?: number;
-  /** Include drafts (seller views only) */
-  includeDrafts?: boolean;
   ids?: ID[];
 };
 

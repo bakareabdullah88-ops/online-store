@@ -3,21 +3,22 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { MapPin, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { AddressFields } from "@/components/address/address-picker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/controls";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input } from "@/components/ui/input";
-import { Pill } from "@/components/ui/misc";
 import { Select } from "@/components/ui/overlay";
 import { Dialog, ResponsiveSheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { kindIcon, kindLabel } from "@/config/zone-kinds";
 import { spring } from "@/design/motion";
 import { useCampuses } from "@/queries/catalog";
 import { usePlaces, useRemovePlace, useSavePlace } from "@/queries/inbox";
 import { useSession } from "@/queries/session";
 import { placeSchema } from "@/services/inputs";
 import { errorMessage } from "@/services/errors";
-import type { SavedPlace } from "@/services/types";
+import type { CampusZone, SavedPlace } from "@/services/types";
 import { toast } from "@/stores/toast";
 import { NavPageHeader } from "@/components/app/nav-header";
 
@@ -31,17 +32,26 @@ type Draft = {
   isDefault: boolean;
 };
 
+/** A short name for a place at this spot, within the 30 characters a name may have. */
+function spotName(z: CampusZone) {
+  return z.name.length <= 30 ? z.name : kindLabel[z.kind];
+}
+
 function PlaceForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
   const [d, setD] = useState(draft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const campuses = useCampuses();
   const save = useSavePlace();
   const campus = campuses.data?.find((c) => c.id === d.campusId);
+  const kind = campus?.zones.find((z) => z.id === d.zoneId)?.kind;
   const submit = () => {
     const parsed = placeSchema.safeParse({ ...d, pickupPointId: d.pickupPointId || undefined });
-    if (!parsed.success) {
-      const e: Record<string, string> = {};
-      for (const i of parsed.error.issues) e[String(i.path[0])] ??= i.message;
+    const e: Record<string, string> = {};
+    if (!parsed.success) for (const i of parsed.error.issues) e[String(i.path[0])] ??= i.message;
+    // Off campus, the area alone won't find you.
+    if (kind === "offcampus" && d.addressLine.trim().length < 3)
+      e.addressLine = "Add your street address";
+    if (!parsed.success || Object.keys(e).length) {
       setErrors(e);
       return;
     }
@@ -50,9 +60,25 @@ function PlaceForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
         toast.success(d.id ? "Place updated" : "Place saved");
         onDone();
       },
-      onError: (e) => toast.error(errorMessage(e)),
+      onError: (err) => toast.error(errorMessage(err)),
     });
   };
+  const pickZone = (zoneId: string) =>
+    setD((v) => {
+      const from = campus?.zones.find((z) => z.id === v.zoneId);
+      const to = campus?.zones.find((z) => z.id === zoneId);
+      const pointAt = (id: string | undefined) =>
+        campus?.pickupPoints.find((p) => p.zoneId === id)?.id ?? "";
+      // Name it after the spot, and prefer the spot's pickup point, unless they chose otherwise.
+      const autoLabel = !v.label.trim() || (!!from && v.label === spotName(from));
+      const autoPoint = !v.pickupPointId || v.pickupPointId === pointAt(from?.id);
+      return {
+        ...v,
+        zoneId,
+        label: autoLabel && to ? spotName(to) : v.label,
+        pickupPointId: autoPoint ? pointAt(zoneId) : v.pickupPointId,
+      };
+    });
   return (
     <form
       className="flex flex-col gap-5"
@@ -62,58 +88,56 @@ function PlaceForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
         submit();
       }}
     >
+      {(campuses.data?.length ?? 0) > 1 && (
+        <Field label="Campus">
+          <Select
+            value={d.campusId}
+            onValueChange={(v) => setD({ ...d, campusId: v, zoneId: "", pickupPointId: "" })}
+            options={(campuses.data ?? []).map((c) => ({
+              value: c.id,
+              label: c.shortName,
+              hint: c.city,
+            }))}
+            label="Campus"
+          />
+        </Field>
+      )}
+      <AddressFields
+        campus={campus}
+        zoneId={d.zoneId}
+        detail={d.addressLine}
+        onZoneChange={pickZone}
+        onDetailChange={(addressLine) => setD((v) => ({ ...v, addressLine }))}
+        label="Hall, faculty or area"
+        errors={{ zoneId: errors.zoneId, addressLine: errors.addressLine }}
+        detailRequired
+      />
       <Field label="Name" error={errors.label} hint="e.g. Hostel, Department, Cousin's place">
         <Input
           value={d.label}
           onChange={(e) => setD({ ...d, label: e.target.value })}
           maxLength={30}
+          className="h-11 text-[16px] sm:text-body"
         />
       </Field>
-      <Field label="Campus">
-        <Select
-          value={d.campusId}
-          onValueChange={(v) => setD({ ...d, campusId: v, zoneId: "", pickupPointId: "" })}
-          options={(campuses.data ?? []).map((c) => ({
-            value: c.id,
-            label: c.shortName,
-            hint: c.city,
-          }))}
-          label="Campus"
-        />
-      </Field>
-      <Field label="Hostel, faculty or area" error={errors.zoneId}>
-        <Select
-          value={d.zoneId || undefined}
-          onValueChange={(v) => setD({ ...d, zoneId: v })}
-          placeholder="Choose a zone"
-          options={(campus?.zones ?? []).map((z) => ({ value: z.id, label: z.name }))}
-          label="Zone"
-        />
-      </Field>
-      <Field label="Room, block or landmark" error={errors.addressLine}>
-        <Input
-          value={d.addressLine}
-          onChange={(e) => setD({ ...d, addressLine: e.target.value })}
-          placeholder="Room 12, Block C"
-          maxLength={120}
-        />
-      </Field>
-      <Field label="Preferred pickup point" optional>
-        <Select
-          value={d.pickupPointId || "none"}
-          onValueChange={(v) => setD({ ...d, pickupPointId: v === "none" ? "" : v })}
-          options={[
-            { value: "none", label: "No preference" },
-            ...(campus?.pickupPoints ?? []).map((p) => ({ value: p.id, label: p.name })),
-          ]}
-          label="Pickup point"
-        />
-      </Field>
+      {(campus?.pickupPoints.length ?? 0) > 0 && (
+        <Field label="Preferred pickup point" optional>
+          <Select
+            value={d.pickupPointId || "none"}
+            onValueChange={(v) => setD({ ...d, pickupPointId: v === "none" ? "" : v })}
+            options={[
+              { value: "none", label: "No preference" },
+              ...(campus?.pickupPoints ?? []).map((p) => ({ value: p.id, label: p.name })),
+            ]}
+            label="Pickup point"
+          />
+        </Field>
+      )}
       <Checkbox
         checked={d.isDefault}
         onCheckedChange={(v) => setD({ ...d, isDefault: v })}
         label="Use as my default"
-        description="Checkout fills this in for brands on this campus."
+        description="Checkout starts with this place, and distances are measured from it."
       />
       <Button type="submit" size="lg" loading={save.isPending}>
         {d.id ? "Save changes" : "Save place"}
@@ -132,7 +156,8 @@ export function PlacesView() {
 
   const blank: Draft = {
     label: "",
-    campusId: user?.campusId ?? campuses.data?.[0]?.id ?? "",
+    campusId:
+      campuses.data?.find((c) => c.id === user?.campusId)?.id ?? campuses.data?.[0]?.id ?? "",
     zoneId: "",
     pickupPointId: "",
     addressLine: "",
@@ -165,41 +190,59 @@ export function PlacesView() {
           action={<Button onClick={() => setEditing(blank)}>Add a place</Button>}
         />
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
           <AnimatePresence initial={false}>
             {data.map((p) => {
               const campus = campuses.data?.find((c) => c.id === p.campusId);
               const zone = campus?.zones.find((z) => z.id === p.zoneId);
               const point = campus?.pickupPoints.find((x) => x.id === p.pickupPointId);
+              const KindIcon = zone ? kindIcon[zone.kind] : MapPin;
               return (
                 <motion.li
                   key={p.id}
                   layout
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={spring.smooth}
-                  className="card flex flex-col p-5"
+                  className="card flex flex-col py-5"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
-                      <MapPin className="size-5" />
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
+                      <KindIcon className="size-5" aria-hidden />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-2 text-body font-semibold">
-                        {p.label} {p.isDefault && <Pill tone="accent">Default</Pill>}
+                      <p className="flex flex-wrap items-center gap-x-2 text-body font-semibold">
+                        <span className="min-w-0 break-words">{p.label}</span>
+                        {p.isDefault && (
+                          <span className="inline-flex items-center gap-1 text-small font-medium text-accent-ink">
+                            <Star className="size-3.5 fill-current" aria-hidden />
+                            Default
+                          </span>
+                        )}
                       </p>
-                      <p className="mt-1 text-small text-ink-2">{p.addressLine}</p>
-                      <p className="text-small text-muted">
-                        {zone?.name} · {campus?.shortName}
+                      <p className="mt-0.5 text-small text-muted">
+                        {[zone?.name, (campuses.data?.length ?? 0) > 1 ? campus?.shortName : null]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
+                      {p.addressLine && p.addressLine !== zone?.name && (
+                        <p className="mt-1 text-small break-words text-ink-2">{p.addressLine}</p>
+                      )}
                       {point && <p className="mt-1 text-small text-muted">Pickup: {point.name}</p>}
                     </div>
                   </div>
-                  <div className="mt-4 flex gap-1 border-t border-line pt-3">
+                  <div className="-mx-3 mt-3 flex gap-1">
                     <Button
                       size="sm"
                       variant="ghost"
                       leadingIcon={<Pencil className="size-4" />}
-                      onClick={() => setEditing({ ...p, pickupPointId: p.pickupPointId ?? "" })}
+                      onClick={() =>
+                        setEditing(
+                          campus
+                            ? { ...p, pickupPointId: p.pickupPointId ?? "" }
+                            : // A campus we no longer offer: pick the spot again here.
+                              { ...p, campusId: blank.campusId, zoneId: "", pickupPointId: "" },
+                        )
+                      }
                     >
                       Edit
                     </Button>

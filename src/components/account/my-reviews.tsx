@@ -33,15 +33,15 @@ export function MyReviewsView() {
         <EmptyState
           illustration="reviews"
           title="No reviews yet"
-          body="After an order is delivered, you can rate it from your orders."
-          action={<ButtonLink href="/orders">Your orders</ButtonLink>}
+          body="Once an order reaches you, you can rate it from your orders."
+          action={<ButtonLink href="/orders">See your orders</ButtonLink>}
         />
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col border-b border-line-thin">
           {data.map((r) => {
             const p = products.data?.items.find((x) => x.id === r.productId);
             return (
-              <li key={r.id} className="card p-5">
+              <li key={r.id} className="card py-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     {p ? (
@@ -62,7 +62,7 @@ export function MyReviewsView() {
                 </div>
                 <p className="mt-3 text-body text-ink-2">{r.body}</p>
                 {r.reply && (
-                  <div className="mt-3 rounded-md bg-canvas-sunk px-4 py-3">
+                  <div className="mt-3 border-l-2 border-line pl-4">
                     <p className="eyebrow text-muted">Reply from {p?.brand.name ?? "the brand"}</p>
                     <p className="mt-1 text-small text-ink-2">{r.reply.body}</p>
                   </div>

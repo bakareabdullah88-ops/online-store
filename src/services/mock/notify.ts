@@ -20,6 +20,7 @@ export function notifyBuyerOfStatus(
   order: Order,
   status: OrderStatus,
   at?: string,
+  note?: string,
 ) {
   const buyer = db.users.find((u) => u.id === order.buyerId);
   if (!buyer?.notificationPrefs.orderUpdates) return;
@@ -28,11 +29,11 @@ export function notifyBuyerOfStatus(
     confirmed: `${order.brandName} accepted your order.`,
     preparing: `${order.brandName} is packing your order.`,
     ready: `Your order is ready. Show code ${order.code} at the pickup point.`,
-    out_for_delivery: "A rider is on the way. Keep your phone close.",
+    out_for_delivery: "It's on the way. Keep your phone close.",
     delivered:
       order.fulfilment.method === "pickup"
-        ? "Picked up. Enjoy! Tap to leave a review."
-        : "Delivered. Enjoy! Tap to leave a review.",
+        ? "Picked up. Tap to leave a review."
+        : "Delivered. Tap to leave a review.",
     declined: `${order.brandName} couldn't take this order. You haven't been charged.`,
     cancelled: "Your order was cancelled.",
   };
@@ -40,7 +41,7 @@ export function notifyBuyerOfStatus(
     userId: order.buyerId,
     kind: "order",
     title: `${label} · ${order.code}`,
-    body: body[status] ?? "",
+    body: [body[status], note && `Reason: ${note}`].filter(Boolean).join(" "),
     href: `/orders/${order.id}`,
     ...(at ? { createdAt: at } : {}),
   });

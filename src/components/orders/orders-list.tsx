@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneBanner, RouteScene } from "@/components/scenes/campus-scenes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Compass, Eye, MessageCircle, Receipt, RotateCcw, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -46,7 +47,7 @@ export function OrdersList() {
   const router = useRouter();
   const pathname = usePathname() ?? "/orders";
   const now = useNow(30_000);
-  const reorder = useReorder();
+  const { reorder } = useReorder();
   const startThread = useStartThread();
   const cancel = useCancelOrder();
   const [q, setQ] = useState("");
@@ -90,7 +91,7 @@ export function OrdersList() {
       header: "Shop",
       csv: (o) => o.brandName,
       cell: (o) => (
-        <span className="inline-flex items-center gap-2 rounded-full bg-surface py-1 pr-3 pl-1 shadow-xs ring-1 ring-line">
+        <span className="inline-flex items-center gap-2">
           <span className="size-6 overflow-hidden rounded-full">
             <AppImage image={o.brandLogo} alt="" variant="logo" name={o.brandName} />
           </span>
@@ -137,21 +138,15 @@ export function OrdersList() {
 
   return (
     <div>
+      <SceneBanner className="-mt-5 mb-3 h-[170px] sm:h-[210px] md:-mt-7 md:h-[22vw] md:max-h-[320px]">
+        <RouteScene className="absolute inset-0" />
+      </SceneBanner>
       <NavPageHeader
         title="Orders"
         description={
           activeCount
             ? `${activeCount} on the way. Open one to follow it live.`
             : "Everything you've ordered, newest first."
-        }
-        actions={
-          <ButtonLink
-            href="/explore"
-            variant="secondary"
-            leadingIcon={<Compass className="size-4" />}
-          >
-            Discover
-          </ButtonLink>
         }
       />
       <DataTable
@@ -203,7 +198,7 @@ export function OrdersList() {
         ]}
         card={(o) => (
           <div className="flex items-center gap-3">
-            <span className="size-11 shrink-0 overflow-hidden rounded-xl ring-1 ring-line">
+            <span className="size-11 shrink-0 overflow-hidden rounded-md">
               <AppImage
                 image={o.items[0]?.image}
                 alt=""

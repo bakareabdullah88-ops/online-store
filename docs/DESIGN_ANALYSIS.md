@@ -55,7 +55,7 @@
 - **Why it works:** a warm editorial feel. Cream and sand surfaces instead of white, black
   primary buttons, a refined serif for headlines, tiny uppercase mono labels as section
   "eyebrows", generous product photography with lots of air.
-- **Take:** this is the soul of the marketplace side of Kiosk.
+- **Take:** this is the soul of the marketplace side of Kamplug.
 
 ### 07 · Landing
 
@@ -64,7 +64,7 @@
 - **Take:** asymmetric hero, numbered "how it works", a seller call-to-action with a different
   surface tone.
 
-## Synthesis → the Kiosk identity
+## Synthesis → the Kamplug identity
 
 | Dimension            | Decision                                                                                                                                                                                                                                                                     |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

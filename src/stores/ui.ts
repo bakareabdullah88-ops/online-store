@@ -64,6 +64,8 @@ export const usePrefs = create<Prefs>()(
 type Ui = {
   bagOpen: boolean;
   commandOpen: boolean;
+  /** The phone menu. Shared, so a side kept alive in the background can't come back with it open. */
+  menuOpen: boolean;
   /** True between signing out (or deleting the account) and leaving the app, so the auth gate doesn't bounce to /login. */
   leaving: boolean;
   /** Increments to trigger the bag-icon bump after a fly-to-bag. */
@@ -72,6 +74,7 @@ type Ui = {
   shopJustOpened: boolean;
   setBagOpen: (v: boolean) => void;
   setCommandOpen: (v: boolean) => void;
+  setMenuOpen: (v: boolean) => void;
   setLeaving: (v: boolean) => void;
   pulseBag: () => void;
 };
@@ -79,11 +82,13 @@ type Ui = {
 export const useUi = create<Ui>((set) => ({
   bagOpen: false,
   commandOpen: false,
+  menuOpen: false,
   leaving: false,
   bagPulse: 0,
   shopJustOpened: false,
   setBagOpen: (bagOpen) => set({ bagOpen }),
   setCommandOpen: (commandOpen) => set({ commandOpen }),
+  setMenuOpen: (menuOpen) => set({ menuOpen }),
   setLeaving: (leaving) => set({ leaving }),
   pulseBag: () => set((s) => ({ bagPulse: s.bagPulse + 1 })),
 }));

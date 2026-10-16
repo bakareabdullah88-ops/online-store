@@ -1,26 +1,54 @@
 # API contract
 
-Every method of the service layer (`src/services/contracts.ts`) and the endpoint it becomes.
-The mock implementation (`src/services/mock`) already behaves like this contract, so a real backend
-can be dropped in by implementing `src/services/remote` with **zero UI changes**.
+Every method of the service layer (`src/services/contracts.ts`): what it takes, returns and
+refuses. The UI only talks to these interfaces. Two implementations exist:
 
-- **Base URL:** `/api/v1`
-- **Auth:** HTTP-only session cookie (`kiosk_session`). The mock stores a session id in IndexedDB.
+- **`mock`**: the service code in `src/services/mock` runs in the browser against IndexedDB (one
+  person's device). Used for local development and most unit tests.
+- **`remote`** (the real backend): the **same service code** runs on the server against Postgres,
+  shared by everyone. `src/services/remote` is a thin browser client; `src/server` holds the
+  database, sessions and route handlers. Set `NEXT_PUBLIC_DATA_SOURCE=remote` and `DATABASE_URL`.
+
+## Transport (remote)
+
+| Route                   | What                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `POST /api/rpc`         | `{ service, method, args }` → `{ data, seq }`. One call of any method below except `media`.    |
+| `POST /api/media`       | Raw image body (`image/jpeg\|png\|webp\|gif\|avif`, ≤ 4MB; the browser shrinks bigger photos). |
+| `GET /api/media/:id`    | The image, cached forever (ids are never reused).                                              |
+| `DELETE /api/media/:id` | Only by whoever uploaded it.                                                                   |
+| `GET /api/sync`         | `{ seq }`: the newest change. Open tabs poll it every 20s and refetch when it moves.           |
+
+- **Auth:** HTTP-only, `SameSite=Lax` session cookie (`kamplug_session`, 30 days). Only a SHA-256
+  hash of its token is stored (`kamplug_sessions`). `signIn`/`signUp` and Google
+  sign-in set it, `signOut`/`deleteAccount` clear it.
+- **Google sign-in:** Better Auth handles the trip to Google; Kamplug then takes the verified email
+  and signs the person in (creating the account on first visit). If someone had signed up with
+  a password for that email, the password is removed, because Google has now proved who owns it.
+  Google-only accounts confirm account deletion by typing their email.
+- **Same site only:** requests whose `Origin` isn't this site get `403`. Sign-in, sign-up and
+  account deletion allow 10 attempts a minute per address.
+- **Data source:** the app always uses this backend. `NEXT_PUBLIC_DATA_SOURCE=mock` (automated
+  tests only) keeps data in the browser instead.
+- **Never sent:** password hashes and salts are stripped from every response.
 - **Money:** always integer **kobo** (`number`). Never floats.
 - **Dates:** ISO-8601 strings in UTC.
 - **Types:** request and response shapes refer to `src/services/types.ts`; input schemas are the Zod
-  schemas in `src/services/inputs.ts` (reuse them server-side).
-- **Errors:** JSON `{ "code": ServiceErrorCode, "message": string, "fields"?: Record<string,string> }`.
+  schemas in `src/services/inputs.ts`.
+- **Errors:** JSON `{ "error": { "code": ServiceErrorCode, "message": string, "fields"?: Record<string,string> } }`.
 
-| `code`            | HTTP | Meaning                                                           |
-| ----------------- | ---- | ----------------------------------------------------------------- |
-| `VALIDATION`      | 422  | Input failed the Zod schema; `fields` maps field → message        |
-| `UNAUTHORIZED`    | 401  | Not signed in / bad credentials                                   |
-| `FORBIDDEN`       | 403  | Signed in but not allowed (e.g. no shop, own product)             |
-| `NOT_FOUND`       | 404  | Resource missing or not visible to caller                         |
-| `CONFLICT`        | 409  | State conflict (taken handle, sold out, illegal order transition) |
-| `UNAVAILABLE`     | 503  | Upstream outage, or a feature that is not switched on yet         |
-| `NOT_IMPLEMENTED` | 501  | Remote stub (current state of `remote/`)                          |
+The **Endpoint** column in the tables below is the REST shape each method would take if the API is
+ever split into resources (for a mobile app, say). Today every method goes through `/api/rpc`.
+
+| `code`            | HTTP | Meaning                                                            |
+| ----------------- | ---- | ------------------------------------------------------------------ |
+| `VALIDATION`      | 422  | Input failed the Zod schema; `fields` maps field → message         |
+| `UNAUTHORIZED`    | 401  | Not signed in / bad credentials                                    |
+| `FORBIDDEN`       | 403  | Signed in but not allowed (e.g. no shop, own product)              |
+| `NOT_FOUND`       | 404  | Resource missing or not visible to caller                          |
+| `CONFLICT`        | 409  | State conflict (taken handle, sold out, illegal order transition)  |
+| `UNAVAILABLE`     | 503  | Database not connected, a feature not switched on, or rate limited |
+| `NOT_IMPLEMENTED` | 501  | Not used by the server today                                       |
 
 List endpoints return `Page<T> = { items, total, page, pageSize, hasMore }` where noted.
 
@@ -66,16 +94,16 @@ List endpoints return `Page<T> = { items, total, page, pageSize, hasMore }` wher
 
 ## Orders: `services.orders`
 
-| Method                   | Endpoint                      | Request                                                                                                                                   | Response                                                                 | Errors                                                                                                                              |
-| ------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `quote(input)`           | `POST /checkout/quote`        | `CheckoutInput`                                                                                                                           | `CheckoutQuote` (per-brand subtotals, fees, promo status, line problems) | `VALIDATION`, `UNAUTHORIZED`                                                                                                        |
-| `createOrders(input)`    | `POST /checkout`              | `CheckoutInput { campusId, phone, paymentMethod, groups[{ brandId, lines[{productId, variantKey, quantity}], fulfilment, promoCode? }] }` | `{ checkoutId, orders: Order[] }`, one order per brand                   | `VALIDATION`, `CONFLICT` (stock, own product, invalid promo), `UNAVAILABLE` (online payment while `features.onlinePayments` is off) |
-| `listMyOrders()`         | `GET /me/orders`              | –                                                                                                                                         | `Order[]`                                                                | `UNAUTHORIZED`                                                                                                                      |
-| `getOrder(id)`           | `GET /orders/:id`             | –                                                                                                                                         | `Order` (buyer or the selling brand)                                     | `NOT_FOUND`                                                                                                                         |
-| `cancelOrder(id)`        | `POST /orders/:id/cancel`     | –                                                                                                                                         | `Order`                                                                  | `CONFLICT` (already accepted)                                                                                                       |
-| `reviewOrderItem(input)` | `POST /orders/:id/reviews`    | `ReviewInput { orderId, productId, rating, body }`                                                                                        | `Review`                                                                 | `CONFLICT` (not delivered / already reviewed)                                                                                       |
-| `getDashboard(range)`    | `GET /me/dashboard?from=&to=` | –                                                                                                                                         | `BuyerDashboard` (`domain/analytics.ts`)                                 | `UNAUTHORIZED`                                                                                                                      |
-| `myReviews()`            | `GET /me/reviews`             | –                                                                                                                                         | `Review[]`                                                               | `UNAUTHORIZED`                                                                                                                      |
+| Method                   | Endpoint                      | Request                                                                                                                                   | Response                                                                                                                                                | Errors                                                                                                                              |
+| ------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `quote(input)`           | `POST /checkout/quote`        | `CheckoutInput`                                                                                                                           | `CheckoutQuote` (per-brand subtotals, fees, promo status, line problems)                                                                                | `VALIDATION`, `UNAUTHORIZED`                                                                                                        |
+| `createOrders(input)`    | `POST /checkout`              | `CheckoutInput { campusId, phone, paymentMethod, groups[{ brandId, lines[{productId, variantKey, quantity}], fulfilment, promoCode? }] }` | `{ checkoutId, orders: Order[] }`, one order per brand; offline payment is recorded per order from its fulfilment (`pay_on_pickup` / `pay_on_delivery`) | `VALIDATION`, `CONFLICT` (stock, own product, invalid promo), `UNAVAILABLE` (online payment while `features.onlinePayments` is off) |
+| `listMyOrders()`         | `GET /me/orders`              | –                                                                                                                                         | `Order[]`                                                                                                                                               | `UNAUTHORIZED`                                                                                                                      |
+| `getOrder(id)`           | `GET /orders/:id`             | –                                                                                                                                         | `Order` (buyer or the selling brand)                                                                                                                    | `NOT_FOUND`                                                                                                                         |
+| `cancelOrder(id)`        | `POST /orders/:id/cancel`     | –                                                                                                                                         | `Order`                                                                                                                                                 | `CONFLICT` (already accepted)                                                                                                       |
+| `reviewOrderItem(input)` | `POST /orders/:id/reviews`    | `ReviewInput { orderId, productId, rating, body }`                                                                                        | `Review`                                                                                                                                                | `CONFLICT` (not delivered / already reviewed)                                                                                       |
+| `getDashboard(range)`    | `GET /me/dashboard?from=&to=` | –                                                                                                                                         | `BuyerDashboard` (`domain/analytics.ts`)                                                                                                                | `UNAUTHORIZED`                                                                                                                      |
+| `myReviews()`            | `GET /me/reviews`             | –                                                                                                                                         | `Review[]`                                                                                                                                              | `UNAUTHORIZED`                                                                                                                      |
 
 > **Status changes.** Sellers move orders by hand: placed → confirmed → preparing → ready / out for
 > delivery → delivered (or declined / cancelled). Pay-on-delivery and pay-at-pickup orders are marked

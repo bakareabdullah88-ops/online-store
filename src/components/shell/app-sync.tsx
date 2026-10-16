@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { services } from "@/services";
 import { useBag } from "@/stores/bag";
+import { useSpot } from "@/stores/spot";
 import { usePrefs, useUi } from "@/stores/ui";
 import { modeForPath } from "./mode";
 
@@ -31,6 +32,7 @@ export function AppSync() {
   useEffect(() => {
     void useBag.persist.rehydrate();
     void usePrefs.persist.rehydrate();
+    void useSpot.persist.rehydrate();
     // Offline shell (production only, so dev never serves stale chunks).
     if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useUnsavedChangesGuard } from "@/components/ui/unsaved-guard";
 import { Camera, ExternalLink } from "lucide-react";
 import { AppImage } from "@/components/ui/app-image";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export function ImagePicker({
   onUploaded,
   label,
   className,
+  withButton = false,
 }: {
   image: ImageRef | null;
   name: string;
@@ -39,10 +41,12 @@ export function ImagePicker({
   onUploaded: (id: string, ref: ImageRef) => void;
   label: string;
   className?: string;
+  /** Show a visible "Change" button under the image (touch screens can't hover). */
+  withButton?: boolean;
 }) {
   const upload = useUploadImage();
   const input = useRef<HTMLInputElement>(null);
-  return (
+  const box = (
     <div
       className={cn(
         "relative overflow-hidden bg-sand",
@@ -56,8 +60,7 @@ export function ImagePicker({
         type="button"
         onClick={() => input.current?.click()}
         className={cn(
-          "absolute flex items-center justify-center gap-2 bg-primary/70 text-small font-medium text-on-primary opacity-0 backdrop-blur-sm transition-opacity hover:opacity-100 focus-visible:opacity-100",
-          "inset-0",
+          "absolute inset-0 flex items-center justify-center gap-2 bg-primary/60 text-small font-medium text-on-primary opacity-0 transition-opacity duration-150 hover:opacity-100 focus-visible:opacity-100",
         )}
         aria-label={label}
       >
@@ -72,7 +75,9 @@ export function ImagePicker({
         tabIndex={-1}
         aria-hidden
         onChange={(e) => {
-          const f = e.target.files?.[0];
+          const f = e.currentTarget.files?.[0];
+          // Clear it so choosing the same file again still uploads.
+          e.currentTarget.value = "";
           if (f)
             upload.mutate(f, {
               onSuccess: (r) => onUploaded(r.id, r.ref),
@@ -80,6 +85,21 @@ export function ImagePicker({
             });
         }}
       />
+    </div>
+  );
+  if (!withButton) return box;
+  return (
+    <div className="flex flex-col items-start gap-3">
+      {box}
+      <Button
+        variant="secondary"
+        size="sm"
+        loading={upload.isPending}
+        leadingIcon={<Camera className="size-4" />}
+        onClick={() => input.current?.click()}
+      >
+        {variant === "logo" ? "Change logo" : "Change cover"}
+      </Button>
     </div>
   );
 }
@@ -96,7 +116,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="card scroll-mt-24 p-5 md:p-6">
+    <section id={id} className="card scroll-mt-24 py-6 md:py-8">
       <h2 className="text-title font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-muted">{description}</p>}
       <div className="mt-5">{children}</div>
@@ -120,6 +140,32 @@ function BrandForm({ brand }: { brand: Brand }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
+  const dirty =
+    name !== brand.name ||
+    tagline !== brand.tagline ||
+    bio !== brand.bio ||
+    category !== brand.category ||
+    !!logo.id ||
+    !!cover.id ||
+    [...days].sort().join() !== [...brand.openHours.days].sort().join() ||
+    opens !== brand.openHours.opens ||
+    closes !== brand.openHours.closes ||
+    JSON.stringify(fulfilment) !== JSON.stringify(fromFulfilment(brand.fulfilment));
+  const discard = () => {
+    setName(brand.name);
+    setTagline(brand.tagline);
+    setBio(brand.bio);
+    setCategory(brand.category);
+    setLogo({ ref: brand.logo });
+    setCover({ ref: brand.cover });
+    setDays(brand.openHours.days);
+    setOpens(brand.openHours.opens);
+    setCloses(brand.openHours.closes);
+    setFulfilment(fromFulfilment(brand.fulfilment));
+    setErrors({});
+  };
+  const guard = useUnsavedChangesGuard(dirty, { onDiscard: discard });
+
   const save = () => {
     const e: Record<string, string> = {};
     if (closes <= opens) e.hours = "Closing time must be after opening time";
@@ -142,6 +188,9 @@ function BrandForm({ brand }: { brand: Brand }) {
       {
         onSuccess: () => {
           setErrors({});
+          // The new images are saved now; nothing left to upload.
+          setLogo((l) => ({ ref: l.ref }));
+          setCover((c) => ({ ref: c.ref }));
           setSaved(true);
           window.setTimeout(() => setSaved(false), 1500);
           toast.success("Brand saved");
@@ -158,32 +207,40 @@ function BrandForm({ brand }: { brand: Brand }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col">
       <Section
         id="logo"
         title="Look"
         description="Your logo and cover appear on your shop page, in search and on every order."
       >
-        <ImagePicker
-          image={cover.ref}
-          name={name}
-          variant="cover"
-          label="Upload a cover image"
-          onUploaded={(id, ref) => setCover({ id, ref })}
-        />
-        <div className="-mt-12 ml-5 flex items-end gap-4">
-          <ImagePicker
-            image={logo.ref}
-            name={name}
-            variant="logo"
-            label="Upload a logo"
-            onUploaded={(id, ref) => setLogo({ id, ref })}
-            className="ring-4 ring-surface"
-          />
-          <p className="pb-2 text-small text-muted">
-            Hover or focus an image to change it. Square logos work best.
-          </p>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-[auto_minmax(0,1fr)]">
+          <div>
+            <p className="mb-2 text-small font-medium">Logo</p>
+            <ImagePicker
+              image={logo.ref}
+              name={name}
+              variant="logo"
+              label="Upload a logo"
+              onUploaded={(id, ref) => setLogo({ id, ref })}
+              withButton
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="mb-2 text-small font-medium">Cover</p>
+            <ImagePicker
+              image={cover.ref}
+              name={name}
+              variant="cover"
+              label="Upload a cover image"
+              onUploaded={(id, ref) => setCover({ id, ref })}
+              className="max-w-md"
+              withButton
+            />
+          </div>
         </div>
+        <p className="mt-4 text-small text-muted">
+          Square logos work best. Covers are wide (16:6). PNG, JPG or WebP.
+        </p>
       </Section>
       <Section id="bio" title="Story">
         <div className="flex flex-col gap-5">
@@ -256,32 +313,25 @@ function BrandForm({ brand }: { brand: Brand }) {
           errors={errors}
         />
       </Section>
-      <div className="sticky bottom-[calc(var(--tabbar-h)+12px)] z-(--z-sticky) flex justify-end lg:bottom-4">
-        <Button
-          size="lg"
-          className="shadow-lg"
-          loading={update.isPending}
-          success={saved}
-          onClick={save}
-        >
+      <div className="sticky bottom-0 z-(--z-sticky) -mx-1 flex items-center justify-end gap-3 border-t border-line-thin bg-[color-mix(in_oklab,var(--app-bg)_92%,transparent)] px-1 py-3 backdrop-blur">
+        {dirty && <span className="mr-auto text-small text-muted">Unsaved changes</span>}
+        <Button loading={update.isPending} success={saved} onClick={save}>
           Save changes
         </Button>
       </div>
+      {guard.dialog}
     </div>
   );
 }
 
 function VacationCard({ brand }: { brand: Brand }) {
   const update = useUpdateBrand();
+  // Flips at once; if saving fails it goes back to what the shop really is.
+  const on = update.isPending ? (update.variables?.vacation ?? brand.vacation) : brand.vacation;
   return (
-    <div
-      className={cn(
-        "rounded-lg p-5 hairline transition-colors",
-        brand.vacation ? "bg-warning-soft" : "bg-surface",
-      )}
-    >
+    <div className="card py-5">
       <Switch
-        checked={brand.vacation}
+        checked={on}
         onCheckedChange={(vacation) =>
           update.mutate(
             { vacation },
@@ -291,6 +341,10 @@ function VacationCard({ brand }: { brand: Brand }) {
                   description: vacation
                     ? "Your shop stays visible but can't take orders."
                     : "Buyers can order from you.",
+                }),
+              onError: (err) =>
+                toast.error("That didn't go through. Try again?", {
+                  description: errorMessage(err),
                 }),
             },
           )
@@ -317,7 +371,7 @@ export function StudioBrandSettings() {
       <NavPageHeader
         eyebrow="Brand"
         title="Brand settings"
-        description={`kiosk/${brand.handle}`}
+        description={`kamplug/${brand.handle}`}
         actions={
           <ButtonLink
             href={`/brands/${brand.handle}`}
@@ -328,9 +382,7 @@ export function StudioBrandSettings() {
           </ButtonLink>
         }
       />
-      <div className="mb-6">
-        <VacationCard brand={brand} />
-      </div>
+      <VacationCard brand={brand} />
       <BrandForm key={brand.id} brand={brand} />
     </div>
   );

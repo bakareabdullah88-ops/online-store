@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { KioskMark } from "@/components/app/kiosk-mark";
+import { KamplugWordmark } from "@/components/app/kamplug-mark";
 import { brand } from "@/config/brand";
 import { cn } from "@/lib/cn";
 
-/** Mark tile plus the name. */
+/** The Kamplug wordmark: plain text, "kam" in ink and "plug" in cobalt. */
 export function Logo({
   className,
   href = "/",
@@ -19,12 +19,7 @@ export function Logo({
       className={cn("group inline-flex items-center gap-2 rounded-xs", className)}
       aria-label={`${brand.name} home`}
     >
-      <span className="grid size-8 place-items-center rounded-[10px] bg-primary text-on-primary shadow-sm transition-transform duration-300 group-hover:-rotate-6">
-        <KioskMark className="size-[18px]" />
-      </span>
-      <span className="text-[22px] leading-none font-bold tracking-[-0.03em] text-ink">
-        {brand.name}
-      </span>
+      <KamplugWordmark className="text-[26px]" />
       {suffix && <span className="ml-1 eyebrow text-muted">{suffix}</span>}
     </Link>
   );

@@ -19,12 +19,14 @@ import { formatNaira } from "@/domain/money";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { useCampuses, useSearch } from "@/queries/catalog";
+import { isOnMap } from "@/domain/distance";
+import { useNearQuery } from "@/queries/nearby";
 import { qk } from "@/queries/keys";
 import { services } from "@/services";
 import type { SortKey } from "@/services/types";
 import { BrandCard } from "../brand-card";
-import { ProductCard, ProductCardSkeleton } from "../product-card";
-import { ExploreFilters } from "./filters";
+import { ProductRow, ProductRowSkeleton } from "../product-row";
+import { CategoryNav, ExploreFilters } from "./filters";
 import {
   activeFilterCount,
   sortLabels,
@@ -58,6 +60,7 @@ function ActivePills({
   if (params.rating)
     pills.push({ key: "rating", label: `${params.rating}★ & up`, clear: { rating: null } });
   if (params.stock) pills.push({ key: "stock", label: "In stock", clear: { stock: false } });
+  if (params.walk) pills.push({ key: "walk", label: "Walking distance", clear: { walk: false } });
   if (!pills.length) return null;
   return (
     <ul className="flex flex-wrap gap-2" aria-label="Active filters">
@@ -91,11 +94,11 @@ function BrandMatches({ q }: { q: string }) {
   const { data } = useSearch(q);
   if (!data?.brands.length) return null;
   return (
-    <section aria-label="Matching brands" className="mb-10">
+    <section aria-label="Matching brands" className="mb-6">
       <p className="mb-3 eyebrow text-muted">Brands</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {data.brands.map((b) => (
-          <BrandCard key={b.id} brand={b} variant="compact" className="bg-surface hairline" />
+          <BrandCard key={b.id} brand={b} variant="compact" />
         ))}
       </div>
     </section>
@@ -104,7 +107,9 @@ function BrandMatches({ q }: { q: string }) {
 
 export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" }) {
   const { params, update, clearFilters, pending } = useExploreParams();
-  const query = useMemo(() => toQuery(params), [params]);
+  const near = useNearQuery();
+  const located = isOnMap(near?.zoneId);
+  const query = useMemo(() => ({ ...toQuery(params), ...(near ? { near } : {}) }), [params, near]);
   const reduce = useReducedMotion();
   const [sheet, setSheet] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -138,7 +143,11 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const sortOptions = (Object.keys(sortLabels) as SortKey[])
-    .filter((s) => s !== "relevance" || !!params.q)
+    .filter(
+      (s) =>
+        (s !== "relevance" || !!params.q) &&
+        (s !== "nearest" || located || params.sort === "nearest"),
+    )
     .map((s) => ({ value: s, label: sortLabels[s] }));
 
   const title =
@@ -156,112 +165,121 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
       "Everything on campus"
     );
 
+  const summary = (
+    <span aria-live="polite">
+      {list.isPending ? "Loading…" : `${formatNumber(total)} ${total === 1 ? "item" : "items"}`}
+      {category && !list.isPending && ` · ${category.blurb}`}
+    </span>
+  );
+
   return (
     <div className={pagePad}>
-      <NavPageHeader
-        title={title}
-        current={mode === "search" ? "Search" : category ? category.name : "Discover"}
-        className="mb-0"
-        description={
-          <span aria-live="polite">
-            {list.isPending
-              ? "Loading…"
-              : `${formatNumber(total)} ${total === 1 ? "thing" : "things"}`}
-            {category && !list.isPending && ` · ${category.blurb}`}
-          </span>
-        }
-      />
-
-      {/* Sticky category rail + tools */}
-      <div className="card sticky top-[calc(env(safe-area-inset-top)+76px)] z-(--z-sticky) mt-5 rounded-2xl px-3 py-2.5 md:top-[88px]">
-        <div className="flex items-center gap-3">
-          <div className="-my-1 scrollbar-none min-w-0 flex-1 overflow-x-auto py-1">
-            <ChipGroup
-              label="Category"
-              value={params.category}
-              onChange={(v) => update({ category: v as ExploreParams["category"] })}
-            >
-              <ChipOption value="all">All</ChipOption>
-              {categories.map((c) => (
-                <ChipOption key={c.id} value={c.id}>
-                  {c.name}
-                </ChipOption>
-              ))}
-            </ChipGroup>
-          </div>
-        </div>
-        <div className="mt-3 flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="lg:hidden"
-            leadingIcon={<SlidersHorizontal className="size-4" />}
-            onClick={() => setSheet(true)}
-          >
-            Filters
-            {filters > 0 && (
-              <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-on-primary">
-                {filters}
-              </span>
-            )}
-          </Button>
-          <div className="w-48 sm:w-56">
-            <Select
-              label="Sort by"
-              value={params.sort}
-              onValueChange={(v) => update({ sort: v })}
-              options={sortOptions}
-              className="h-9 text-small"
-            />
-          </div>
-          {(pending || (list.isFetching && !list.isFetchingNextPage)) && (
-            <Spinner className="ml-1 size-4 text-muted" label="Updating results" />
-          )}
-          <div className="ml-auto hidden min-w-0 lg:block">
-            <ActivePills params={params} update={update} />
-          </div>
-        </div>
-        <div className="mt-3 lg:hidden">
-          <ActivePills params={params} update={update} />
-        </div>
+      {/* On large screens the title sits at the top of the results column instead,
+          level with the sidebar. */}
+      <div className="lg:hidden">
+        <NavPageHeader
+          title={title}
+          current={mode === "search" ? "Search" : category ? category.name : "Discover"}
+          className="mb-0"
+          description={summary}
+        />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr]">
-        <aside className="hidden lg:block" aria-label="Filters">
-          <div className="sticky top-44">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-title font-semibold">Filters</h2>
-              {filters > 0 && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="text-small text-muted underline underline-offset-4 hover:text-ink"
-                >
-                  Clear all
-                </button>
-              )}
+      {/* Phones and tablets have no sidebar, so categories scroll sideways here. */}
+      <div className="-mx-4 mt-5 scrollbar-none overflow-x-auto px-4 py-1 md:-mx-6 md:px-6 lg:hidden">
+        <ChipGroup
+          label="Category"
+          value={params.category}
+          onChange={(v) => update({ category: v as ExploreParams["category"] })}
+        >
+          <ChipOption value="all">All</ChipOption>
+          {categories.map((c) => (
+            <ChipOption key={c.id} value={c.id}>
+              {c.name}
+            </ChipOption>
+          ))}
+        </ChipGroup>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-8 lg:mt-0 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="hidden lg:block" aria-label="Categories and filters">
+          <div className="sticky top-24 scrollbar-none flex max-h-[calc(100dvh-7rem)] flex-col overflow-y-auto pb-4">
+            <div className="pb-4">
+              <CategoryNav value={params.category} onChange={(v) => update({ category: v })} />
             </div>
-            <ExploreFilters params={params} update={update} />
+            <div className="card pt-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-title font-semibold">Filters</h2>
+                {filters > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="text-small text-muted underline underline-offset-4 hover:text-ink"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+              <ExploreFilters params={params} update={update} />
+            </div>
           </div>
         </aside>
 
         <div className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:min-h-[52px]">
+            <div className="hidden min-w-0 lg:block">
+              <h1 className="text-[26px] leading-tight font-semibold tracking-[-0.03em]">
+                {title}
+              </h1>
+              <p className="mt-0.5 text-small text-muted">{summary}</p>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              {(pending || (list.isFetching && !list.isFetchingNextPage)) && (
+                <Spinner className="size-4 text-muted" label="Updating results" />
+              )}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="lg:hidden"
+                leadingIcon={<SlidersHorizontal className="size-4" />}
+                onClick={() => setSheet(true)}
+              >
+                Filters
+                {filters > 0 && (
+                  <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-on-primary">
+                    {filters}
+                  </span>
+                )}
+              </Button>
+              <div className="w-44 sm:w-52">
+                <Select
+                  label="Sort by"
+                  value={params.sort}
+                  onValueChange={(v) => update({ sort: v })}
+                  options={sortOptions}
+                  className="h-9 text-small"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mb-4 empty:hidden">
+            <ActivePills params={params} update={update} />
+          </div>
           {mode === "search" && params.q && <BrandMatches q={params.q} />}
-          <h2 className="sr-only">Products</h2>
           {list.isError ? (
             <EmptyState
               illustration="error"
-              title="We couldn't load products"
-              body="Something went wrong on our side. Your filters are saved."
+              title="That didn't load"
+              body="Probably our side, not yours. Your filters are still set."
               action={<Button onClick={() => void list.refetch()}>Try again</Button>}
             />
           ) : list.isPending ? (
             <div
-              className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-4"
+              className="flex flex-col divide-y divide-line-thin border-y border-line-thin"
               aria-busy
             >
-              {Array.from({ length: 12 }, (_, i) => (
-                <ProductCardSkeleton key={i} />
+              {Array.from({ length: 5 }, (_, i) => (
+                <ProductRowSkeleton key={i} />
               ))}
             </div>
           ) : items.length === 0 ? (
@@ -287,7 +305,7 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
             <LayoutGroup>
               <ul
                 className={cn(
-                  "grid grid-cols-2 gap-x-4 gap-y-8 transition-opacity sm:grid-cols-3 xl:grid-cols-4",
+                  "flex flex-col divide-y divide-line-thin border-y border-line-thin transition-opacity",
                   list.isPlaceholderData && "opacity-60",
                 )}
               >
@@ -296,12 +314,12 @@ export function ExploreView({ mode = "explore" }: { mode?: "explore" | "search" 
                     <motion.li
                       key={p.id}
                       layout={!reduce}
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.96 }}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
                       transition={spring.smooth}
                     >
-                      <ProductCard product={p} morph priority={i < 4} />
+                      <ProductRow product={p} morph priority={i < 2} />
                     </motion.li>
                   ))}
                 </AnimatePresence>

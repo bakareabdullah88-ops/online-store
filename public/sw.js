@@ -1,6 +1,6 @@
-/* Kiosk service worker: offline shell. Data lives in IndexedDB, so once a page
- * has been visited it keeps working offline. Bump VERSION to invalidate. */
-const VERSION = "kiosk-v1";
+/* Kamplug service worker: offline shell for pages already visited. Bump VERSION
+ * to invalidate. */
+const VERSION = "kamplug-v2";
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (event) => {
@@ -31,6 +31,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // The backend (sign-in redirects, photos, live updates) always goes straight to the network.
+  if (url.pathname.startsWith("/api/")) return;
 
   // Pages: network first, then the cached copy, then the offline page.
   if (request.mode === "navigate") {
