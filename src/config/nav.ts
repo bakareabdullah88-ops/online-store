@@ -1,15 +1,18 @@
 import {
+  BagIcon,
+  DashboardIcon,
+  DiscoverIcon,
+  HomeIcon,
+  MessagesIcon,
+  OrdersIcon,
+  SavedIcon,
+} from "@/components/icons/kamplug-icons";
+import type { AppIcon } from "@/components/icons/kamplug-icons";
+import {
   Bell,
-  Compass,
-  Gauge,
-  Heart,
-  LayoutGrid,
   MapPin,
-  MessageCircle,
   Package,
-  Receipt,
   Settings,
-  ShoppingBag,
   Star,
   Store,
   Tag,
@@ -21,7 +24,7 @@ import {
 export type NavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: LucideIcon | AppIcon;
   /** Colour of the item's icon tile (a CSS colour or variable). */
   tone: string;
   /** Which badge to show next to the item, if any. */
@@ -60,7 +63,7 @@ export const marketNav: NavSection[] = [
       {
         href: "/home",
         label: "Home",
-        icon: LayoutGrid,
+        icon: HomeIcon,
         tone: T.blue,
         primary: true,
         match: startsWith("/home"),
@@ -68,7 +71,7 @@ export const marketNav: NavSection[] = [
       {
         href: "/explore",
         label: "Discover",
-        icon: Compass,
+        icon: DiscoverIcon,
         tone: T.violet,
         primary: true,
         match: startsWith("/explore", "/search", "/brands", "/products"),
@@ -76,7 +79,7 @@ export const marketNav: NavSection[] = [
       {
         href: "/orders",
         label: "Orders",
-        icon: Receipt,
+        icon: OrdersIcon,
         tone: T.orange,
         primary: true,
         badge: "activeOrders",
@@ -85,14 +88,14 @@ export const marketNav: NavSection[] = [
       {
         href: "/account",
         label: "Dashboard",
-        icon: Gauge,
+        icon: DashboardIcon,
         tone: T.sky,
         match: (p) => p === "/account",
       },
       {
         href: "/messages",
         label: "Messages",
-        icon: MessageCircle,
+        icon: MessagesIcon,
         tone: T.teal,
         badge: "messages",
         match: startsWith("/messages"),
@@ -100,7 +103,7 @@ export const marketNav: NavSection[] = [
       {
         href: "/wishlist",
         label: "Saved",
-        icon: Heart,
+        icon: SavedIcon,
         tone: T.pink,
         primary: true,
         match: startsWith("/wishlist"),
@@ -113,7 +116,7 @@ export const marketNav: NavSection[] = [
       {
         href: "/bag",
         label: "Bag",
-        icon: ShoppingBag,
+        icon: BagIcon,
         tone: T.indigo,
         badge: "bag",
         match: startsWith("/bag", "/checkout"),
@@ -147,7 +150,7 @@ export const shopNav: NavSection[] = [
       {
         href: "/studio",
         label: "Dashboard",
-        icon: Gauge,
+        icon: DashboardIcon,
         tone: T.blue,
         primary: true,
         match: (p) => p === "/studio" || p.startsWith("/studio?") || p === "/studio/analytics",
@@ -155,7 +158,7 @@ export const shopNav: NavSection[] = [
       {
         href: "/studio/orders",
         label: "Orders",
-        icon: Receipt,
+        icon: OrdersIcon,
         tone: T.orange,
         primary: true,
         badge: "newOrders",
@@ -164,7 +167,7 @@ export const shopNav: NavSection[] = [
       {
         href: "/studio/messages",
         label: "Inbox",
-        icon: MessageCircle,
+        icon: MessagesIcon,
         tone: T.teal,
         badge: "shopMessages",
       },

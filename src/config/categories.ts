@@ -1,16 +1,17 @@
+import {
+  AccessoriesIcon,
+  BeautyIcon,
+  BooksIcon,
+  FashionIcon,
+  FoodIcon,
+  PrintIcon,
+  TechIcon,
+  ThriftIcon,
+} from "@/components/icons/kamplug-icons";
+import type { AppIcon } from "@/components/icons/kamplug-icons";
 import type { ArtMotif, CategoryId } from "@/services/types";
 import type { ArtPalette } from "@/design/tokens";
-import {
-  BookOpen,
-  Cpu,
-  Gem,
-  Palette,
-  Recycle,
-  Shirt,
-  Soup,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 
 export type Category = {
   id: CategoryId;
@@ -19,14 +20,14 @@ export type Category = {
   blurb: string;
   motif: ArtMotif;
   palette: ArtPalette;
-  icon: LucideIcon;
+  icon: LucideIcon | AppIcon;
 };
 
 /** Static taxonomy. BACKEND-SEAM: could be served by the API later. */
 export const categories: readonly Category[] = [
   {
     id: "fashion",
-    icon: Shirt,
+    icon: FashionIcon,
     name: "Fashion",
     blurb: "Made-on-campus streetwear and tailoring",
     motif: "tee",
@@ -34,7 +35,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "thrift",
-    icon: Recycle,
+    icon: ThriftIcon,
     name: "Thrift",
     blurb: "Vintage finds, one of one",
     motif: "jacket",
@@ -42,7 +43,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "food",
-    icon: Soup,
+    icon: FoodIcon,
     name: "Food & snacks",
     blurb: "Small chops, jollof, late-night bites",
     motif: "bowl",
@@ -50,7 +51,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "beauty",
-    icon: Sparkles,
+    icon: BeautyIcon,
     name: "Skincare & beauty",
     blurb: "Shea, black soap, glow oils",
     motif: "dropper",
@@ -58,7 +59,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "accessories",
-    icon: Gem,
+    icon: AccessoriesIcon,
     name: "Accessories",
     blurb: "Beads, bags and little extras",
     motif: "bracelet",
@@ -66,7 +67,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "print",
-    icon: Palette,
+    icon: PrintIcon,
     name: "Print & design",
     blurb: "Posters, stickers, custom cards",
     motif: "poster",
@@ -74,7 +75,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "tech",
-    icon: Cpu,
+    icon: TechIcon,
     name: "Tech accessories",
     blurb: "Cases, cables, earbuds",
     motif: "earbuds",
@@ -82,7 +83,7 @@ export const categories: readonly Category[] = [
   },
   {
     id: "books",
-    icon: BookOpen,
+    icon: BooksIcon,
     name: "Books & notes",
     blurb: "Past questions, novels, study packs",
     motif: "book",

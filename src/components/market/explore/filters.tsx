@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { LayoutGrid, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { HomeIcon, type AppIcon } from "@/components/icons/kamplug-icons";
 import { Chip } from "@/components/ui/chip";
 import { RangeSlider, Switch } from "@/components/ui/controls";
 import { Select } from "@/components/ui/overlay";
@@ -210,8 +211,8 @@ export function CategoryNav({
   value: ExploreParams["category"];
   onChange: (v: ExploreParams["category"]) => void;
 }) {
-  const items: { id: ExploreParams["category"]; name: string; icon: LucideIcon }[] = [
-    { id: "all", name: "Everything", icon: LayoutGrid },
+  const items: { id: ExploreParams["category"]; name: string; icon: LucideIcon | AppIcon }[] = [
+    { id: "all", name: "Everything", icon: HomeIcon },
     ...categories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })),
   ];
   return (

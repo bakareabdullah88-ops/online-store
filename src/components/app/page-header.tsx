@@ -1,5 +1,6 @@
 "use client";
 
+import type { AppIcon } from "@/components/icons/kamplug-icons";
 import Link from "next/link";
 import { ChevronRight, House, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -23,7 +24,7 @@ export function PageHeader({
 }: {
   title: ReactNode;
   description?: ReactNode;
-  icon?: LucideIcon;
+  icon?: LucideIcon | AppIcon;
   /** Colour of the icon tile. */
   tone?: string;
   crumbs?: Crumb[];
